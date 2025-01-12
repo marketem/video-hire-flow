@@ -28,8 +28,9 @@ const supabase = createClient(
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
-      flowType: 'pkce',
-      storage: window.localStorage
+      flowType: 'implicit',
+      storage: window.localStorage,
+      debug: true
     },
     global: {
       headers: {
