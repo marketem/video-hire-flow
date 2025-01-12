@@ -26,7 +26,8 @@ const supabase = createClient(
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      flowType: 'pkce'
     },
     global: {
       headers: {
@@ -35,7 +36,15 @@ const supabase = createClient(
     },
     db: {
       schema: 'public'
-    }
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10
+      }
+    },
+    // Add retrying capabilities
+    maxRetryCount: 3,
+    retryInterval: 1000
   }
 );
 
