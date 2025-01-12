@@ -4,11 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import { createClientComponentClient } from "@supabase/auth-helpers-react";
 
 export default function SignUp() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const supabase = createClientComponentClient();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -19,12 +21,36 @@ export default function SignUp() {
     const password = formData.get("password") as string;
     const companyName = formData.get("companyName") as string;
 
-    // For now, just show a toast since we need Supabase setup
-    toast({
-      title: "Setup Required",
-      description: "Authentication will be enabled once Supabase is set up.",
-    });
-    setIsLoading(false);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            company_name: companyName,
+            trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(), // 14 days from now
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Account created!",
+        description: "Please check your email to verify your account.",
+      });
+
+      // Redirect to dashboard or onboarding
+      navigate("/dashboard");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
