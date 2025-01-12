@@ -24,12 +24,17 @@ export function SignUpForm() {
     const lastName = formData.get("lastName") as string;
 
     try {
-      console.log('Attempting signup with:', { email, companyName, firstName, lastName });
+      console.log('Starting signup process...');
+      console.log('Supabase client config:', {
+        url: supabase.supabaseUrl,
+        headers: supabase.rest.headers,
+      });
       
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
           data: {
             company_name: companyName,
             first_name: firstName,
@@ -40,23 +45,36 @@ export function SignUpForm() {
       });
 
       if (signUpError) {
-        console.error('Signup error details:', signUpError);
+        console.error('Detailed signup error:', {
+          message: signUpError.message,
+          status: signUpError.status,
+          name: signUpError.name,
+          details: signUpError
+        });
         throw signUpError;
       }
 
       if (signUpData?.user) {
+        console.log('Signup successful:', signUpData);
         toast({
           title: "Account created!",
           description: "Welcome to InterviewPro.",
         });
         
-        // Force navigation to dashboard
-        console.log('Redirecting to dashboard...');
-        navigate('/dashboard', { replace: true });
+        // Wait a brief moment before navigation to ensure toast is visible
+        setTimeout(() => {
+          navigate('/dashboard', { replace: true });
+        }, 500);
         return;
       }
     } catch (error) {
-      console.error('Signup error:', error);
+      console.error('Signup process error:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        details: error
+      });
+      
       toast({
         title: "Error",
         description: error.message || "An error occurred during signup",
