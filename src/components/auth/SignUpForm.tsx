@@ -25,10 +25,6 @@ export function SignUpForm() {
 
     try {
       console.log('Starting signup process...');
-      console.log('Supabase client config:', {
-        url: supabase.supabaseUrl,
-        headers: supabase.rest.headers,
-      });
       
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -45,12 +41,7 @@ export function SignUpForm() {
       });
 
       if (signUpError) {
-        console.error('Detailed signup error:', {
-          message: signUpError.message,
-          status: signUpError.status,
-          name: signUpError.name,
-          details: signUpError
-        });
+        console.error('Signup error:', signUpError);
         throw signUpError;
       }
 
@@ -68,12 +59,7 @@ export function SignUpForm() {
         return;
       }
     } catch (error) {
-      console.error('Signup process error:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-        details: error
-      });
+      console.error('Signup process error:', error);
       
       toast({
         title: "Error",
