@@ -27,23 +27,7 @@ const supabase = createClient(
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true,
-      flowType: 'implicit',
-      storage: window.localStorage,
-      debug: true
-    },
-    global: {
-      headers: {
-        'X-Client-Info': 'supabase-js-web'
-      }
-    },
-    realtime: {
-      params: {
-        eventsPerSecond: 10
-      }
-    },
-    db: {
-      schema: 'public'
+      detectSessionInUrl: false
     }
   }
 );
