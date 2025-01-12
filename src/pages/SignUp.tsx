@@ -47,13 +47,17 @@ export default function SignUp() {
 
       if (error) throw error;
 
-      toast({
-        title: "Account created!",
-        description: "Please check your email to verify your account.",
-      });
-
-      navigate("/dashboard");
+      if (data?.user) {
+        toast({
+          title: "Account created!",
+          description: "Welcome to InterviewPro.",
+        });
+        
+        // Force navigation to dashboard
+        navigate("/dashboard", { replace: true });
+      }
     } catch (error) {
+      console.error('Signup error:', error);
       toast({
         title: "Error",
         description: error.message,
