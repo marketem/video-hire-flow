@@ -45,7 +45,10 @@ export function SignUpForm() {
           description: "Welcome to InterviewPro.",
         });
         
-        navigate("/dashboard", { replace: true });
+        // Wait a brief moment to ensure the session is properly set
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 500);
       }
     } catch (error) {
       console.error('Signup error:', error);
