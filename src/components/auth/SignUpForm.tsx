@@ -36,6 +36,7 @@ export function SignUpForm() {
             last_name: lastName,
             trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
           },
+          emailRedirectTo: window.location.origin + '/dashboard',
         },
       });
 
@@ -45,29 +46,10 @@ export function SignUpForm() {
       }
 
       if (signUpData?.user) {
-        // Wait a moment for the session to be established
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          throw new Error('Failed to establish session');
-        }
-
-        if (session) {
-          toast({
-            title: "Account created!",
-            description: "Welcome to InterviewPro.",
-          });
-          navigate("/dashboard");
-        } else {
-          console.error('No session established after signup');
-          toast({
-            title: "Verification needed",
-            description: "Please check your email to verify your account.",
-          });
-        }
+        toast({
+          title: "Verification email sent",
+          description: "Please check your email to verify your account.",
+        });
       }
     } catch (error) {
       console.error('Signup error:', error);
