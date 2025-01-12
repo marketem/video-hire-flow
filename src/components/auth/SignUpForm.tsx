@@ -49,7 +49,11 @@ export function SignUpForm() {
           title: "Account created!",
           description: "Welcome to InterviewPro.",
         });
-        navigate("/dashboard");
+        
+        // Force navigation to dashboard
+        console.log('Redirecting to dashboard...');
+        navigate('/dashboard', { replace: true });
+        return;
       }
     } catch (error) {
       console.error('Signup error:', error);
