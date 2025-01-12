@@ -28,6 +28,8 @@ export default function SignUp() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const companyName = formData.get("companyName") as string;
+    const firstName = formData.get("firstName") as string;
+    const lastName = formData.get("lastName") as string;
 
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -36,6 +38,8 @@ export default function SignUp() {
         options: {
           data: {
             company_name: companyName,
+            first_name: firstName,
+            last_name: lastName,
             trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(), // 14 days from now
           },
         },
@@ -48,7 +52,6 @@ export default function SignUp() {
         description: "Please check your email to verify your account.",
       });
 
-      // Redirect to dashboard or onboarding
       navigate("/dashboard");
     } catch (error) {
       toast({
@@ -89,6 +92,24 @@ export default function SignUp() {
             </p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="firstName">First Name</Label>
+              <Input
+                id="firstName"
+                name="firstName"
+                placeholder="John"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                name="lastName"
+                placeholder="Doe"
+                required
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="companyName">Company Name</Label>
               <Input
