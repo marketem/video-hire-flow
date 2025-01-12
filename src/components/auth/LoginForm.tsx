@@ -20,25 +20,32 @@ export function LoginForm() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
+    console.log("Attempting login...");
+
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      console.log("Login response:", { data, error });
+
       if (error) {
         throw error;
       }
 
       if (data?.user) {
+        console.log("Login successful, navigating to dashboard...");
         toast({
           title: "Welcome back!",
           description: "You've successfully logged in.",
         });
         
         navigate('/dashboard');
+        console.log("Navigation called");
       }
     } catch (error) {
+      console.error("Login error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to log in",
