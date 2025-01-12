@@ -26,7 +26,7 @@ export function SignUpForm() {
     try {
       console.log('Attempting signup with:', { email, companyName, firstName, lastName });
       
-      const { data, error } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -39,28 +39,33 @@ export function SignUpForm() {
         },
       });
 
-      if (error) {
-        console.error('Signup error details:', error);
-        throw error;
+      if (signUpError) {
+        console.error('Signup error details:', signUpError);
+        throw signUpError;
       }
 
-      if (data?.user) {
-        toast({
-          title: "Account created!",
-          description: "Welcome to InterviewPro.",
-        });
+      if (signUpData?.user) {
+        // Wait a moment for the session to be established
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Wait for the session to be established
-        const { data: sessionData } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (sessionData?.session) {
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          throw new Error('Failed to establish session');
+        }
+
+        if (session) {
+          toast({
+            title: "Account created!",
+            description: "Welcome to InterviewPro.",
+          });
           navigate("/dashboard");
         } else {
-          console.error('Session not established after signup');
+          console.error('No session established after signup');
           toast({
-            title: "Error",
-            description: "Please try logging in.",
-            variant: "destructive",
+            title: "Verification needed",
+            description: "Please check your email to verify your account.",
           });
         }
       }
