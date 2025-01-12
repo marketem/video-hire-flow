@@ -30,7 +30,6 @@ export function SignUpForm() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
           data: {
             company_name: companyName,
             first_name: firstName,
@@ -47,15 +46,14 @@ export function SignUpForm() {
 
       if (signUpData?.user) {
         console.log('Signup successful:', signUpData);
+        
+        // Immediately navigate to dashboard after successful signup
         toast({
           title: "Account created!",
           description: "Welcome to InterviewPro.",
         });
         
-        // Wait a brief moment before navigation to ensure toast is visible
-        setTimeout(() => {
-          navigate('/dashboard', { replace: true });
-        }, 500);
+        navigate('/dashboard');
         return;
       }
     } catch (error) {
