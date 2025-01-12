@@ -18,55 +18,40 @@ export function LoginForm() {
     e.preventDefault();
     setIsLoading(true);
 
-    try {
-      console.log("Attempting login with email:", email);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password: password.trim(),
+    });
+
+    if (error) {
+      console.error("Login error:", error.message);
       
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      console.log("Login response:", { data, error });
-
-      if (error) {
-        console.error("Login error details:", error);
-        
-        // Show specific error message based on the error type
-        if (error.message.includes("Invalid login credentials")) {
-          toast({
-            title: "Login Failed",
-            description: "Please check your email and password, or sign up if you don't have an account.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: error.message,
-            variant: "destructive",
-          });
-        }
-        return;
-      }
-
-      if (data?.user) {
-        console.log("Login successful, user data:", data.user);
+      if (error.message.includes("Invalid login credentials")) {
         toast({
-          title: "Welcome back!",
-          description: "You've successfully logged in.",
+          title: "Login Failed",
+          description: "Invalid email or password. Please try again or sign up if you don't have an account.",
+          variant: "destructive",
         });
-        
-        navigate('/dashboard');
+      } else {
+        toast({
+          title: "Error",
+          description: "An error occurred during login. Please try again.",
+          variant: "destructive",
+        });
       }
-    } catch (error) {
-      console.error("Unexpected login error:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
       setIsLoading(false);
+      return;
     }
+
+    if (data?.user) {
+      toast({
+        title: "Success",
+        description: "You've successfully logged in!",
+      });
+      navigate('/dashboard');
+    }
+
+    setIsLoading(false);
   };
 
   return (
