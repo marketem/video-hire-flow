@@ -28,7 +28,8 @@ const supabase = createClient(
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
-      flowType: 'pkce'
+      flowType: 'pkce',
+      storage: window.localStorage
     },
     global: {
       headers: {
@@ -39,6 +40,9 @@ const supabase = createClient(
       params: {
         eventsPerSecond: 10
       }
+    },
+    db: {
+      schema: 'public'
     }
   }
 );
