@@ -36,7 +36,6 @@ export function SignUpForm() {
             last_name: lastName,
             trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
           },
-          emailRedirectTo: window.location.origin + '/dashboard',
         },
       });
 
@@ -47,9 +46,10 @@ export function SignUpForm() {
 
       if (signUpData?.user) {
         toast({
-          title: "Verification email sent",
-          description: "Please check your email to verify your account.",
+          title: "Account created!",
+          description: "Welcome to InterviewPro.",
         });
+        navigate("/dashboard");
       }
     } catch (error) {
       console.error('Signup error:', error);
