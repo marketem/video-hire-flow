@@ -3,11 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
   const supabase = useSupabaseClient();
@@ -16,16 +18,12 @@ export function LoginForm() {
     e.preventDefault();
     setIsLoading(true);
 
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-
-    console.log("Attempting login with:", { email });
-
     try {
+      console.log("Attempting login with:", { email });
+      
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: email.trim(),
+        password: password.trim(),
       });
 
       console.log("Login response:", { data, error });
@@ -76,8 +74,9 @@ export function LoginForm() {
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
-            name="email"
             type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="name@company.com"
             required
           />
@@ -86,8 +85,9 @@ export function LoginForm() {
           <Label htmlFor="password">Password</Label>
           <Input
             id="password"
-            name="password"
             type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>
