@@ -50,10 +50,19 @@ export function SignUpForm() {
           description: "Welcome to InterviewPro.",
         });
         
-        // Wait a brief moment to ensure the session is properly set
-        setTimeout(() => {
+        // Wait for the session to be established
+        const { data: sessionData } = await supabase.auth.getSession();
+        
+        if (sessionData?.session) {
           navigate("/dashboard");
-        }, 500);
+        } else {
+          console.error('Session not established after signup');
+          toast({
+            title: "Error",
+            description: "Please try logging in.",
+            variant: "destructive",
+          });
+        }
       }
     } catch (error) {
       console.error('Signup error:', error);
