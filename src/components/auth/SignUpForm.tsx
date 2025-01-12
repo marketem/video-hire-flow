@@ -24,6 +24,8 @@ export function SignUpForm() {
     const lastName = formData.get("lastName") as string;
 
     try {
+      console.log('Attempting signup with:', { email, companyName, firstName, lastName });
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -37,7 +39,10 @@ export function SignUpForm() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Signup error details:', error);
+        throw error;
+      }
 
       if (data?.user) {
         toast({
@@ -54,7 +59,7 @@ export function SignUpForm() {
       console.error('Signup error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "An error occurred during signup",
         variant: "destructive",
       });
     } finally {
