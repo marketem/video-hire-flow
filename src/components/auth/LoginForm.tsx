@@ -20,7 +20,7 @@ export function LoginForm() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    console.log("Attempting login...");
+    console.log("Attempting login with:", { email });
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -31,7 +31,20 @@ export function LoginForm() {
       console.log("Login response:", { data, error });
 
       if (error) {
-        throw error;
+        if (error.message === "Invalid login credentials") {
+          toast({
+            title: "Login Failed",
+            description: "Invalid email or password. Please try again.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+        return;
       }
 
       if (data?.user) {
@@ -48,7 +61,7 @@ export function LoginForm() {
       console.error("Login error:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to log in",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -57,29 +70,35 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          placeholder="name@company.com"
-          required
-        />
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="name@company.com"
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            required
+          />
+        </div>
+        <Button className="w-full" type="submit" disabled={isLoading}>
+          {isLoading ? "Logging in..." : "Log in"}
+        </Button>
+      </form>
+      
+      <div className="text-sm text-muted-foreground">
+        <p>First, create an account using the Sign Up page before attempting to log in.</p>
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          required
-        />
-      </div>
-      <Button className="w-full" type="submit" disabled={isLoading}>
-        {isLoading ? "Logging in..." : "Log in"}
-      </Button>
-    </form>
+    </div>
   );
 }
