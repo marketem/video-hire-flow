@@ -41,10 +41,7 @@ const supabase = createClient(
       params: {
         eventsPerSecond: 10
       }
-    },
-    // Add retrying capabilities
-    maxRetryCount: 3,
-    retryInterval: 1000
+    }
   }
 );
 
