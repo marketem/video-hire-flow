@@ -19,20 +19,23 @@ export function LoginForm() {
     setIsLoading(true);
 
     try {
-      console.log("Attempting login with:", { email });
+      console.log("Attempting login with email:", email);
       
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password: password.trim(),
+        email,
+        password,
       });
 
       console.log("Login response:", { data, error });
 
       if (error) {
-        if (error.message === "Invalid login credentials") {
+        console.error("Login error details:", error);
+        
+        // Show specific error message based on the error type
+        if (error.message.includes("Invalid login credentials")) {
           toast({
             title: "Login Failed",
-            description: "Invalid email or password. Please try again.",
+            description: "Please check your email and password, or sign up if you don't have an account.",
             variant: "destructive",
           });
         } else {
@@ -46,17 +49,16 @@ export function LoginForm() {
       }
 
       if (data?.user) {
-        console.log("Login successful, navigating to dashboard...");
+        console.log("Login successful, user data:", data.user);
         toast({
           title: "Welcome back!",
           description: "You've successfully logged in.",
         });
         
         navigate('/dashboard');
-        console.log("Navigation called");
       }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Unexpected login error:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
@@ -97,7 +99,7 @@ export function LoginForm() {
       </form>
       
       <div className="text-sm text-muted-foreground">
-        <p>First, create an account using the Sign Up page before attempting to log in.</p>
+        <p>First time? Please create an account using the Sign Up page before attempting to log in.</p>
       </div>
     </div>
   );
