@@ -70,7 +70,11 @@ export function useCandidateActions() {
       }
 
       const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${token}`
-      await copyToClipboard(videoSubmissionUrl)
+      const copySuccess = await copyToClipboard(videoSubmissionUrl)
+      
+      if (!copySuccess) {
+        throw new Error(`Failed to copy: ${videoSubmissionUrl}`)
+      }
       
       toast({
         title: "Success",
@@ -82,7 +86,7 @@ export function useCandidateActions() {
       console.error('Error in copyVideoLink:', error)
       toast({
         title: "Error",
-        description: "Failed to generate or copy video submission link. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to generate or copy video submission link",
         variant: "destructive",
       })
       return false
