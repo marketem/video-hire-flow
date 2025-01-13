@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, VideoIcon, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { JobOpenings } from "@/components/jobs/JobOpenings";
+import { VideoReview } from "@/components/jobs/video-review/VideoReview";
 
 export default function Dashboard() {
   const session = useSession();
@@ -142,9 +144,18 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <div className="space-y-8">
-        <JobOpenings />
-      </div>
+      <Tabs defaultValue="jobs" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="jobs">Job Openings</TabsTrigger>
+          <TabsTrigger value="videos">Video Reviews</TabsTrigger>
+        </TabsList>
+        <TabsContent value="jobs">
+          <JobOpenings />
+        </TabsContent>
+        <TabsContent value="videos">
+          <VideoReview />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
