@@ -16,48 +16,33 @@ import {
 const features = [
   {
     icon: Video,
-    title: "Asynchronous Video Interviews",
-    description: "Screen candidates efficiently with pre-recorded video submissions, allowing flexible scheduling for both recruiters and candidates."
+    title: "Video Interview Platform",
+    description: "Screen candidates efficiently with pre-recorded video submissions. Review and evaluate responses at your convenience.",
+    image: "/lovable-uploads/388035ef-8cbe-472a-8e39-0f87ff9b2f55.png"
   },
   {
     icon: Users,
-    title: "Candidate Management",
-    description: "Track and manage all your candidates in one place with our intuitive dashboard interface."
-  },
-  {
-    icon: MessageSquare,
-    title: "Video Response Review",
-    description: "Review and evaluate candidate video submissions with your team, making collaborative hiring decisions easier."
-  },
-  {
-    icon: Bell,
-    title: "SMS Notifications",
-    description: "Automated SMS notifications to keep candidates informed and engaged throughout the hiring process."
-  },
-  {
-    icon: UserPlus,
-    title: "Unlimited Job Postings",
-    description: "Create and manage multiple job openings with custom descriptions and requirements."
+    title: "Comprehensive Candidate Management",
+    description: "Track all candidates in one place with our intuitive dashboard. Monitor video response rates and review status.",
+    image: "/lovable-uploads/104b8677-3217-4914-9739-d5411b37b59b.png"
   },
   {
     icon: FileSpreadsheet,
     title: "Bulk Candidate Import",
-    description: "Easily import candidate lists from spreadsheets or other ATS systems."
+    description: "Save time by importing multiple candidates via CSV. Easily upload candidate lists with our simple template.",
+    image: "/lovable-uploads/ec2c9532-cce8-4948-9b2b-b619e6f12935.png"
   },
   {
-    icon: Shield,
-    title: "Secure Video Storage",
-    description: "All video submissions are securely stored and accessible only to authorized team members."
+    icon: MessageSquare,
+    title: "Streamlined Job Postings",
+    description: "Create and manage detailed job listings with custom requirements and descriptions. Track applications in real-time.",
+    image: "/lovable-uploads/67b0c217-7bca-4a45-b403-c56b959e6b98.png"
   },
   {
-    icon: Clock,
-    title: "14-Day Free Trial",
-    description: "Try all features risk-free with our comprehensive 14-day trial period."
-  },
-  {
-    icon: Building2,
-    title: "Company Dashboard",
-    description: "Get insights into your hiring process with analytics and response rate tracking."
+    icon: Bell,
+    title: "Automated Video Invites",
+    description: "Send automated video interview requests to candidates. Track response rates and follow up with ease.",
+    image: "/lovable-uploads/df5493e2-3eb5-49f6-8040-5b36cbeb4193.png"
   }
 ];
 
@@ -69,26 +54,44 @@ const Features = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h1 className="text-4xl font-bold mb-4">
-              Everything You Need for Modern Hiring
+              Modern Video Hiring Platform
             </h1>
             <p className="text-xl text-muted-foreground">
-              VibeCheck provides all the tools you need to streamline your hiring process with video interviews.
+              Streamline your hiring process with asynchronous video interviews and comprehensive candidate management.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="space-y-20">
             {features.map((feature, index) => {
               const Icon = feature.icon;
+              const isEven = index % 2 === 0;
+              
               return (
-                <Card key={index} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <Icon className="h-8 w-8 mb-4 text-primary" />
-                    <CardTitle>{feature.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">{feature.description}</p>
-                  </CardContent>
-                </Card>
+                <div 
+                  key={index} 
+                  className={`flex flex-col lg:flex-row gap-8 items-center ${
+                    isEven ? 'lg:flex-row' : 'lg:flex-row-reverse'
+                  }`}
+                >
+                  <div className="flex-1 space-y-4">
+                    <Card className="border-none shadow-none">
+                      <CardHeader>
+                        <Icon className="h-12 w-12 text-primary mb-4" />
+                        <CardTitle className="text-2xl">{feature.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-lg text-muted-foreground">{feature.description}</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <div className="flex-1">
+                    <img 
+                      src={feature.image} 
+                      alt={feature.title}
+                      className="rounded-lg shadow-lg w-full"
+                    />
+                  </div>
+                </div>
               );
             })}
           </div>
