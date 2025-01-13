@@ -18,32 +18,39 @@ export function useSendVideoInvites(jobId: string) {
       for (const candidate of selectedCandidatesList) {
         const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${candidate.video_token}`
         
-        // Send email using Supabase Edge Function
-        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-video-invite', {
-          body: {
-            to: candidate.email,
+        console.log('Sending invite to:', candidate.email, 'with URL:', videoSubmissionUrl)
+        
+        const { error: inviteError } = await supabase.auth.admin.inviteUserByEmail(candidate.email, {
+          data: {
+            type: 'video_invite',
             name: candidate.name,
             companyName: user?.user_metadata?.company_name || 'our company',
             senderName: user?.user_metadata?.name || 'The hiring manager',
             submissionUrl: videoSubmissionUrl
-          }
+          },
+          redirectTo: videoSubmissionUrl,
         })
 
-        if (emailError) {
-          console.error('Error sending email:', emailError)
+        if (inviteError) {
+          console.error('Error sending invite:', inviteError)
           throw new Error('Failed to send email invitation')
         }
 
-        console.log('Email sent successfully:', emailData)
+        console.log('Successfully sent invite to:', candidate.email)
 
         // Update candidate status
-        await supabase
+        const { error: updateError } = await supabase
           .from('candidates')
           .update({ status: 'requested' })
           .eq('id', candidate.id)
+
+        if (updateError) {
+          console.error('Error updating candidate status:', updateError)
+          throw new Error('Failed to update candidate status')
+        }
       }
 
-      await queryClient.invalidateQueries({ queryKey: ['candidates', jobId] })
+      await queryClient.invalidateQueries({ queryKey: ['job-candidates', jobId] })
 
       toast({
         title: "Success",
@@ -55,7 +62,7 @@ export function useSendVideoInvites(jobId: string) {
       console.error('Error sending invites:', error)
       toast({
         title: "Error",
-        description: "Failed to send video invitations",
+        description: error instanceof Error ? error.message : "Failed to send video invitations",
         variant: "destructive",
       })
       return false
