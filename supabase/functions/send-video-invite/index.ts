@@ -13,7 +13,13 @@ interface RequestBody {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { 
+      headers: {
+        ...corsHeaders,
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      }
+    })
   }
 
   try {
@@ -28,7 +34,7 @@ serve(async (req) => {
     const { to, name, companyName, senderName, submissionUrl } = body
 
     // Validate required fields
-    if (!to || !submissionUrl) {
+    if (!to || !name || !submissionUrl) {
       throw new Error('Missing required fields')
     }
 
@@ -44,22 +50,31 @@ serve(async (req) => {
       }
     )
 
-    // Send email using a basic email template
-    const { error } = await supabaseAdmin.auth.admin.sendEmail(to, {
-      template: 'custom',
-      subject: 'Video Interview Request',
-      html: `
-        <h2>Hello ${name},</h2>
-        <p>${senderName} from ${companyName} has requested a video interview submission from you.</p>
-        <p>Please click the link below to record and submit your video:</p>
-        <p><a href="${submissionUrl}">${submissionUrl}</a></p>
-        <p>Best regards,<br>${companyName} Team</p>
-      `
+    // Send email using resend
+    const emailResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('RESEND_API_KEY')}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: 'noreply@yourdomain.com',
+        to: to,
+        subject: 'Video Interview Request',
+        html: `
+          <h2>Hello ${name},</h2>
+          <p>${senderName} from ${companyName} has requested a video interview submission from you.</p>
+          <p>Please click the link below to record and submit your video:</p>
+          <p><a href="${submissionUrl}">${submissionUrl}</a></p>
+          <p>Best regards,<br>${companyName} Team</p>
+        `
+      })
     })
 
-    if (error) {
-      console.error('Error sending email:', error)
-      throw error
+    if (!emailResponse.ok) {
+      const error = await emailResponse.text()
+      console.error('Email service error:', error)
+      throw new Error('Failed to send email')
     }
 
     return new Response(
@@ -78,7 +93,7 @@ serve(async (req) => {
         error: error instanceof Error ? error.message : 'Unknown error occurred'
       }),
       { 
-        status: 400,
+        status: 500,
         headers: { 
           ...corsHeaders,
           'Content-Type': 'application/json'
