@@ -17,20 +17,22 @@ serve(async (req) => {
   }
 
   try {
-    // Verify authentication
+    // Get auth token from request header
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
-      throw new Error('No authorization header')
+      throw new Error('Missing authorization header')
     }
 
-    const { to, name, companyName, senderName, submissionUrl } = await req.json() as RequestBody
+    // Parse request body
+    const body = await req.json() as RequestBody
+    const { to, name, companyName, senderName, submissionUrl } = body
 
     // Validate required fields
     if (!to || !submissionUrl) {
       throw new Error('Missing required fields')
     }
 
-    // Create a Supabase client with the service role key
+    // Create Supabase client with admin privileges
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -42,19 +44,17 @@ serve(async (req) => {
       }
     )
 
-    // Use a more basic email sending approach instead of invite
-    const { error } = await supabaseAdmin.functions.invoke('send-email', {
-      body: {
-        to,
-        subject: 'Video Interview Request',
-        html: `
-          <h2>Hello ${name},</h2>
-          <p>${senderName} from ${companyName} has requested a video interview submission from you.</p>
-          <p>Please click the link below to record and submit your video:</p>
-          <p><a href="${submissionUrl}">${submissionUrl}</a></p>
-          <p>Best regards,<br>${companyName} Team</p>
-        `
-      }
+    // Send email using a basic email template
+    const { error } = await supabaseAdmin.auth.admin.sendEmail(to, {
+      template: 'custom',
+      subject: 'Video Interview Request',
+      html: `
+        <h2>Hello ${name},</h2>
+        <p>${senderName} from ${companyName} has requested a video interview submission from you.</p>
+        <p>Please click the link below to record and submit your video:</p>
+        <p><a href="${submissionUrl}">${submissionUrl}</a></p>
+        <p>Best regards,<br>${companyName} Team</p>
+      `
     })
 
     if (error) {
@@ -66,9 +66,9 @@ serve(async (req) => {
       JSON.stringify({ success: true }),
       { 
         headers: { 
-          ...corsHeaders, 
+          ...corsHeaders,
           'Content-Type': 'application/json'
-        } 
+        }
       }
     )
   } catch (error) {
@@ -78,11 +78,11 @@ serve(async (req) => {
         error: error instanceof Error ? error.message : 'Unknown error occurred'
       }),
       { 
-        status: 400, 
+        status: 400,
         headers: { 
-          ...corsHeaders, 
+          ...corsHeaders,
           'Content-Type': 'application/json'
-        } 
+        }
       }
     )
   }
