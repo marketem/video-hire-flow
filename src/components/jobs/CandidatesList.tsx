@@ -56,7 +56,6 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
 
   const generateTokenMutation = useMutation({
     mutationFn: async (candidateId: string) => {
-      // Generate a random token
       const token = crypto.randomUUID()
       
       const { error } = await supabase
@@ -107,6 +106,30 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
     }
   }
 
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (err) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed'; 
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+
+      try {
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        return true;
+      } catch (err) {
+        document.body.removeChild(textarea);
+        return false;
+      }
+    }
+  };
+
   const sendVideoInvites = async () => {
     try {
       const selectedCandidatesList = candidates?.filter(c => 
@@ -114,7 +137,6 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       ) || []
 
       for (const candidate of selectedCandidatesList) {
-        // Generate token if not exists
         if (!candidate.video_token) {
           await generateTokenMutation.mutateAsync(candidate.id)
         }
@@ -122,7 +144,6 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
         const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${candidate.video_token}`
         const message = `${user?.user_metadata?.name || 'The hiring manager'} has invited you to submit a quick video to finish your application to ${user?.user_metadata?.company_name || 'our company'}: ${videoSubmissionUrl}`
 
-        // Here we would integrate with an SMS service
         console.log('SMS message:', message)
         console.log('Would be sent to:', candidate.phone)
       }
@@ -144,13 +165,11 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
 
   const copyVideoLink = async (candidateId: string) => {
     try {
-      // Generate token if not exists
       const candidate = candidates?.find(c => c.id === candidateId)
       if (!candidate?.video_token) {
         await generateTokenMutation.mutateAsync(candidateId)
       }
       
-      // Get the updated candidate data
       const updatedCandidate = (await queryClient.fetchQuery({
         queryKey: ['candidates', jobId],
         queryFn: async () => {
@@ -166,18 +185,26 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       }))
 
       const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${updatedCandidate.video_token}`
-      await navigator.clipboard.writeText(videoSubmissionUrl)
+      const success = await copyToClipboard(videoSubmissionUrl);
       
-      toast({
-        title: "Success",
-        description: "Video submission link copied to clipboard",
-      })
+      if (success) {
+        toast({
+          title: "Success",
+          description: "Video submission link copied to clipboard",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: `Failed to copy automatically. Here's the link: ${videoSubmissionUrl}`,
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to copy link to clipboard",
+        description: "Failed to generate video submission link",
         variant: "destructive",
-      })
+      });
     }
   }
 
