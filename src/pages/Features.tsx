@@ -4,60 +4,60 @@ import { Footer } from "@/components/Footer";
 import { 
   Video, 
   Users, 
-  MessageSquare, 
-  Bell, 
-  UserPlus, 
-  FileSpreadsheet,
-  Shield,
-  Clock,
-  Building2
+  ClipboardList,
+  Send,
+  Upload,
+  ListFilter,
+  ThumbsUp,
+  Building2,
+  Mail
 } from "lucide-react";
 
 const features = [
   {
     icon: Video,
-    title: "Asynchronous Video Interviews",
-    description: "Screen candidates efficiently with pre-recorded video submissions, allowing flexible scheduling for both recruiters and candidates."
+    title: "Video Interview Platform",
+    description: "Streamline your hiring process with asynchronous video interviews. Candidates can record and submit responses on their own time, making the screening process more efficient."
   },
   {
     icon: Users,
     title: "Candidate Management",
-    description: "Track and manage all your candidates in one place with our intuitive dashboard interface."
+    description: "Organize all your candidates in one place with our intuitive dashboard. Track application status, review submissions, and manage the entire hiring pipeline efficiently."
   },
   {
-    icon: MessageSquare,
-    title: "Video Response Review",
-    description: "Review and evaluate candidate video submissions with your team, making collaborative hiring decisions easier."
+    icon: ClipboardList,
+    title: "Job Posting Management",
+    description: "Create and manage detailed job postings with custom descriptions, requirements, and qualifications. Track applications and responses for each position."
   },
   {
-    icon: Bell,
-    title: "SMS Notifications",
-    description: "Automated SMS notifications to keep candidates informed and engaged throughout the hiring process."
+    icon: Send,
+    title: "Automated Video Invites",
+    description: "Send automated video interview invitations to candidates with just a click. Candidates receive personalized links to submit their video responses."
   },
   {
-    icon: UserPlus,
-    title: "Unlimited Job Postings",
-    description: "Create and manage multiple job openings with custom descriptions and requirements."
-  },
-  {
-    icon: FileSpreadsheet,
+    icon: Upload,
     title: "Bulk Candidate Import",
-    description: "Easily import candidate lists from spreadsheets or other ATS systems."
+    description: "Save time by importing multiple candidates at once using CSV files. Easily upload candidate information including names, emails, and phone numbers."
   },
   {
-    icon: Shield,
-    title: "Secure Video Storage",
-    description: "All video submissions are securely stored and accessible only to authorized team members."
+    icon: ListFilter,
+    title: "Candidate Filtering",
+    description: "Filter and sort candidates based on status, response completion, and review stage. Quickly identify candidates ready for review or awaiting response."
   },
   {
-    icon: Clock,
-    title: "14-Day Free Trial",
-    description: "Try all features risk-free with our comprehensive 14-day trial period."
+    icon: ThumbsUp,
+    title: "Video Review System",
+    description: "Review candidate video submissions with an intuitive interface. Approve or reject candidates, and collaborate with your team on hiring decisions."
   },
   {
     icon: Building2,
     title: "Company Dashboard",
-    description: "Get insights into your hiring process with analytics and response rate tracking."
+    description: "Get insights into your hiring process with real-time metrics. Track response rates, review progress, and monitor candidate engagement across all positions."
+  },
+  {
+    icon: Mail,
+    title: "Email Notifications",
+    description: "Keep candidates informed throughout the process with automated email notifications. Send reminders and updates about their application status."
   }
 ];
 
@@ -69,10 +69,10 @@ const Features = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h1 className="text-4xl font-bold mb-4">
-              Everything You Need for Modern Hiring
+              Modern Video Hiring Platform
             </h1>
             <p className="text-xl text-muted-foreground">
-              VibeCheck provides all the tools you need to streamline your hiring process with video interviews.
+              Streamline your hiring process with our comprehensive video interview and candidate management system.
             </p>
           </div>
 
