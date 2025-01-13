@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Phone, ThumbsDown, ThumbsUp, Video } from "lucide-react"
+import { Phone, ThumbsDown, ThumbsUp } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import type { Candidate } from "@/types/candidate"
 
@@ -103,11 +103,10 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
           <div className="flex gap-2">
             {candidate.video_url && (
               <Button
-                variant="outline"
-                size="icon"
+                variant="secondary"
                 onClick={() => window.open(candidate.video_url, '_blank')}
               >
-                <Video className="h-4 w-4" />
+                Review Video
               </Button>
             )}
             <Button
