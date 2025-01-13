@@ -40,6 +40,10 @@ const features = [
       {
         src: "/lovable-uploads/67b0c217-7bca-4a45-b403-c56b959e6b98.png",
         alt: "Job postings"
+      },
+      {
+        src: "/lovable-uploads/34d6e67c-e255-44a8-8ecd-ae9fcf75a403.png",
+        alt: "Add individual candidate"
       }
     ]
   }
@@ -91,7 +95,7 @@ const Features = () => {
                         className="rounded-lg shadow-lg w-4/5 mx-auto"
                       />
                     ) : (
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-3 gap-4">
                         {feature.images.map((img, imgIndex) => (
                           <img 
                             key={imgIndex}
