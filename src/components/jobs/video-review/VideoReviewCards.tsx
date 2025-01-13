@@ -8,7 +8,7 @@ interface VideoStats {
   jobId: string
   jobTitle: string
   videosReceived: number
-  pendingReview: number
+  readyForReview: number
   approved: number
 }
 
@@ -35,12 +35,12 @@ export function VideoReviewCards() {
           .eq('job_id', job.id)
           .not('video_url', 'is', null)
 
-        const { count: pendingReview } = await supabase
+        const { count: readyForReview } = await supabase
           .from('candidates')
           .select('*', { count: 'exact', head: true })
           .eq('job_id', job.id)
           .not('video_url', 'is', null)
-          .eq('status', 'new')
+          .in('status', ['new', 'reviewing'])
 
         const { count: approved } = await supabase
           .from('candidates')
@@ -48,12 +48,12 @@ export function VideoReviewCards() {
           .eq('job_id', job.id)
           .eq('status', 'accepted')
 
-        if (videosReceived || pendingReview || approved) {
+        if (videosReceived || readyForReview || approved) {
           stats.push({
             jobId: job.id,
             jobTitle: job.title,
             videosReceived: videosReceived || 0,
-            pendingReview: pendingReview || 0,
+            readyForReview: readyForReview || 0,
             approved: approved || 0,
           })
         }
@@ -82,9 +82,9 @@ export function VideoReviewCards() {
                   <dt>Videos Received:</dt>
                   <dd>{stat.videosReceived}</dd>
                 </div>
-                <div className={`flex justify-between font-medium ${stat.pendingReview > 1 ? 'text-red-600' : ''}`}>
-                  <dt>Pending Review:</dt>
-                  <dd>{stat.pendingReview}</dd>
+                <div className={`flex justify-between font-medium ${stat.readyForReview > 1 ? 'text-red-600' : ''}`}>
+                  <dt>Ready for Review:</dt>
+                  <dd>{stat.readyForReview}</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt>Approved:</dt>
