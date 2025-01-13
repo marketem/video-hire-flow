@@ -45,6 +45,12 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
 
         console.log('SMS message:', message)
         console.log('Would be sent to:', candidate.phone)
+
+        // Update candidate status to 'requested'
+        await supabase
+          .from('candidates')
+          .update({ status: 'requested' })
+          .eq('id', candidate.id)
       }
 
       toast({
