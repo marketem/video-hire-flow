@@ -84,9 +84,6 @@ export function AccountSettingsDialog({ open, onOpenChange }: AccountSettingsDia
         title: "Account updated",
         description: "Your account information has been updated successfully.",
       });
-      
-      // Reset form with new values
-      form.reset(data);
       onOpenChange(false);
     } catch (error) {
       toast({
