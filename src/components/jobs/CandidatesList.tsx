@@ -144,10 +144,13 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
 
   const copyVideoLink = async (candidateId: string) => {
     try {
+      console.log('Starting copyVideoLink for candidate:', candidateId);
+      
       // Generate token if not exists
-      const candidate = candidates?.find(c => c.id === candidateId)
+      const candidate = candidates?.find(c => c.id === candidateId);
       if (!candidate?.video_token) {
-        await generateTokenMutation.mutateAsync(candidateId)
+        console.log('No video token found, generating new one');
+        await generateTokenMutation.mutateAsync(candidateId);
       }
       
       // Get the updated candidate data
@@ -158,26 +161,54 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
             .from('candidates')
             .select('*')
             .eq('id', candidateId)
-            .single()
+            .single();
 
-          if (error) throw error
-          return data as Candidate
+          if (error) throw error;
+          return data as Candidate;
         }
-      }))
+      }));
 
-      const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${updatedCandidate.video_token}`
-      await navigator.clipboard.writeText(videoSubmissionUrl)
+      console.log('Updated candidate data:', updatedCandidate);
+
+      if (!updatedCandidate?.video_token) {
+        throw new Error('Failed to generate video token');
+      }
+
+      const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${updatedCandidate.video_token}`;
+      console.log('Generated URL:', videoSubmissionUrl);
+
+      // Try using the modern Clipboard API first
+      try {
+        await navigator.clipboard.writeText(videoSubmissionUrl);
+        console.log('Successfully copied using Clipboard API');
+      } catch (clipboardError) {
+        console.error('Clipboard API failed:', clipboardError);
+        
+        // Fallback to execCommand
+        const textArea = document.createElement('textarea');
+        textArea.value = videoSubmissionUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        const success = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (!success) {
+          throw new Error('Fallback clipboard method failed');
+        }
+        console.log('Successfully copied using execCommand fallback');
+      }
       
       toast({
         title: "Success",
         description: "Video submission link copied to clipboard",
-      })
+      });
     } catch (error) {
+      console.error('Error in copyVideoLink:', error);
       toast({
         title: "Error",
-        description: "Failed to copy link to clipboard",
+        description: error instanceof Error ? error.message : "Failed to copy link to clipboard",
         variant: "destructive",
-      })
+      });
     }
   }
 
