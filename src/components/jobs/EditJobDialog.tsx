@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog"
 import {
@@ -19,6 +20,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
+import { useEffect } from "react"
 
 interface EditJobDialogProps {
   job: {
@@ -44,12 +46,24 @@ export function EditJobDialog({
   
   const form = useForm({
     defaultValues: {
-      title: job?.title || "",
-      department: job?.department || "",
-      location: job?.location || "",
-      description: job?.description || "",
+      title: "",
+      department: "",
+      location: "",
+      description: "",
     },
   })
+
+  // Reset form with new values when job changes or dialog opens
+  useEffect(() => {
+    if (job && open) {
+      form.reset({
+        title: job.title,
+        department: job.department,
+        location: job.location,
+        description: job.description,
+      })
+    }
+  }, [job, open, form])
 
   const onSubmit = async (values: {
     title: string
@@ -90,6 +104,9 @@ export function EditJobDialog({
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Edit Job Opening</DialogTitle>
+          <DialogDescription>
+            Make changes to the job opening details below.
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
