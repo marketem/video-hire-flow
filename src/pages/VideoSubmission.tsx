@@ -255,7 +255,11 @@ export default function VideoSubmission() {
       console.log('Starting recording...')
       resetVideoElement()
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { width: 640, height: 480 },
+        video: { 
+          width: 640, 
+          height: 480,
+          facingMode: 'user' // Explicitly request front camera
+        },
         audio: true 
       })
       streamRef.current = stream
@@ -278,6 +282,16 @@ export default function VideoSubmission() {
         }
       }
 
+      mediaRecorder.onerror = (event: Event) => {
+        const error = event as ErrorEvent // Type assertion for error event
+        console.error('MediaRecorder error:', error)
+        toast({
+          title: "Recording Error",
+          description: "An error occurred while recording. Please try again.",
+          variant: "destructive",
+        })
+      }
+
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: 'video/webm' })
         
@@ -295,8 +309,8 @@ export default function VideoSubmission() {
     } catch (error) {
       console.error('Error accessing camera:', error)
       toast({
-        title: "Error",
-        description: "Could not access camera. Please ensure you've granted permission.",
+        title: "Camera Access Error",
+        description: "Could not access camera. Please ensure you've granted camera and microphone permissions and try again.",
         variant: "destructive",
       })
     }
