@@ -106,30 +106,6 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
     }
   }
 
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } catch (err) {
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      textarea.style.position = 'fixed'; 
-      textarea.style.opacity = '0';
-      document.body.appendChild(textarea);
-      textarea.focus();
-      textarea.select();
-
-      try {
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        return true;
-      } catch (err) {
-        document.body.removeChild(textarea);
-        return false;
-      }
-    }
-  };
-
   const sendVideoInvites = async () => {
     try {
       const selectedCandidatesList = candidates?.filter(c => 
@@ -165,48 +141,110 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
 
   const copyVideoLink = async (candidateId: string) => {
     try {
-      const candidate = candidates?.find(c => c.id === candidateId)
-      if (!candidate?.video_token) {
-        await generateTokenMutation.mutateAsync(candidateId)
+      console.log('Starting copyVideoLink for candidate:', candidateId);
+      
+      const candidate = candidates?.find(c => c.id === candidateId);
+      console.log('Found candidate:', candidate);
+      
+      if (!candidate) {
+        throw new Error('Candidate not found');
+      }
+
+      if (!candidate.video_token) {
+        console.log('No video token found, generating new one');
+        await generateTokenMutation.mutateAsync(candidateId);
       }
       
-      const updatedCandidate = (await queryClient.fetchQuery({
+      const updatedCandidate = await queryClient.fetchQuery<Candidate>({
         queryKey: ['candidates', jobId],
         queryFn: async () => {
           const { data, error } = await supabase
             .from('candidates')
             .select('*')
             .eq('id', candidateId)
-            .single()
+            .single();
 
-          if (error) throw error
-          return data as Candidate
+          if (error) {
+            console.error('Error fetching updated candidate:', error);
+            throw error;
+          }
+          return data as Candidate;
         }
-      }))
+      });
 
-      const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${updatedCandidate.video_token}`
-      const success = await copyToClipboard(videoSubmissionUrl);
+      console.log('Updated candidate data:', updatedCandidate);
+
+      if (!updatedCandidate?.video_token) {
+        console.error('No video token found after generation');
+        throw new Error('Failed to generate or retrieve video token');
+      }
+
+      const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${updatedCandidate.video_token}`;
+      console.log('Generated URL:', videoSubmissionUrl);
+
+      const textarea = document.createElement('textarea');
+      textarea.value = videoSubmissionUrl;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      textarea.style.top = '0';
+      textarea.style.left = '0';
       
-      if (success) {
+      document.body.appendChild(textarea);
+      
+      let copySuccess = false;
+      
+      try {
+        await navigator.clipboard.writeText(videoSubmissionUrl);
+        console.log('Successfully copied using Clipboard API');
+        copySuccess = true;
+      } catch (clipboardError) {
+        console.log('Clipboard API failed, falling back to selection method', clipboardError);
+        
+        textarea.focus();
+        textarea.select();
+        
+        try {
+          copySuccess = document.execCommand('copy');
+          if (!copySuccess) {
+            console.error('execCommand copy failed');
+          } else {
+            console.log('Successfully copied using execCommand');
+          }
+        } catch (execError) {
+          console.error('Error using execCommand:', execError);
+        }
+      } finally {
+        document.body.removeChild(textarea);
+      }
+
+      if (copySuccess) {
         toast({
           title: "Success",
           description: "Video submission link copied to clipboard",
         });
       } else {
-        toast({
-          title: "Error",
-          description: `Failed to copy automatically. Here's the link: ${videoSubmissionUrl}`,
-          variant: "destructive",
-        });
+        throw new Error('Failed to copy to clipboard');
       }
+      
     } catch (error) {
+      console.error('Error in copyVideoLink:', error);
+      
+      const currentToken = candidates?.find(c => c.id === candidateId)?.video_token;
+      const fallbackUrl = currentToken 
+        ? `${window.location.origin}/video-submission?token=${currentToken}`
+        : 'No video token available';
+      
       toast({
         title: "Error",
-        description: "Failed to generate video submission link",
+        description: `Failed to copy link. URL: ${fallbackUrl}`,
         variant: "destructive",
       });
+      
+      return false;
     }
-  }
+    
+    return true;
+  };
 
   const toggleSelectAll = (checked: boolean) => {
     if (checked) {
