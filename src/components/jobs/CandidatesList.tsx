@@ -176,11 +176,8 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
         await navigator.clipboard.writeText(videoSubmissionUrl)
         toast({
           title: "Success",
-          description: "Video submission link copied to clipboard. You can now share this link.",
+          description: "Video submission link copied to clipboard",
         })
-        
-        // Open the URL in a new tab to verify it works
-        window.open(videoSubmissionUrl, '_blank')
       } catch (clipboardError) {
         console.error('Clipboard error:', clipboardError)
         // Fallback for browsers that don't support clipboard API
@@ -192,11 +189,8 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
         document.body.removeChild(textArea)
         toast({
           title: "Success",
-          description: "Video submission link copied to clipboard. You can now share this link.",
+          description: "Video submission link copied to clipboard",
         })
-        
-        // Open the URL in a new tab to verify it works
-        window.open(videoSubmissionUrl, '_blank')
       }
     } catch (error) {
       console.error('Copy link error:', error)
