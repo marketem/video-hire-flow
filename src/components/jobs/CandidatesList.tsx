@@ -177,25 +177,32 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${updatedCandidate.video_token}`;
       console.log('Generated URL:', videoSubmissionUrl);
 
-      // Try using the modern Clipboard API first
+      // Create a temporary input element
+      const tempInput = document.createElement('input');
+      tempInput.style.position = 'absolute';
+      tempInput.style.left = '-9999px';
+      tempInput.value = videoSubmissionUrl;
+      document.body.appendChild(tempInput);
+
+      // Select and copy
+      tempInput.select();
+      tempInput.setSelectionRange(0, 99999); // For mobile devices
+      
       try {
+        // Try the modern way first
         await navigator.clipboard.writeText(videoSubmissionUrl);
         console.log('Successfully copied using Clipboard API');
       } catch (clipboardError) {
-        console.error('Clipboard API failed:', clipboardError);
-        
-        // Fallback to execCommand
-        const textArea = document.createElement('textarea');
-        textArea.value = videoSubmissionUrl;
-        document.body.appendChild(textArea);
-        textArea.select();
-        const success = document.execCommand('copy');
-        document.body.removeChild(textArea);
-        
-        if (!success) {
-          throw new Error('Fallback clipboard method failed');
+        console.log('Clipboard API failed, trying document.execCommand');
+        // Fallback
+        const successful = document.execCommand('copy');
+        if (!successful) {
+          throw new Error('Failed to copy text to clipboard');
         }
-        console.log('Successfully copied using execCommand fallback');
+        console.log('Successfully copied using execCommand');
+      } finally {
+        // Clean up
+        document.body.removeChild(tempInput);
       }
       
       toast({
@@ -206,7 +213,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       console.error('Error in copyVideoLink:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to copy link to clipboard",
+        description: "Failed to copy link to clipboard. Please try selecting and copying manually.",
         variant: "destructive",
       });
     }
