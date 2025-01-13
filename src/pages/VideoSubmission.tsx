@@ -42,15 +42,25 @@ export default function VideoSubmission() {
     }
   }, [isRecording])
 
+  // Reset video element when switching between recording and playback
+  const resetVideoElement = () => {
+    if (videoRef.current) {
+      videoRef.current.pause()
+      videoRef.current.currentTime = 0
+      videoRef.current.srcObject = null
+      videoRef.current.src = ""
+      videoRef.current.load()
+    }
+  }
+
   // Handle recorded blob changes
   useEffect(() => {
     if (recordedBlob && videoRef.current) {
-      // Clear any existing srcObject
-      videoRef.current.srcObject = null
+      resetVideoElement()
       
-      // Create and set the video URL
       const videoURL = URL.createObjectURL(recordedBlob)
       videoRef.current.src = videoURL
+      videoRef.current.muted = false
       videoRef.current.load()
       
       return () => {
@@ -61,12 +71,14 @@ export default function VideoSubmission() {
 
   const startRecording = async () => {
     try {
+      resetVideoElement()
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       streamRef.current = stream
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream
         videoRef.current.muted = true
+        videoRef.current.play()
       }
 
       const mediaRecorder = new MediaRecorder(stream)
@@ -83,9 +95,6 @@ export default function VideoSubmission() {
         const blob = new Blob(chunksRef.current, { type: 'video/webm' })
         
         // Clean up the stream first
-        if (videoRef.current) {
-          videoRef.current.srcObject = null
-        }
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => track.stop())
           streamRef.current = null
@@ -123,7 +132,6 @@ export default function VideoSubmission() {
       if (isPlaying) {
         videoRef.current.pause()
       } else {
-        videoRef.current.muted = false
         videoRef.current.play()
       }
       setIsPlaying(!isPlaying)
@@ -199,7 +207,6 @@ export default function VideoSubmission() {
         <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
           <video
             ref={videoRef}
-            autoPlay
             playsInline
             className="w-full h-full object-cover"
             onEnded={() => setIsPlaying(false)}
@@ -231,7 +238,10 @@ export default function VideoSubmission() {
 
           {recordedBlob && !isUploading && (
             <div className="flex w-full gap-2">
-              <Button onClick={() => setRecordedBlob(null)} variant="outline" className="flex-1">
+              <Button onClick={() => {
+                resetVideoElement()
+                setRecordedBlob(null)
+              }} variant="outline" className="flex-1">
                 Record Again
               </Button>
               <Button onClick={handleUpload} className="flex-1">
