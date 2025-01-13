@@ -13,13 +13,10 @@ export interface SidebarContext {
   toggleSidebar: () => void
 }
 
-export interface SidebarProviderProps {
+export interface SidebarProviderProps extends React.ComponentProps<"div"> {
   defaultOpen?: boolean
   open?: boolean
   onOpenChange?: (open: boolean) => void
-  children: ReactNode
-  className?: string
-  style?: React.CSSProperties
 }
 
 export interface SidebarProps extends React.ComponentProps<"div"> {
@@ -34,4 +31,15 @@ export interface SidebarMenuButtonProps extends React.ComponentProps<"button"> {
   tooltip?: string | React.ComponentProps<"div">
   variant?: "default" | "outline"
   size?: "default" | "sm" | "lg"
+}
+
+export interface SidebarMenuItemProps extends React.ComponentProps<"li"> {
+  icon?: React.ElementType
+  label: string
+  isActive?: boolean
+}
+
+export interface SidebarGroupProps extends React.ComponentProps<"div"> {
+  label?: string
+  action?: ReactNode
 }
