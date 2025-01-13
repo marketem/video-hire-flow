@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Users, Link as LinkIcon, Eye, Edit, XOctagon } from "lucide-react"
+import { Users, Link as LinkIcon, Eye, Edit, XOctagon, RefreshCw } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { ViewJobDialog } from "./ViewJobDialog"
 import { EditJobDialog } from "./EditJobDialog"
@@ -85,6 +85,30 @@ export function JobOpeningsList() {
       toast({
         title: "Error",
         description: "Failed to close job",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleReopenJob = async (jobId: string) => {
+    try {
+      const { error } = await supabase
+        .from('job_openings')
+        .update({ status: 'open' })
+        .eq('id', jobId)
+
+      if (error) throw error
+
+      toast({
+        title: "Success",
+        description: "Job has been reopened",
+      })
+      
+      fetchJobs()
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to reopen job",
         variant: "destructive",
       })
     }
@@ -175,7 +199,7 @@ export function JobOpeningsList() {
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
-                {job.status === 'open' && (
+                {job.status === 'open' ? (
                   <Button
                     variant="ghost"
                     size="icon"
@@ -183,6 +207,15 @@ export function JobOpeningsList() {
                     title="Close job"
                   >
                     <XOctagon className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleReopenJob(job.id)}
+                    title="Reopen job"
+                  >
+                    <RefreshCw className="h-4 w-4" />
                   </Button>
                 )}
               </TableCell>
