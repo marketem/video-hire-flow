@@ -31,7 +31,7 @@ export function useVideoReview(jobId: string | null) {
     enabled: !!jobId && !!session,
   })
 
-  const handleReviewAction = async (candidateId: string, status: 'reviewing' | 'rejected' | 'accepted') => {
+  const handleReviewAction = async (candidateId: string, status: 'reviewing' | 'rejected' | 'approved') => {
     if (!session) {
       toast({
         title: "Authentication Required",
@@ -124,17 +124,16 @@ export function useVideoReview(jobId: string | null) {
     }
   }
 
-  // Update the filtering logic to ensure mutual exclusivity
   const readyForReview = candidates?.filter(c => 
-    c.video_url && c.status === 'new'
+    c.video_url && c.status === 'reviewing'
   ) || []
 
   const awaitingResponse = candidates?.filter(c => 
-    (!c.video_url && c.video_token) || ['invited', 'requested'].includes(c.status)
+    c.status === 'requested' || (c.status === 'new' && c.video_token)
   ) || []
 
   const approvedCandidates = candidates?.filter(c => 
-    c.status === 'accepted'
+    c.status === 'approved'
   ) || []
 
   const rejectedCandidates = candidates?.filter(c => 
