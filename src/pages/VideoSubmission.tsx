@@ -276,12 +276,10 @@ export default function VideoSubmission() {
   return (
     <div className="min-h-screen bg-background p-4 flex flex-col items-center justify-center">
       <div className="w-full max-w-md space-y-4">
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold">Record Your Introduction</h1>
-          <p className="text-muted-foreground">
-            Welcome, {candidate?.name}! Please record a 30-second video introducing yourself
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold text-center">Record Your Introduction</h1>
+        <p className="text-muted-foreground text-center mb-8">
+          Please record a 30-second video introducing yourself
+        </p>
 
         {isRecording && (
           <div className="space-y-2">
