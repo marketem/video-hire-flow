@@ -62,7 +62,7 @@ const features: Feature[] = [
   {
     icon: FileSpreadsheet,
     title: "Add Candidates via Upload or Job Post",
-    description: "Save time by importing multiple candidates via CSV or create detailed job listings with custom requirements. Track applications and manage candidates all in one place.",
+    description: "Easily import candidates from your favorite job platform like Indeed or ZipRecruiter using a .CSV file. Save time by importing multiple candidates or create detailed job listings with custom requirements. Track applications and manage candidates all in one place.",
     images: [
       {
         src: "/lovable-uploads/17c52080-5b12-4346-a55c-f23143f5af60.png",
