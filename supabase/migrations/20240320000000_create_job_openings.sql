@@ -3,7 +3,7 @@ drop policy if exists "Allow users to view all job openings" on job_openings;
 drop policy if exists "Allow users to create their own job openings" on job_openings;
 drop policy if exists "Allow users to update their own job openings" on job_openings;
 drop policy if exists "Allow public access to enabled job openings" on job_openings;
-drop table if exists "public"."job_openings";
+drop table if exists "public"."job_openings" cascade;
 
 create table "public"."job_openings" (
     "id" uuid not null default gen_random_uuid(),
