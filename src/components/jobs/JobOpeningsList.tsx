@@ -11,6 +11,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Users, Link as LinkIcon, Eye, Edit, XOctagon } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { ViewJobDialog } from "./ViewJobDialog"
+import { EditJobDialog } from "./EditJobDialog"
 
 interface JobOpening {
   id: string
@@ -25,6 +27,9 @@ interface JobOpening {
 export function JobOpeningsList() {
   const [jobs, setJobs] = useState<JobOpening[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [selectedJob, setSelectedJob] = useState<JobOpening | null>(null)
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
@@ -75,7 +80,7 @@ export function JobOpeningsList() {
         description: "Job has been closed",
       })
       
-      fetchJobs() // Refresh the list
+      fetchJobs()
     } catch (error) {
       toast({
         title: "Error",
@@ -83,6 +88,16 @@ export function JobOpeningsList() {
         variant: "destructive",
       })
     }
+  }
+
+  const handleViewJob = (job: JobOpening) => {
+    setSelectedJob(job)
+    setIsViewDialogOpen(true)
+  }
+
+  const handleEditJob = (job: JobOpening) => {
+    setSelectedJob(job)
+    setIsEditDialogOpen(true)
   }
 
   if (isLoading) {
@@ -98,79 +113,96 @@ export function JobOpeningsList() {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Title</TableHead>
-          <TableHead>Department</TableHead>
-          <TableHead>Location</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Created</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {jobs.map((job) => (
-          <TableRow key={job.id}>
-            <TableCell className="font-medium">{job.title}</TableCell>
-            <TableCell>{job.department}</TableCell>
-            <TableCell>{job.location}</TableCell>
-            <TableCell>
-              <span 
-                className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
-                  job.status === 'open' 
-                    ? 'ring-green-600/20 bg-green-50 text-green-700'
-                    : 'ring-red-600/20 bg-red-50 text-red-700'
-                }`}
-              >
-                {job.status}
-              </span>
-            </TableCell>
-            <TableCell>{new Date(job.created_at).toLocaleDateString()}</TableCell>
-            <TableCell className="text-right space-x-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => copyPublicLink(job.id)}
-                title="Copy public link"
-              >
-                <LinkIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                title="View candidates"
-              >
-                <Users className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                title="View details"
-              >
-                <Eye className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Edit job"
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-              {job.status === 'open' && (
+    <>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Title</TableHead>
+            <TableHead>Department</TableHead>
+            <TableHead>Location</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {jobs.map((job) => (
+            <TableRow key={job.id}>
+              <TableCell className="font-medium">{job.title}</TableCell>
+              <TableCell>{job.department}</TableCell>
+              <TableCell>{job.location}</TableCell>
+              <TableCell>
+                <span 
+                  className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
+                    job.status === 'open' 
+                      ? 'ring-green-600/20 bg-green-50 text-green-700'
+                      : 'ring-red-600/20 bg-red-50 text-red-700'
+                  }`}
+                >
+                  {job.status}
+                </span>
+              </TableCell>
+              <TableCell>{new Date(job.created_at).toLocaleDateString()}</TableCell>
+              <TableCell className="text-right space-x-1">
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleCloseJob(job.id)}
-                  title="Close job"
+                  onClick={() => copyPublicLink(job.id)}
+                  title="Copy public link"
                 >
-                  <XOctagon className="h-4 w-4" />
+                  <LinkIcon className="h-4 w-4" />
                 </Button>
-              )}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title="View candidates"
+                >
+                  <Users className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleViewJob(job)}
+                  title="View details"
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleEditJob(job)}
+                  title="Edit job"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                {job.status === 'open' && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleCloseJob(job.id)}
+                    title="Close job"
+                  >
+                    <XOctagon className="h-4 w-4" />
+                  </Button>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      <ViewJobDialog
+        job={selectedJob}
+        open={isViewDialogOpen}
+        onOpenChange={setIsViewDialogOpen}
+      />
+
+      <EditJobDialog
+        job={selectedJob}
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        onJobUpdated={fetchJobs}
+      />
+    </>
   )
 }
