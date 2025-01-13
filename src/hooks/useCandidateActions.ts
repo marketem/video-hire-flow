@@ -50,6 +50,8 @@ export function useCandidateActions() {
   }
 
   const copyVideoLink = async (candidateId: string) => {
+    let videoToken: string | null = null;
+    
     try {
       const { data: candidate } = await queryClient.fetchQuery({
         queryKey: ['candidates', candidateId],
@@ -69,7 +71,8 @@ export function useCandidateActions() {
         await generateTokenMutation.mutateAsync(candidateId)
       }
 
-      const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${candidate.video_token}`
+      videoToken = candidate.video_token;
+      const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${videoToken}`
       
       await copyToClipboard(videoSubmissionUrl)
       
@@ -81,7 +84,7 @@ export function useCandidateActions() {
       return true
     } catch (error) {
       console.error('Error in copyVideoLink:', error)
-      const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${candidate?.video_token || '[token not generated]'}`
+      const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${videoToken || '[token not generated]'}`
       toast({
         title: "Error",
         description: `Failed to copy video submission link: ${videoSubmissionUrl}`,
