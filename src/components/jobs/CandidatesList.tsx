@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { FileText, Video, Copy, Send } from "lucide-react"
+import { FileText, Video, Send } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
 
@@ -164,21 +164,29 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
 
   return (
     <div className="space-y-4">
-      {selectedCandidates.length > 0 && (
-        <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
+      <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
+        {selectedCandidates.length > 0 && (
           <span className="text-sm text-muted-foreground">
             {selectedCandidates.length} candidates selected
           </span>
+        )}
+        <div className="flex gap-2 ml-auto">
+          <Button
+            size="sm"
+            onClick={() => copyVideoLink(candidates[0].id)}
+          >
+            Copy Video Link
+          </Button>
           <Button
             size="sm"
             onClick={sendVideoInvites}
-            className="ml-auto"
+            disabled={selectedCandidates.length === 0}
           >
             <Send className="mr-2 h-4 w-4" />
             Send Video Invites
           </Button>
         </div>
-      )}
+      </div>
       
       <Table>
         <TableHeader>
@@ -196,7 +204,6 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
             <TableHead>Applied</TableHead>
             <TableHead>Resume</TableHead>
             <TableHead>Video</TableHead>
-            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -254,16 +261,6 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
                 ) : (
                   <span className="text-muted-foreground text-sm">No video</span>
                 )}
-              </TableCell>
-              <TableCell>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => copyVideoLink(candidate.id)}
-                  title="Copy Video Invite Link"
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
               </TableCell>
             </TableRow>
           ))}
