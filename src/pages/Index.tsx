@@ -23,7 +23,7 @@ const Index = () => {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto">
               <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
-                Transform Your Hiring Process with Video Submissions
+                Transform Your Hiring Process with Candidate Videos
               </h1>
               <p className="text-xl text-gray-600 mb-8">
                 Screen candidates efficiently with asynchronous video interviews. Save time and make better hiring decisions.

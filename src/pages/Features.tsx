@@ -35,7 +35,7 @@ type Feature = SingleImageFeature | MultiImageFeature;
 const features: Feature[] = [
   {
     icon: Users,
-    title: "Dashboard to Request and Review Candidate Videos",
+    title: "Hiring Dashboard",
     description: "Track all candidates in one place with our intuitive dashboard. Monitor video response rates and review status.",
     image: "/lovable-uploads/104b8677-3217-4914-9739-d5411b37b59b.png"
   },
