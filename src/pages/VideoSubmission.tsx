@@ -21,6 +21,7 @@ export default function VideoSubmission() {
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
+  // Timer effect for recording
   useEffect(() => {
     if (isRecording) {
       timerRef.current = setInterval(() => {
@@ -41,11 +42,16 @@ export default function VideoSubmission() {
     }
   }, [isRecording])
 
+  // Handle recorded blob changes
   useEffect(() => {
     if (recordedBlob && videoRef.current) {
+      // Clear any existing srcObject
+      videoRef.current.srcObject = null
+      
+      // Create and set the video URL
       const videoURL = URL.createObjectURL(recordedBlob)
       videoRef.current.src = videoURL
-      videoRef.current.load() // Force the video to load the new source
+      videoRef.current.load()
       
       return () => {
         URL.revokeObjectURL(videoURL)
@@ -60,7 +66,7 @@ export default function VideoSubmission() {
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream
-        videoRef.current.muted = true // Mute while recording to prevent feedback
+        videoRef.current.muted = true
       }
 
       const mediaRecorder = new MediaRecorder(stream)
@@ -75,12 +81,17 @@ export default function VideoSubmission() {
 
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: 'video/webm' })
+        
+        // Clean up the stream first
         if (videoRef.current) {
           videoRef.current.srcObject = null
         }
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => track.stop())
+          streamRef.current = null
         }
+        
+        // Then set the recorded blob
         setRecordedBlob(blob)
       }
 
@@ -112,7 +123,7 @@ export default function VideoSubmission() {
       if (isPlaying) {
         videoRef.current.pause()
       } else {
-        videoRef.current.muted = false // Unmute for playback
+        videoRef.current.muted = false
         videoRef.current.play()
       }
       setIsPlaying(!isPlaying)
