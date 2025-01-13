@@ -14,6 +14,7 @@ interface AddCandidateFormProps {
 export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const supabase = useSupabaseClient()
   const queryClient = useQueryClient()
@@ -31,6 +32,7 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
             job_id: jobId,
             name,
             email,
+            phone,
             status: 'new'
           }
         ])
@@ -74,6 +76,17 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="phone">Phone Number</Label>
+        <Input
+          id="phone"
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          required
+          placeholder="+1234567890"
         />
       </div>
       <Button type="submit" disabled={isSubmitting}>

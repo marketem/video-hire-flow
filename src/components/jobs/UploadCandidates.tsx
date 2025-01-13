@@ -38,9 +38,10 @@ export function UploadCandidates({ jobId, onSuccess }: UploadCandidatesProps) {
           job_id: jobId,
           name: candidate.name || candidate.fullname || '',
           email: candidate.email || '',
+          phone: candidate.phone || candidate.phonenumber || '',
           status: 'new'
         }
-      }).filter(candidate => candidate.name && candidate.email)
+      }).filter(candidate => candidate.name && candidate.email && candidate.phone)
 
       const { error } = await supabase
         .from('candidates')
@@ -77,8 +78,9 @@ export function UploadCandidates({ jobId, onSuccess }: UploadCandidatesProps) {
               <ul className="list-disc list-inside space-y-1">
                 <li><code className="bg-muted px-1 rounded">name</code> or <code className="bg-muted px-1 rounded">fullname</code> - The candidate's full name</li>
                 <li><code className="bg-muted px-1 rounded">email</code> - The candidate's email address</li>
+                <li><code className="bg-muted px-1 rounded">phone</code> or <code className="bg-muted px-1 rounded">phonenumber</code> - The candidate's phone number</li>
               </ul>
-              <p className="text-xs">Example: name,email<br />John Doe,john@example.com</p>
+              <p className="text-xs">Example: name,email,phone<br />John Doe,john@example.com,+1234567890</p>
             </div>
           </div>
         </CardContent>

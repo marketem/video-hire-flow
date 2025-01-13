@@ -13,6 +13,7 @@ interface Candidate {
   id: string
   name: string
   email: string
+  phone: string
   status: string
   created_at: string
 }
@@ -56,6 +57,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
         <TableRow>
           <TableHead>Name</TableHead>
           <TableHead>Email</TableHead>
+          <TableHead>Phone</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Applied</TableHead>
         </TableRow>
@@ -65,6 +67,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
           <TableRow key={candidate.id}>
             <TableCell className="font-medium">{candidate.name}</TableCell>
             <TableCell>{candidate.email}</TableCell>
+            <TableCell>{candidate.phone}</TableCell>
             <TableCell>
               <span 
                 className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
