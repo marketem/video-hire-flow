@@ -40,7 +40,7 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
     enabled: !!jobId,
   })
 
-  const handleReviewAction = async (candidateId: string, status: 'reviewing' | 'rejected') => {
+  const handleReviewAction = async (candidateId: string, status: 'reviewing' | 'rejected' | 'accepted') => {
     try {
       const { error } = await supabase
         .from('candidates')
@@ -70,6 +70,10 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
 
   const awaitingResponse = candidates?.filter(c => 
     !c.video_url && c.video_token
+  ) || []
+
+  const approvedCandidates = candidates?.filter(c => 
+    c.status === 'accepted'
   ) || []
 
   const rejectedCandidates = candidates?.filter(c => 
@@ -112,7 +116,7 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => handleReviewAction(candidate.id, 'reviewing')}
+                  onClick={() => handleReviewAction(candidate.id, 'accepted')}
                 >
                   <ThumbsUp className="h-4 w-4" />
                 </Button>
@@ -150,6 +154,11 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
           <section>
             <h3 className="font-semibold mb-4">Ready for Review ({readyForReview.length})</h3>
             <CandidateList candidates={readyForReview} showActions />
+          </section>
+
+          <section>
+            <h3 className="font-semibold mb-4">Approved Candidates ({approvedCandidates.length})</h3>
+            <CandidateList candidates={approvedCandidates} />
           </section>
 
           <section>
