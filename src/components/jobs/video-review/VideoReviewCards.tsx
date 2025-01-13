@@ -10,6 +10,7 @@ interface VideoStats {
   invitesSent: number
   videosReceived: number
   pendingReview: number
+  approved: number
 }
 
 export function VideoReviewCards() {
@@ -48,13 +49,20 @@ export function VideoReviewCards() {
           .not('video_url', 'is', null)
           .eq('status', 'new')
 
-        if (invitesSent || videosReceived || pendingReview) {
+        const { count: approved } = await supabase
+          .from('candidates')
+          .select('*', { count: 'exact', head: true })
+          .eq('job_id', job.id)
+          .eq('status', 'accepted')
+
+        if (invitesSent || videosReceived || pendingReview || approved) {
           stats.push({
             jobId: job.id,
             jobTitle: job.title,
             invitesSent: invitesSent || 0,
             videosReceived: videosReceived || 0,
             pendingReview: pendingReview || 0,
+            approved: approved || 0,
           })
         }
       }
@@ -86,9 +94,13 @@ export function VideoReviewCards() {
                   <dt>Videos Received:</dt>
                   <dd>{stat.videosReceived}</dd>
                 </div>
-                <div className="flex justify-between font-medium">
+                <div className="flex justify-between">
                   <dt>Pending Review:</dt>
                   <dd>{stat.pendingReview}</dd>
+                </div>
+                <div className="flex justify-between font-medium">
+                  <dt>Approved:</dt>
+                  <dd>{stat.approved}</dd>
                 </div>
               </dl>
             </CardContent>
