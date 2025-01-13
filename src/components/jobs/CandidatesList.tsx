@@ -46,20 +46,29 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       if (error) throw error
       return data as Candidate[]
     },
-    enabled: !!jobId, // Only run query if jobId exists
+    enabled: !!jobId,
   })
 
   const handleViewResume = async (resumeUrl: string) => {
     try {
+      console.log('Creating signed URL for resume:', resumeUrl)
+      
+      // Extract just the filename from the full path
+      const fileName = resumeUrl.split('/').pop()
+      if (!fileName) {
+        throw new Error('Invalid resume URL')
+      }
+
       const { data, error } = await supabase.storage
         .from('resumes')
-        .createSignedUrl(resumeUrl, 60) // URL valid for 60 seconds
+        .createSignedUrl(fileName, 60) // URL valid for 60 seconds
 
       if (error) throw error
       
       // Open resume in new tab
       window.open(data.signedUrl, '_blank')
     } catch (error) {
+      console.error('Error accessing resume:', error)
       toast({
         title: "Error",
         description: "Failed to access resume",
@@ -93,7 +102,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {candidates.map((candidate) => (
+        {candidates?.map((candidate) => (
           <TableRow key={candidate.id}>
             <TableCell className="font-medium">{candidate.name}</TableCell>
             <TableCell>{candidate.email}</TableCell>
