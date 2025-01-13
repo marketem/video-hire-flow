@@ -16,6 +16,15 @@ export function useSendVideoInvites(jobId: string) {
       console.log('All candidates:', candidates)
       console.log('Current user:', user)
 
+      // First get the job title
+      const { data: jobData } = await supabase
+        .from('job_openings')
+        .select('title')
+        .eq('id', jobId)
+        .single()
+
+      const jobTitle = jobData?.title || 'the position'
+
       const selectedCandidatesList = candidates.filter(c => 
         selectedCandidates.includes(c.id)
       )
@@ -50,7 +59,7 @@ export function useSendVideoInvites(jobId: string) {
           company_name: user?.user_metadata?.company_name || 'our company',
           sender_name: user?.user_metadata?.name || 'The hiring team',
           submission_url: videoSubmissionUrl,
-          job_title: candidates[0]?.job_title || 'the position'
+          job_title: jobTitle
         }
 
         console.log('Sending email with metadata:', metadata)
