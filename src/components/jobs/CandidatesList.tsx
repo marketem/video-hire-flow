@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
 import { CandidatesTable } from "./candidates/CandidatesTable"
@@ -15,6 +15,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
   const supabase = useSupabaseClient()
   const user = useUser()
   const { toast } = useToast()
+  const queryClient = useQueryClient()
 
   const { data: candidates, isLoading } = useQuery({
     queryKey: ['candidates', jobId],
@@ -52,6 +53,9 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
           .update({ status: 'requested' })
           .eq('id', candidate.id)
       }
+
+      // Invalidate and refetch the candidates query to update the UI
+      await queryClient.invalidateQueries({ queryKey: ['candidates', jobId] })
 
       toast({
         title: "Success",
