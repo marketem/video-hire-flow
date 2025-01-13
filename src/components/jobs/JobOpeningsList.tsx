@@ -23,6 +23,7 @@ interface JobOpening {
   status: string
   created_at: string
   description: string
+  candidates_count: number
 }
 
 export function JobOpeningsList() {
@@ -35,19 +36,33 @@ export function JobOpeningsList() {
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchJobs()
-  }, [])
-
   const fetchJobs = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: jobsData, error: jobsError } = await supabase
         .from('job_openings')
         .select('*')
         .order('created_at', { ascending: false })
 
-      if (error) throw error
-      setJobs(data || [])
+      if (jobsError) throw jobsError
+
+      // Fetch candidates count for each job
+      const jobsWithCounts = await Promise.all(
+        (jobsData || []).map(async (job) => {
+          const { count, error: countError } = await supabase
+            .from('candidates')
+            .select('*', { count: 'exact', head: true })
+            .eq('job_id', job.id)
+
+          if (countError) throw countError
+
+          return {
+            ...job,
+            candidates_count: count || 0
+          }
+        })
+      )
+
+      setJobs(jobsWithCounts)
     } catch (error) {
       toast({
         title: "Error",
@@ -58,6 +73,10 @@ export function JobOpeningsList() {
       setIsLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchJobs()
+  }, [])
 
   const copyPublicLink = (jobId: string) => {
     const link = `${window.location.origin}/jobs/${jobId}`
@@ -144,8 +163,8 @@ export function JobOpeningsList() {
         <TableHeader>
           <TableRow>
             <TableHead>Title</TableHead>
-            <TableHead>Department</TableHead>
             <TableHead>Location</TableHead>
+            <TableHead>Candidates</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Created</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -155,8 +174,8 @@ export function JobOpeningsList() {
           {jobs.map((job) => (
             <TableRow key={job.id}>
               <TableCell className="font-medium">{job.title}</TableCell>
-              <TableCell>{job.department}</TableCell>
               <TableCell>{job.location}</TableCell>
+              <TableCell>{job.candidates_count}</TableCell>
               <TableCell>
                 <span 
                   className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
