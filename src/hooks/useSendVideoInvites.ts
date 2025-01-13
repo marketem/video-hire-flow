@@ -43,14 +43,19 @@ export function useSendVideoInvites(jobId: string) {
         const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${videoToken}`
         console.log('Generated submission URL:', videoSubmissionUrl)
 
+        // Get the company name from user metadata or use a default
+        const companyName = user?.user_metadata?.company_name || 'our company'
+        const senderName = user?.user_metadata?.name || 'The hiring team'
+
         const { data, error: emailError } = await supabase.auth.signInWithOtp({
           email: candidate.email,
           options: {
             emailRedirectTo: videoSubmissionUrl,
             data: {
+              type: 'video_invitation',
               candidate_name: candidate.name,
-              company_name: user?.user_metadata?.company_name || 'our company',
-              sender_name: user?.user_metadata?.first_name ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}` : 'The hiring manager',
+              company_name: companyName,
+              sender_name: senderName,
               submission_url: videoSubmissionUrl
             }
           }
