@@ -52,13 +52,21 @@ export function useSendVideoInvites(jobId: string) {
         const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${videoToken}`
         console.log('Generated submission URL:', videoSubmissionUrl)
 
-        // Get the company name and sender name from user metadata
+        // IMPORTANT: These variable names must exactly match the email template
+        // Do not let any code transform these to snake_case
         const metadata = {
           type: 'video_invitation',
           name: candidate.name,
           companyName: user?.user_metadata?.company_name || 'our company',
           senderName: user?.user_metadata?.name || 'The hiring team',
-          submissionUrl: videoSubmissionUrl
+          submissionUrl: videoSubmissionUrl,
+          // Explicitly set data property to prevent any transformations
+          data: {
+            name: candidate.name,
+            companyName: user?.user_metadata?.company_name || 'our company',
+            senderName: user?.user_metadata?.name || 'The hiring team',
+            submissionUrl: videoSubmissionUrl
+          }
         }
 
         console.log('Sending email with metadata:', metadata)
@@ -67,7 +75,7 @@ export function useSendVideoInvites(jobId: string) {
           email: candidate.email,
           options: {
             emailRedirectTo: videoSubmissionUrl,
-            data: metadata
+            data: metadata.data // Use the explicitly set data property
           }
         })
 
@@ -77,6 +85,8 @@ export function useSendVideoInvites(jobId: string) {
           console.error('Error sending invite:', emailError)
           throw new Error('Failed to send email invitation')
         }
+
+        console.log('Successfully sent invite to:', candidate.email)
 
         // Update candidate status
         const { error: statusError } = await supabase
