@@ -25,12 +25,10 @@ export function useSendVideoInvites(jobId: string) {
           options: {
             emailRedirectTo: videoSubmissionUrl,
             data: {
-              user_metadata: {
-                name: candidate.name,
-                company_name: user?.user_metadata?.company_name || 'our company',
-                sender_name: user?.user_metadata?.name || 'The hiring manager',
-                submission_url: videoSubmissionUrl
-              }
+              name: candidate.name,
+              company_name: user?.user_metadata?.company_name || 'our company',
+              sender_name: user?.user_metadata?.name || 'The hiring manager',
+              submission_url: videoSubmissionUrl
             }
           }
         })
