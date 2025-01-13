@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { useEffect } from "react"
 
@@ -29,6 +30,7 @@ interface EditJobDialogProps {
     department: string
     location: string
     description: string
+    public_page_enabled: boolean
   } | null
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -50,10 +52,10 @@ export function EditJobDialog({
       department: "",
       location: "",
       description: "",
+      public_page_enabled: true,
     },
   })
 
-  // Reset form with new values when job changes or dialog opens
   useEffect(() => {
     if (job && open) {
       form.reset({
@@ -61,6 +63,7 @@ export function EditJobDialog({
         department: job.department,
         location: job.location,
         description: job.description,
+        public_page_enabled: job.public_page_enabled,
       })
     }
   }, [job, open, form])
@@ -70,6 +73,7 @@ export function EditJobDialog({
     department: string
     location: string
     description: string
+    public_page_enabled: boolean
   }) => {
     if (!job) return
 
@@ -159,6 +163,23 @@ export function EditJobDialog({
                     <Textarea {...field} rows={5} />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="public_page_enabled"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Enable public application page</FormLabel>
+                  </div>
                 </FormItem>
               )}
             />

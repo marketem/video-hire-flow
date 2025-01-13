@@ -5,6 +5,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react"
 
@@ -18,6 +19,7 @@ interface JobFormData {
   department: string
   location: string
   description: string
+  public_page_enabled: boolean
 }
 
 export function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
@@ -25,7 +27,11 @@ export function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
   const supabase = useSupabaseClient()
   const user = useUser()
   const { toast } = useToast()
-  const form = useForm<JobFormData>()
+  const form = useForm<JobFormData>({
+    defaultValues: {
+      public_page_enabled: true
+    }
+  })
 
   const onSubmit = async (data: JobFormData) => {
     if (!user) {
@@ -47,6 +53,7 @@ export function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
             department: data.department,
             location: data.location,
             description: data.description,
+            public_page_enabled: data.public_page_enabled,
             status: 'open',
             user_id: user.id
           }
@@ -132,6 +139,23 @@ export function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
                     />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="public_page_enabled"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Enable public application page</FormLabel>
+                  </div>
                 </FormItem>
               )}
             />

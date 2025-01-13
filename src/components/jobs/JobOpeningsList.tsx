@@ -24,6 +24,7 @@ interface JobOpening {
   created_at: string
   description: string
   candidates_count: number
+  public_page_enabled: boolean
 }
 
 export function JobOpeningsList() {
@@ -201,7 +202,8 @@ export function JobOpeningsList() {
                   variant="ghost"
                   size="icon"
                   onClick={() => copyPublicLink(job.id)}
-                  title="Copy public link"
+                  disabled={!job.public_page_enabled}
+                  title={job.public_page_enabled ? "Copy public link" : "Public page disabled"}
                 >
                   <LinkIcon className="h-4 w-4" />
                 </Button>
