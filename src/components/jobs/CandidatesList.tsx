@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { FileText, Copy } from "lucide-react"
+import { FileText } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface Candidate {
@@ -60,37 +60,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       
       if (bucketError) {
         console.error('Bucket error:', bucketError)
-        const errorDetails = JSON.stringify(bucketError, null, 2)
-        console.log('Full error details:', errorDetails)
-        
-        // Show error with copy button
-        toast({
-          title: "Storage Error",
-          description: (
-            <div className="space-y-2">
-              <pre className="bg-secondary p-2 rounded text-xs overflow-x-auto">
-                {errorDetails}
-              </pre>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="w-full"
-                onClick={() => {
-                  navigator.clipboard.writeText(errorDetails)
-                  toast({
-                    title: "Copied",
-                    description: "Error details copied to clipboard",
-                  })
-                }}
-              >
-                <Copy className="h-4 w-4 mr-2" />
-                Copy Error
-              </Button>
-            </div>
-          ),
-          variant: "destructive",
-        })
-        return
+        throw new Error('Storage bucket not accessible')
       }
       
       console.log('Bucket exists:', bucketData)
@@ -102,37 +72,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
 
       if (error) {
         console.error('Signed URL error:', error)
-        const errorDetails = JSON.stringify(error, null, 2)
-        console.log('Full error details:', errorDetails)
-        
-        // Show error with copy button
-        toast({
-          title: "Access Error",
-          description: (
-            <div className="space-y-2">
-              <pre className="bg-secondary p-2 rounded text-xs overflow-x-auto">
-                {errorDetails}
-              </pre>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="w-full"
-                onClick={() => {
-                  navigator.clipboard.writeText(errorDetails)
-                  toast({
-                    title: "Copied",
-                    description: "Error details copied to clipboard",
-                  })
-                }}
-              >
-                <Copy className="h-4 w-4 mr-2" />
-                Copy Error
-              </Button>
-            </div>
-          ),
-          variant: "destructive",
-        })
-        return
+        throw error
       }
       
       if (!data?.signedUrl) {
@@ -143,44 +83,15 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       window.open(data.signedUrl, '_blank')
     } catch (error) {
       console.error('Error accessing resume:', error)
-      let errorDetails = 'Unknown error'
+      let errorMessage = 'Failed to access resume'
       
       if (error instanceof Error) {
-        errorDetails = JSON.stringify({
-          message: error.message,
-          stack: error.stack
-        }, null, 2)
-      } else {
-        errorDetails = JSON.stringify(error, null, 2)
+        errorMessage = error.message
       }
       
-      console.log('Full error details:', errorDetails)
-      
-      // Show error with copy button
       toast({
         title: "Error",
-        description: (
-          <div className="space-y-2">
-            <pre className="bg-secondary p-2 rounded text-xs overflow-x-auto">
-              {errorDetails}
-            </pre>
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="w-full"
-              onClick={() => {
-                navigator.clipboard.writeText(errorDetails)
-                toast({
-                  title: "Copied",
-                  description: "Error details copied to clipboard",
-                })
-              }}
-            >
-              <Copy className="h-4 w-4 mr-2" />
-              Copy Error
-            </Button>
-          </div>
-        ),
+        description: errorMessage,
         variant: "destructive",
       })
     }
