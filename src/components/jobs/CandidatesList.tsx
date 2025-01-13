@@ -155,7 +155,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
         await generateTokenMutation.mutateAsync(candidateId);
       }
       
-      const updatedCandidate = (await queryClient.fetchQuery({
+      const updatedCandidate = await queryClient.fetchQuery<Candidate>({
         queryKey: ['candidates', jobId],
         queryFn: async () => {
           const { data, error } = await supabase
@@ -170,9 +170,6 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
           }
           return data as Candidate;
         }
-      })).catch(error => {
-        console.error('Error fetching updated candidate:', error);
-        return null;
       });
 
       console.log('Updated candidate data:', updatedCandidate);
