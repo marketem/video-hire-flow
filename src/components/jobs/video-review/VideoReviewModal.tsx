@@ -69,6 +69,23 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
     }
   }
 
+  const getVideoUrl = async (videoPath: string) => {
+    const { data } = await supabase
+      .storage
+      .from('videos')
+      .createSignedUrl(videoPath, 3600) // URL valid for 1 hour
+
+    if (data?.signedUrl) {
+      window.open(data.signedUrl, '_blank')
+    } else {
+      toast({
+        title: "Error",
+        description: "Could not access video. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
   // Filter candidates based on their status and video submission state
   const readyForReview = candidates?.filter(c => 
     c.video_url && (c.status === 'new' || c.status === 'reviewing')
@@ -104,7 +121,7 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
             {candidate.video_url && (
               <Button
                 variant="secondary"
-                onClick={() => window.open(candidate.video_url, '_blank')}
+                onClick={() => getVideoUrl(candidate.video_url!)}
               >
                 Review Video
               </Button>
