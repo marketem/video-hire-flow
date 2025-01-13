@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Upload } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
 
 interface UploadCandidatesProps {
   jobId: string
@@ -66,28 +67,50 @@ export function UploadCandidates({ jobId, onSuccess }: UploadCandidatesProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="csv">Upload CSV File</Label>
-        <Input
-          id="csv"
-          type="file"
-          accept=".csv"
-          onChange={handleFileUpload}
-          disabled={isUploading}
-        />
+    <div className="space-y-6">
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-sm text-muted-foreground space-y-4">
+            <h3 className="font-medium text-foreground">CSV File Requirements:</h3>
+            <div className="space-y-2">
+              <p>Your CSV file should include these columns:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li><code className="bg-muted px-1 rounded">name</code> or <code className="bg-muted px-1 rounded">fullname</code> - The candidate's full name</li>
+                <li><code className="bg-muted px-1 rounded">email</code> - The candidate's email address</li>
+              </ul>
+              <p className="text-xs">Example: name,email<br />John Doe,john@example.com</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="space-y-4">
+        <Label htmlFor="csv" className="text-base">Upload Candidates CSV</Label>
+        <div className="flex items-center justify-center w-full">
+          <label htmlFor="csv" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/5 hover:bg-muted/10 border-muted-foreground/20">
+            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+              <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+              <p className="mb-2 text-sm text-muted-foreground">
+                <span className="font-semibold">Click to upload</span> or drag and drop
+              </p>
+              <p className="text-xs text-muted-foreground/75">CSV files only</p>
+            </div>
+            <Input
+              id="csv"
+              type="file"
+              accept=".csv"
+              onChange={handleFileUpload}
+              disabled={isUploading}
+              className="hidden"
+            />
+          </label>
+        </div>
       </div>
-      <div className="text-sm text-muted-foreground">
-        <p>The CSV file should include the following columns:</p>
-        <ul className="list-disc list-inside mt-2">
-          <li>name (or fullname)</li>
-          <li>email</li>
-        </ul>
-      </div>
+
       {isUploading && (
         <div className="flex items-center justify-center py-4">
-          <Upload className="animate-bounce" />
-          <span className="ml-2">Uploading candidates...</span>
+          <Upload className="animate-bounce mr-2" />
+          <span>Uploading candidates...</span>
         </div>
       )}
     </div>
