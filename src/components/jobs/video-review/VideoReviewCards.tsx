@@ -30,11 +30,12 @@ export function VideoReviewCards() {
       const stats: VideoStats[] = []
 
       for (const job of jobs) {
+        // Count invites where video_token is not null OR video_url is not null
         const { count: invitesSent } = await supabase
           .from('candidates')
           .select('*', { count: 'exact', head: true })
           .eq('job_id', job.id)
-          .not('video_token', 'is', null)
+          .or('video_token.not.is.null,video_url.not.is.null')
 
         const { count: videosReceived } = await supabase
           .from('candidates')
