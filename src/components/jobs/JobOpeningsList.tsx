@@ -179,12 +179,13 @@ export function JobOpeningsList() {
                   <LinkIcon className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="icon"
+                  variant="secondary"
+                  className="gap-2"
                   onClick={() => setSelectedJobForCandidates(job)}
-                  title="View candidates"
+                  title="Send video invites"
                 >
                   <Users className="h-4 w-4" />
+                  Send Invites
                 </Button>
                 <Button
                   variant="ghost"
