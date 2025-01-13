@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
-import { Video, StopCircle } from "lucide-react"
+import { Video, StopCircle, PlayCircle } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 
 export default function VideoSubmission() {
@@ -11,6 +11,7 @@ export default function VideoSubmission() {
   const [isRecording, setIsRecording] = useState(false)
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
   const [timeLeft, setTimeLeft] = useState(30)
   const videoRef = useRef<HTMLVideoElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -94,6 +95,17 @@ export default function VideoSubmission() {
     }
   }
 
+  const togglePlayback = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause()
+      } else {
+        videoRef.current.play()
+      }
+      setIsPlaying(!isPlaying)
+    }
+  }
+
   const handleUpload = async () => {
     if (!recordedBlob || !candidateId) return
 
@@ -168,6 +180,7 @@ export default function VideoSubmission() {
             playsInline
             muted={isRecording}
             className="w-full h-full object-cover"
+            onEnded={() => setIsPlaying(false)}
           />
         </div>
 
@@ -187,14 +200,18 @@ export default function VideoSubmission() {
           )}
 
           {recordedBlob && !isUploading && (
-            <>
-              <Button onClick={() => setRecordedBlob(null)} variant="outline">
+            <div className="flex w-full gap-2">
+              <Button onClick={togglePlayback} variant="outline" className="flex-1">
+                <PlayCircle className="mr-2 h-4 w-4" />
+                {isPlaying ? 'Pause' : 'Play'}
+              </Button>
+              <Button onClick={() => setRecordedBlob(null)} variant="outline" className="flex-1">
                 Record Again
               </Button>
-              <Button onClick={handleUpload}>
+              <Button onClick={handleUpload} className="flex-1">
                 Upload Video
               </Button>
-            </>
+            </div>
           )}
 
           {isUploading && (
