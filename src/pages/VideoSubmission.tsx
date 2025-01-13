@@ -41,13 +41,15 @@ export default function VideoSubmission() {
     },
     enabled: !!token,
     retry: false,
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Invalid or expired video submission link",
-        variant: "destructive",
-      })
-      navigate('/')
+    meta: {
+      onError: () => {
+        toast({
+          title: "Error",
+          description: "Invalid or expired video submission link",
+          variant: "destructive",
+        })
+        navigate('/')
+      }
     }
   })
 
