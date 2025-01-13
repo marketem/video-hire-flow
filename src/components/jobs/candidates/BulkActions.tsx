@@ -18,20 +18,20 @@ export function BulkActions({ selectedCount, onSendInvites, onDelete }: BulkActi
       <div className="flex gap-2 ml-auto">
         <Button
           size="sm"
+          onClick={onSendInvites}
+          disabled={selectedCount === 0}
+        >
+          <Send className="mr-2 h-4 w-4" />
+          Request Video Submission
+        </Button>
+        <Button
+          size="sm"
           variant="destructive"
           onClick={onDelete}
           disabled={selectedCount === 0}
         >
           <Trash2 className="mr-2 h-4 w-4" />
           Delete Candidates
-        </Button>
-        <Button
-          size="sm"
-          onClick={onSendInvites}
-          disabled={selectedCount === 0}
-        >
-          <Send className="mr-2 h-4 w-4" />
-          Request Video Submission
         </Button>
       </div>
     </div>
