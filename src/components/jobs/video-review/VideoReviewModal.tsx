@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Phone, ThumbsDown, ThumbsUp, Video } from "lucide-react"
@@ -30,7 +31,7 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
         .from('candidates')
         .select('*')
         .eq('job_id', jobId)
-        .not('video_token', 'is', null)
+        .not('video_url', 'is', null)
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -135,6 +136,9 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
       <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Review Candidates</DialogTitle>
+          <DialogDescription>
+            Review and manage candidate video submissions
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -161,7 +165,7 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
 
           {(!candidates || candidates.length === 0) && (
             <p className="text-center text-muted-foreground py-8">
-              No candidates found for this job
+              No video submissions found for this job
             </p>
           )}
         </div>

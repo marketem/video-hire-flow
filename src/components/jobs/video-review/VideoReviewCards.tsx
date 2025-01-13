@@ -48,13 +48,15 @@ export function VideoReviewCards() {
           .not('video_url', 'is', null)
           .eq('status', 'new')
 
-        stats.push({
-          jobId: job.id,
-          jobTitle: job.title,
-          invitesSent: invitesSent || 0,
-          videosReceived: videosReceived || 0,
-          pendingReview: pendingReview || 0,
-        })
+        if (invitesSent || videosReceived || pendingReview) {
+          stats.push({
+            jobId: job.id,
+            jobTitle: job.title,
+            invitesSent: invitesSent || 0,
+            videosReceived: videosReceived || 0,
+            pendingReview: pendingReview || 0,
+          })
+        }
       }
 
       return stats
