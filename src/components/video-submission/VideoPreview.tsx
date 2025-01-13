@@ -22,7 +22,7 @@ export function VideoPreview({
         ref={videoRef}
         playsInline
         className="w-full h-full object-cover"
-        onEnded={() => setIsPlaying(false)}
+        onEnded={togglePlayback}
       />
       {recordedBlob && !isPlaying && !isRecording && (
         <div 
