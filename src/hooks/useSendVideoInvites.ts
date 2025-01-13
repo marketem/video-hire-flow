@@ -11,12 +11,22 @@ export function useSendVideoInvites(jobId: string) {
 
   const sendVideoInvites = async (selectedCandidates: string[], candidates: Candidate[]) => {
     try {
+      console.log('Starting sendVideoInvites function')
+      console.log('Selected candidates:', selectedCandidates)
+      console.log('All candidates:', candidates)
+      console.log('Current user:', user)
+
       const selectedCandidatesList = candidates.filter(c => 
         selectedCandidates.includes(c.id)
       )
 
+      console.log('Filtered candidates list:', selectedCandidatesList)
+
       for (const candidate of selectedCandidatesList) {
+        console.log('Processing candidate:', candidate)
+        
         const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${candidate.video_token}`
+        console.log('Generated submission URL:', videoSubmissionUrl)
         
         const metadata = {
           name: candidate.name,
