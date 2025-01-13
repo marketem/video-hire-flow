@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { VideoReviewModal } from "./VideoReviewModal"
@@ -15,10 +15,12 @@ interface VideoStats {
 export function VideoReviewCards() {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
   const supabase = useSupabaseClient()
+  const queryClient = useQueryClient()
 
   const { data: videoStats = [] } = useQuery({
     queryKey: ['video-stats'],
     queryFn: async () => {
+      console.log('Fetching video stats...')
       const { data: jobs, error: jobsError } = await supabase
         .from('job_openings')
         .select('id, title')
@@ -59,8 +61,11 @@ export function VideoReviewCards() {
         }
       }
 
+      console.log('Video stats fetched:', stats)
       return stats
     },
+    // Refresh every 5 seconds to catch new invites
+    refetchInterval: 5000,
   })
 
   return (
