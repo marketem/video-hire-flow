@@ -1,6 +1,7 @@
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, VideoIcon, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +29,36 @@ export default function Dashboard() {
 
     checkSession();
   }, [navigate, supabase.auth, toast]);
+
+  const { data: candidatesCount = 0, isLoading: isLoadingCandidates } = useQuery({
+    queryKey: ['candidates-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('candidates')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'new');
+
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
+  const { data: videoResponsesCount = 0 } = useQuery({
+    queryKey: ['video-responses-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('candidates')
+        .select('*', { count: 'exact', head: true })
+        .not('video_url', 'is', null);
+
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
+  const responseRate = candidatesCount > 0 
+    ? Math.round((videoResponsesCount / candidatesCount) * 100)
+    : 0;
 
   if (!session) {
     return null;
@@ -57,7 +88,9 @@ export default function Dashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">
+              {isLoadingCandidates ? "..." : candidatesCount}
+            </div>
             <p className="text-xs text-muted-foreground">
               Across all job openings
             </p>
@@ -69,7 +102,7 @@ export default function Dashboard() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0%</div>
+            <div className="text-2xl font-bold">{responseRate}%</div>
             <p className="text-xs text-muted-foreground">
               Of invited candidates
             </p>
@@ -81,7 +114,7 @@ export default function Dashboard() {
             <VideoIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{videoResponsesCount}</div>
             <p className="text-xs text-muted-foreground">
               Total responses received
             </p>
