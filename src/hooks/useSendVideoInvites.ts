@@ -52,26 +52,18 @@ export function useSendVideoInvites(jobId: string) {
         const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${videoToken}`
         console.log('Generated submission URL:', videoSubmissionUrl)
 
-        // First update the user's metadata to include the template variables
-        const { error: userUpdateError } = await supabase.auth.updateUser({
-          data: {
-            name: candidate.name,
-            companyName: user?.user_metadata?.company_name || 'our company',
-            senderName: user?.user_metadata?.name || 'The hiring team',
-            submissionUrl: videoSubmissionUrl
-          }
-        })
-
-        if (userUpdateError) {
-          console.error('Error updating user metadata:', userUpdateError)
-          throw new Error('Failed to update user metadata')
-        }
-
-        // Now send the OTP email which will use the updated metadata
+        // Send the OTP email with template variables in the data field
         const { error: emailError } = await supabase.auth.signInWithOtp({
           email: candidate.email,
           options: {
-            emailRedirectTo: videoSubmissionUrl
+            emailRedirectTo: videoSubmissionUrl,
+            data: {
+              type: 'video_invitation',
+              name: candidate.name,
+              companyName: user?.user_metadata?.company_name || 'our company',
+              senderName: user?.user_metadata?.name || 'The hiring team',
+              submissionUrl: videoSubmissionUrl
+            }
           }
         })
 
