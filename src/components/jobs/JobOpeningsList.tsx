@@ -182,10 +182,10 @@ export function JobOpeningsList() {
                   variant="secondary"
                   className="gap-2"
                   onClick={() => setSelectedJobForCandidates(job)}
-                  title="Send video invites"
+                  title="Request video submissions"
                 >
                   <Users className="h-4 w-4" />
-                  Candidates
+                  Request Videos
                 </Button>
                 <Button
                   variant="ghost"
