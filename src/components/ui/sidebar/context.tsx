@@ -1,6 +1,12 @@
 import * as React from "react"
 import { type SidebarContext, type SidebarProviderProps } from "./types"
-import { SIDEBAR_COOKIE_NAME, SIDEBAR_COOKIE_MAX_AGE, SIDEBAR_WIDTH, SIDEBAR_WIDTH_ICON } from "./constants"
+import { 
+  SIDEBAR_COOKIE_NAME, 
+  SIDEBAR_COOKIE_MAX_AGE, 
+  SIDEBAR_WIDTH, 
+  SIDEBAR_WIDTH_ICON,
+  SIDEBAR_KEYBOARD_SHORTCUT 
+} from "./constants"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { TooltipProvider } from "@/components/ui/tooltip"
