@@ -52,34 +52,30 @@ export function useSendVideoInvites(jobId: string) {
         const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${videoToken}`
         console.log('Generated submission URL:', videoSubmissionUrl)
 
-        // IMPORTANT: These variable names must exactly match the email template
-        // Do not let any code transform these to snake_case
-        const metadata = {
-          type: 'video_invitation',
-          name: candidate.name,
-          companyName: user?.user_metadata?.company_name || 'our company',
-          senderName: user?.user_metadata?.name || 'The hiring team',
-          submissionUrl: videoSubmissionUrl,
-          // Explicitly set data property to prevent any transformations
+        // First update the user's metadata to include the template variables
+        const { error: userUpdateError } = await supabase.auth.updateUser({
           data: {
             name: candidate.name,
             companyName: user?.user_metadata?.company_name || 'our company',
             senderName: user?.user_metadata?.name || 'The hiring team',
             submissionUrl: videoSubmissionUrl
           }
+        })
+
+        if (userUpdateError) {
+          console.error('Error updating user metadata:', userUpdateError)
+          throw new Error('Failed to update user metadata')
         }
 
-        console.log('Sending email with metadata:', metadata)
-
-        const { data, error: emailError } = await supabase.auth.signInWithOtp({
+        // Now send the OTP email which will use the updated metadata
+        const { error: emailError } = await supabase.auth.signInWithOtp({
           email: candidate.email,
           options: {
-            emailRedirectTo: videoSubmissionUrl,
-            data: metadata.data // Use the explicitly set data property
+            emailRedirectTo: videoSubmissionUrl
           }
         })
 
-        console.log('Supabase OTP response:', { data, error: emailError })
+        console.log('Supabase OTP response:', { error: emailError })
 
         if (emailError) {
           console.error('Error sending invite:', emailError)
