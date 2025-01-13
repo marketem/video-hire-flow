@@ -33,16 +33,20 @@ export default function Dashboard() {
   const { data: candidatesCount = 0, isLoading: isLoadingCandidates } = useQuery({
     queryKey: ['candidates-count'],
     queryFn: async () => {
+      // First get the IDs of open jobs
+      const { data: openJobIds } = await supabase
+        .from('job_openings')
+        .select('id')
+        .eq('status', 'open');
+
+      if (!openJobIds) return 0;
+
+      // Then count candidates from those jobs
       const { count, error } = await supabase
         .from('candidates')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'new')
-        .in('job_id', 
-          supabase
-            .from('job_openings')
-            .select('id')
-            .eq('status', 'open')
-        );
+        .in('job_id', openJobIds.map(job => job.id));
 
       if (error) throw error;
       return count || 0;
@@ -52,16 +56,20 @@ export default function Dashboard() {
   const { data: videoResponsesCount = 0 } = useQuery({
     queryKey: ['video-responses-count'],
     queryFn: async () => {
+      // First get the IDs of open jobs
+      const { data: openJobIds } = await supabase
+        .from('job_openings')
+        .select('id')
+        .eq('status', 'open');
+
+      if (!openJobIds) return 0;
+
+      // Then count video responses from those jobs
       const { count, error } = await supabase
         .from('candidates')
         .select('*', { count: 'exact', head: true })
         .not('video_url', 'is', null)
-        .in('job_id', 
-          supabase
-            .from('job_openings')
-            .select('id')
-            .eq('status', 'open')
-        );
+        .in('job_id', openJobIds.map(job => job.id));
 
       if (error) throw error;
       return count || 0;
