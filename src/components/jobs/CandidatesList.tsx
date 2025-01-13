@@ -177,32 +177,39 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${updatedCandidate.video_token}`;
       console.log('Generated URL:', videoSubmissionUrl);
 
-      // Create a temporary input element
-      const tempInput = document.createElement('input');
-      tempInput.style.position = 'absolute';
-      tempInput.style.left = '-9999px';
-      tempInput.value = videoSubmissionUrl;
-      document.body.appendChild(tempInput);
-
-      // Select and copy
-      tempInput.select();
-      tempInput.setSelectionRange(0, 99999); // For mobile devices
+      // Create a temporary textarea (better for longer text)
+      const textarea = document.createElement('textarea');
+      textarea.value = videoSubmissionUrl;
+      
+      // Make it invisible but keep it in the viewport
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      textarea.style.top = '0';
+      textarea.style.left = '0';
+      
+      document.body.appendChild(textarea);
       
       try {
-        // Try the modern way first
+        // Try modern clipboard API first
         await navigator.clipboard.writeText(videoSubmissionUrl);
         console.log('Successfully copied using Clipboard API');
       } catch (clipboardError) {
-        console.log('Clipboard API failed, trying document.execCommand');
-        // Fallback
+        console.log('Clipboard API failed, falling back to selection method');
+        
+        // Focus and select the text
+        textarea.focus();
+        textarea.select();
+        
+        // Execute the copy command
         const successful = document.execCommand('copy');
         if (!successful) {
-          throw new Error('Failed to copy text to clipboard');
+          console.error('execCommand copy failed');
+          throw new Error('Unable to copy to clipboard');
         }
         console.log('Successfully copied using execCommand');
       } finally {
-        // Clean up
-        document.body.removeChild(tempInput);
+        // Always clean up
+        document.body.removeChild(textarea);
       }
       
       toast({
@@ -213,7 +220,8 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       console.error('Error in copyVideoLink:', error);
       toast({
         title: "Error",
-        description: "Failed to copy link to clipboard. Please try selecting and copying manually.",
+        description: "Failed to copy link. The URL is: " + 
+          `${window.location.origin}/video-submission?token=${candidates?.find(c => c.id === candidateId)?.video_token}`,
         variant: "destructive",
       });
     }
