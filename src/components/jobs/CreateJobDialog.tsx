@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
-import { useSupabaseClient } from "@supabase/auth-helpers-react"
+import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react"
 
 interface CreateJobDialogProps {
   open: boolean
@@ -23,10 +23,20 @@ interface JobFormData {
 export function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
   const [isLoading, setIsLoading] = useState(false)
   const supabase = useSupabaseClient()
+  const user = useUser()
   const { toast } = useToast()
   const form = useForm<JobFormData>()
 
   const onSubmit = async (data: JobFormData) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create a job opening",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsLoading(true)
     try {
       const { error } = await supabase
@@ -37,7 +47,8 @@ export function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
             department: data.department,
             location: data.location,
             description: data.description,
-            status: 'open'
+            status: 'open',
+            user_id: user.id
           }
         ])
 
