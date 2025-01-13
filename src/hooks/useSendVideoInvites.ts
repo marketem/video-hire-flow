@@ -67,10 +67,20 @@ export function useSendVideoInvites(jobId: string) {
           }
         })
 
-        console.log('Supabase OTP response:', { error: emailError })
-
         if (emailError) {
           console.error('Error sending invite:', emailError)
+          
+          // Check if it's a rate limit error
+          if (emailError.message?.includes('can only request this after')) {
+            const waitSeconds = emailError.message.match(/\d+/)?.[0] || '60'
+            toast({
+              title: "Please wait",
+              description: `For security reasons, please wait ${waitSeconds} seconds before sending another invitation.`,
+              variant: "destructive",
+            })
+            return false
+          }
+          
           throw new Error('Failed to send email invitation')
         }
 
