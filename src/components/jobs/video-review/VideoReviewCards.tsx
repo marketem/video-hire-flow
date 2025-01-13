@@ -19,48 +19,69 @@ export function VideoReviewCards() {
   const { data: videoStats = [] } = useQuery({
     queryKey: ['video-stats'],
     queryFn: async () => {
+      console.log('Fetching video stats...')
+      
+      // First, get all jobs that either:
+      // 1. Have candidates with videos
+      // 2. Have candidates with requested videos
       const { data: jobs, error: jobsError } = await supabase
         .from('job_openings')
-        .select('id, title')
+        .select(`
+          id,
+          title,
+          candidates (
+            id,
+            status,
+            video_url
+          )
+        `)
         .eq('status', 'open')
 
-      if (jobsError) throw jobsError
+      if (jobsError) {
+        console.error('Error fetching jobs:', jobsError)
+        throw jobsError
+      }
+
+      console.log('Fetched jobs:', jobs)
 
       const stats: VideoStats[] = []
 
       for (const job of jobs) {
-        const { count: videosReceived } = await supabase
-          .from('candidates')
-          .select('*', { count: 'exact', head: true })
-          .eq('job_id', job.id)
-          .not('video_url', 'is', null)
+        // Only process jobs that have candidates
+        if (!job.candidates?.length) continue
 
-        const { count: readyForReview } = await supabase
-          .from('candidates')
-          .select('*', { count: 'exact', head: true })
-          .eq('job_id', job.id)
-          .not('video_url', 'is', null)
-          .in('status', ['new', 'reviewing'])
+        const videosReceived = job.candidates.filter(c => c.video_url).length
+        const readyForReview = job.candidates.filter(c => 
+          c.video_url && ['new', 'reviewing'].includes(c.status)
+        ).length
+        const approved = job.candidates.filter(c => c.status === 'accepted').length
+        const hasRequestedVideos = job.candidates.some(c => c.status === 'requested')
 
-        const { count: approved } = await supabase
-          .from('candidates')
-          .select('*', { count: 'exact', head: true })
-          .eq('job_id', job.id)
-          .eq('status', 'accepted')
+        // Include job if it has any videos or requested videos
+        if (videosReceived > 0 || hasRequestedVideos) {
+          console.log('Adding job to stats:', {
+            jobId: job.id,
+            jobTitle: job.title,
+            videosReceived,
+            readyForReview,
+            approved,
+            hasRequestedVideos
+          })
 
-        if (videosReceived || readyForReview || approved) {
           stats.push({
             jobId: job.id,
             jobTitle: job.title,
-            videosReceived: videosReceived || 0,
-            readyForReview: readyForReview || 0,
-            approved: approved || 0,
+            videosReceived,
+            readyForReview,
+            approved,
           })
         }
       }
 
       return stats
     },
+    // Refresh every 5 seconds to catch new invites
+    refetchInterval: 5000,
   })
 
   return (
@@ -82,7 +103,7 @@ export function VideoReviewCards() {
                   <dt>Videos Received:</dt>
                   <dd>{stat.videosReceived}</dd>
                 </div>
-                <div className={`flex justify-between font-medium ${stat.readyForReview > 1 ? 'text-red-600' : ''}`}>
+                <div className={`flex justify-between font-medium ${stat.readyForReview > 0 ? 'text-red-600' : ''}`}>
                   <dt>Ready for Review:</dt>
                   <dd>{stat.readyForReview}</dd>
                 </div>
@@ -94,6 +115,11 @@ export function VideoReviewCards() {
             </CardContent>
           </Card>
         ))}
+        {videoStats.length === 0 && (
+          <div className="col-span-3 text-center py-8 text-muted-foreground">
+            No video submissions or pending requests yet
+          </div>
+        )}
       </div>
 
       <VideoReviewModal
