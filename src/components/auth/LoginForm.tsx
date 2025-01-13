@@ -18,40 +18,48 @@ export function LoginForm() {
     e.preventDefault();
     setIsLoading(true);
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password: password.trim(),
-    });
-
-    if (error) {
-      console.error("Login error:", error.message);
-      
-      if (error.message.includes("Invalid login credentials")) {
-        toast({
-          title: "Login Failed",
-          description: "Invalid email or password. Please try again or click here to sign up if you don't have an account.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "An error occurred during login. Please try again.",
-          variant: "destructive",
-        });
-      }
-      setIsLoading(false);
-      return;
-    }
-
-    if (data?.user) {
-      toast({
-        title: "Success",
-        description: "You've successfully logged in!",
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim(),
       });
-      navigate('/dashboard');
-    }
 
-    setIsLoading(false);
+      if (error) {
+        console.error("Login error:", error.message);
+        
+        if (error.message.includes("Invalid login credentials")) {
+          toast({
+            title: "Login Failed",
+            description: "Invalid email or password. Please try again or click here to sign up if you don't have an account.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "An error occurred during login. Please try again.",
+            variant: "destructive",
+          });
+        }
+        return;
+      }
+
+      if (data?.user) {
+        toast({
+          title: "Success",
+          description: "You've successfully logged in!",
+        });
+        navigate('/dashboard', { replace: true });
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
