@@ -78,12 +78,16 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
 
       if (error) throw error
 
+      // Invalidate all relevant queries
+      queryClient.invalidateQueries({ queryKey: ['candidates', jobId] })
+      queryClient.invalidateQueries({ queryKey: ['video-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['job-openings'] })
+
       toast({
         title: "Success",
         description: "Candidate added successfully",
       })
 
-      queryClient.invalidateQueries({ queryKey: ['candidates', jobId] })
       onSuccess()
     } catch (error) {
       console.error('Form submission error:', error)
