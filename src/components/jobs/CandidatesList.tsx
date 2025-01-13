@@ -59,19 +59,43 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
         throw new Error('Invalid resume URL')
       }
 
+      // First, check if the file exists
+      const { data: existsData, error: existsError } = await supabase.storage
+        .from('resumes')
+        .list('', {
+          search: fileName
+        })
+
+      if (existsError) throw existsError
+      
+      if (!existsData || existsData.length === 0) {
+        throw new Error('Resume file not found')
+      }
+
+      // If file exists, create signed URL
       const { data, error } = await supabase.storage
         .from('resumes')
-        .createSignedUrl(fileName, 60) // URL valid for 60 seconds
+        .createSignedUrl(fileName, 60)
 
       if (error) throw error
       
+      if (!data.signedUrl) {
+        throw new Error('Failed to generate signed URL')
+      }
+
       // Open resume in new tab
       window.open(data.signedUrl, '_blank')
     } catch (error) {
       console.error('Error accessing resume:', error)
+      let errorMessage = 'Failed to access resume'
+      
+      if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to access resume",
+        description: errorMessage,
         variant: "destructive",
       })
     }
