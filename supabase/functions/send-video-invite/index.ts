@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from "../_shared/cors.ts"
-
-const SENDGRID_API_KEY = Deno.env.get('SENDGRID_API_KEY')
 
 interface RequestBody {
   to: string
@@ -19,36 +18,30 @@ serve(async (req) => {
   try {
     const { to, name, companyName, senderName, submissionUrl } = await req.json() as RequestBody
 
-    const emailContent = {
-      personalizations: [{
-        to: [{ email: to, name }],
-        subject: `Video Interview Request from ${companyName}`,
-      }],
-      content: [{
-        type: 'text/html',
-        value: `
-          <p>Hello ${name},</p>
-          <p>${senderName} from ${companyName} has invited you to submit a quick video interview.</p>
-          <p>Please click the link below to record and submit your video:</p>
-          <p><a href="${submissionUrl}">${submissionUrl}</a></p>
-          <p>Best regards,<br>${companyName} Hiring Team</p>
-        `
-      }],
-      from: { email: 'no-reply@yourdomain.com', name: `${companyName} Hiring` },
-      reply_to: { email: 'no-reply@yourdomain.com', name: `${companyName} Hiring` }
-    }
+    // Create a Supabase client with the service role key
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
 
-    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${SENDGRID_API_KEY}`,
-        'Content-Type': 'application/json',
+    const { error } = await supabaseClient.auth.admin.generateLink({
+      type: 'magiclink',
+      email: to,
+      options: {
+        data: {
+          name,
+          companyName,
+          senderName,
+          submissionUrl,
+        },
+        emailRedirectTo: submissionUrl,
+        emailTemplate: 'video-invite',
       },
-      body: JSON.stringify(emailContent),
     })
 
-    if (!response.ok) {
-      throw new Error(`SendGrid API error: ${response.statusText}`)
+    if (error) {
+      console.error('Error sending email:', error)
+      throw error
     }
 
     return new Response(
@@ -56,6 +49,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
+    console.error('Error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
