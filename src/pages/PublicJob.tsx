@@ -60,6 +60,16 @@ export default function PublicJob() {
     setIsSubmitting(true)
 
     try {
+      // Validate file size (max 10MB)
+      if (resume && resume.size > 10 * 1024 * 1024) {
+        throw new Error("File size must be less than 10MB")
+      }
+
+      // Validate file type
+      if (resume && !['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(resume.type)) {
+        throw new Error("File must be PDF, DOC, or DOCX format")
+      }
+
       // Upload resume if provided
       let resumeUrl = null
       if (resume) {
@@ -67,14 +77,20 @@ export default function PublicJob() {
         const fileName = `${Math.random()}.${fileExt}`
         const { error: uploadError, data } = await supabase.storage
           .from('resumes')
-          .upload(fileName, resume)
+          .upload(fileName, resume, {
+            cacheControl: '3600',
+            upsert: false
+          })
 
-        if (uploadError) throw uploadError
+        if (uploadError) {
+          console.error('Resume upload error:', uploadError)
+          throw new Error("Failed to upload resume. Please try again.")
+        }
         resumeUrl = data.path
       }
 
       // Add candidate to database
-      const { error } = await supabase
+      const { error: dbError } = await supabase
         .from('candidates')
         .insert([
           {
@@ -87,7 +103,10 @@ export default function PublicJob() {
           }
         ])
 
-      if (error) throw error
+      if (dbError) {
+        console.error('Database error:', dbError)
+        throw new Error("Failed to submit application. Please try again.")
+      }
 
       toast({
         title: "Success",
@@ -100,9 +119,10 @@ export default function PublicJob() {
       setPhone("")
       setResume(null)
     } catch (error) {
+      console.error('Application submission error:', error)
       toast({
         title: "Error",
-        description: "Failed to submit application. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to submit application. Please try again.",
         variant: "destructive",
       })
     } finally {
