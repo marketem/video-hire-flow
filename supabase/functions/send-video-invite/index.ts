@@ -17,22 +17,14 @@ serve(async (req) => {
   }
 
   try {
-    // Get auth token from request header
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      throw new Error('Missing authorization header')
-    }
-
-    // Parse request body
-    const body = await req.json() as RequestBody
-    const { to, name, companyName, senderName, submissionUrl } = body
+    const { to, name, companyName, senderName, submissionUrl } = await req.json() as RequestBody
 
     // Validate required fields
-    if (!to || !name || !submissionUrl) {
+    if (!to || !submissionUrl) {
       throw new Error('Missing required fields')
     }
 
-    // Create Supabase client with admin privileges
+    // Create a Supabase client with the service role key
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -44,40 +36,30 @@ serve(async (req) => {
       }
     )
 
-    // Send email using resend
-    const emailResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('RESEND_API_KEY')}`,
-        'Content-Type': 'application/json'
+    // Send the email using Supabase's built-in email service
+    const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(to, {
+      data: {
+        type: 'video_invite',
+        name,
+        companyName,
+        senderName,
+        submissionUrl,
       },
-      body: JSON.stringify({
-        from: 'noreply@yourdomain.com',
-        to: to,
-        subject: 'Video Interview Request',
-        html: `
-          <h2>Hello ${name},</h2>
-          <p>${senderName} from ${companyName} has requested a video interview submission from you.</p>
-          <p>Please click the link below to record and submit your video:</p>
-          <p><a href="${submissionUrl}">${submissionUrl}</a></p>
-          <p>Best regards,<br>${companyName} Team</p>
-        `
-      })
+      redirectTo: submissionUrl,
     })
 
-    if (!emailResponse.ok) {
-      const error = await emailResponse.text()
-      console.error('Email service error:', error)
-      throw new Error('Failed to send email')
+    if (error) {
+      console.error('Error sending email:', error)
+      throw error
     }
 
     return new Response(
       JSON.stringify({ success: true }),
       { 
         headers: { 
-          ...corsHeaders,
+          ...corsHeaders, 
           'Content-Type': 'application/json'
-        }
+        } 
       }
     )
   } catch (error) {
@@ -87,11 +69,11 @@ serve(async (req) => {
         error: error instanceof Error ? error.message : 'Unknown error occurred'
       }),
       { 
-        status: 500,
+        status: 400, 
         headers: { 
-          ...corsHeaders,
+          ...corsHeaders, 
           'Content-Type': 'application/json'
-        }
+        } 
       }
     )
   }
