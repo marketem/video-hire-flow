@@ -1,3 +1,15 @@
+-- Create candidates table
+create table "public"."candidates" (
+    id uuid default gen_random_uuid() primary key,
+    job_id uuid references public.job_openings(id) on delete cascade not null,
+    name text not null,
+    email text not null,
+    phone text not null,
+    resume_url text,
+    status text default 'new' not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- Enable RLS on candidates table
 alter table "public"."candidates" enable row level security;
 
