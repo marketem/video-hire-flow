@@ -6,6 +6,10 @@ import { useToast } from "@/hooks/use-toast"
 import { Video, StopCircle, Play } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { useQuery } from "@tanstack/react-query"
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
+
+// Maximum file size in bytes (50MB)
+const MAX_FILE_SIZE = 50 * 1024 * 1024
 
 export default function VideoSubmission() {
   const [searchParams] = useSearchParams()
@@ -16,6 +20,7 @@ export default function VideoSubmission() {
   const [isUploading, setIsUploading] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [timeLeft, setTimeLeft] = useState(30)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
@@ -119,15 +124,68 @@ export default function VideoSubmission() {
     }
   }, [recordedBlob])
 
+  const compressVideo = async (blob: Blob): Promise<Blob> => {
+    // If the blob is already under the size limit, return it as is
+    if (blob.size <= MAX_FILE_SIZE) {
+      return blob;
+    }
+
+    // Create a video element to get the duration
+    const video = document.createElement('video')
+    video.src = URL.createObjectURL(blob)
+    await new Promise((resolve) => {
+      video.onloadedmetadata = resolve
+    })
+
+    // Calculate target bitrate to fit within size limit
+    // Assuming 30 seconds max duration
+    const targetBitrate = (MAX_FILE_SIZE * 8) / 30 // bits per second
+
+    // Create a MediaRecorder with lower bitrate
+    const stream = videoRef.current?.captureStream()
+    if (!stream) throw new Error("Could not capture video stream")
+
+    return new Promise((resolve, reject) => {
+      const compressedChunks: Blob[] = []
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'video/webm',
+        videoBitsPerSecond: targetBitrate
+      })
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          compressedChunks.push(e.data)
+        }
+      }
+
+      mediaRecorder.onstop = () => {
+        const compressedBlob = new Blob(compressedChunks, { type: 'video/mp4' })
+        resolve(compressedBlob)
+      }
+
+      mediaRecorder.onerror = reject
+      mediaRecorder.start()
+      setTimeout(() => mediaRecorder.stop(), video.duration * 1000)
+    })
+  }
+
   const handleUpload = async () => {
     if (!recordedBlob || !candidate?.id) return
-
+    setUploadError(null)
     setIsUploading(true)
+
     try {
+      // Compress video before upload
+      const compressedBlob = await compressVideo(recordedBlob)
+      
       // Convert blob to File object with proper MIME type
-      const file = new File([recordedBlob], `${candidate.id}-${Date.now()}.mp4`, {
+      const file = new File([compressedBlob], `${candidate.id}-${Date.now()}.mp4`, {
         type: 'video/mp4'
       })
+
+      if (file.size > MAX_FILE_SIZE) {
+        throw new Error(`File size exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit`)
+      }
 
       console.log('Preparing to upload file:', {
         name: file.name,
@@ -136,7 +194,7 @@ export default function VideoSubmission() {
       })
 
       // First, ensure we have the correct bucket access
-      const { data: bucketData, error: bucketError } = await supabase
+      const { error: bucketError } = await supabase
         .storage
         .getBucket('videos')
 
@@ -183,9 +241,11 @@ export default function VideoSubmission() {
       navigate('/submission-success')
     } catch (error) {
       console.error('Upload process error:', error)
+      const errorMessage = error instanceof Error ? error.message : "There was a problem uploading your video. Please try again."
+      setUploadError(errorMessage)
       toast({
         title: "Upload Failed",
-        description: "There was a problem uploading your video. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {
@@ -300,6 +360,13 @@ export default function VideoSubmission() {
         <p className="text-muted-foreground text-center mb-8">
           Please record a 30-second video introducing yourself
         </p>
+
+        {uploadError && (
+          <Alert variant="destructive">
+            <AlertTitle>Upload Error</AlertTitle>
+            <AlertDescription>{uploadError}</AlertDescription>
+          </Alert>
+        )}
 
         {isRecording && (
           <div className="space-y-2">
