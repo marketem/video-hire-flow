@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react"
 import {
   Table,
@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { FileText, Video, Send } from "lucide-react"
+import { FileText, Video, Send, Copy } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
 
@@ -23,6 +23,7 @@ interface Candidate {
   created_at: string
   resume_url: string | null
   video_url: string | null
+  video_token?: string | null
 }
 
 interface CandidatesListProps {
@@ -33,6 +34,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
   const supabase = useSupabaseClient()
   const { toast } = useToast()
   const user = useUser()
+  const queryClient = useQueryClient()
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([])
 
   const { data: candidates, isLoading } = useQuery({
@@ -50,6 +52,24 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       return data as Candidate[]
     },
     enabled: !!jobId,
+  })
+
+  const generateTokenMutation = useMutation({
+    mutationFn: async (candidateId: string) => {
+      // Generate a random token
+      const token = crypto.randomUUID()
+      
+      const { error } = await supabase
+        .from('candidates')
+        .update({ video_token: token })
+        .eq('id', candidateId)
+
+      if (error) throw error
+      return { candidateId, token }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['candidates', jobId] })
+    },
   })
 
   const handleViewResume = async (resumeUrl: string) => {
@@ -94,7 +114,12 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       ) || []
 
       for (const candidate of selectedCandidatesList) {
-        const videoSubmissionUrl = `${window.location.origin}/video-submission/${candidate.id}`
+        // Generate token if not exists
+        if (!candidate.video_token) {
+          await generateTokenMutation.mutateAsync(candidate.id)
+        }
+        
+        const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${candidate.video_token}`
         const message = `${user?.user_metadata?.name || 'The hiring manager'} has invited you to submit a quick video to finish your application to ${user?.user_metadata?.company_name || 'our company'}: ${videoSubmissionUrl}`
 
         // Here we would integrate with an SMS service
@@ -118,9 +143,31 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
   }
 
   const copyVideoLink = async (candidateId: string) => {
-    const videoSubmissionUrl = `${window.location.origin}/video-submission/${candidateId}`
     try {
+      // Generate token if not exists
+      const candidate = candidates?.find(c => c.id === candidateId)
+      if (!candidate?.video_token) {
+        await generateTokenMutation.mutateAsync(candidateId)
+      }
+      
+      // Get the updated candidate data
+      const updatedCandidate = (await queryClient.fetchQuery({
+        queryKey: ['candidates', jobId],
+        queryFn: async () => {
+          const { data, error } = await supabase
+            .from('candidates')
+            .select('*')
+            .eq('id', candidateId)
+            .single()
+
+          if (error) throw error
+          return data as Candidate
+        }
+      }))
+
+      const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${updatedCandidate.video_token}`
       await navigator.clipboard.writeText(videoSubmissionUrl)
+      
       toast({
         title: "Success",
         description: "Video submission link copied to clipboard",
@@ -173,12 +220,6 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
         <div className="flex gap-2 ml-auto">
           <Button
             size="sm"
-            onClick={() => copyVideoLink(candidates[0].id)}
-          >
-            Copy Video Link
-          </Button>
-          <Button
-            size="sm"
             onClick={sendVideoInvites}
             disabled={selectedCandidates.length === 0}
           >
@@ -204,6 +245,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
             <TableHead>Applied</TableHead>
             <TableHead>Resume</TableHead>
             <TableHead>Video</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -261,6 +303,16 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
                 ) : (
                   <span className="text-muted-foreground text-sm">No video</span>
                 )}
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => copyVideoLink(candidate.id)}
+                  title="Copy video submission link"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
               </TableCell>
             </TableRow>
           ))}
