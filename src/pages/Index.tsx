@@ -10,7 +10,7 @@ const features = [
   "Candidate management",
   "SMS notifications",
   "Team collaboration",
-  "Custom branding",
+  "Export/Import from Indeed",
 ];
 
 const Index = () => {
