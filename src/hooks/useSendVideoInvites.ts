@@ -56,8 +56,8 @@ export function useSendVideoInvites(jobId: string) {
         const metadata = {
           type: 'video_invitation',
           name: candidate.name,
-          senderName: user?.user_metadata?.name || 'The hiring team',
           companyName: user?.user_metadata?.company_name || 'our company',
+          senderName: user?.user_metadata?.name || 'The hiring team',
           submissionUrl: videoSubmissionUrl
         }
 
