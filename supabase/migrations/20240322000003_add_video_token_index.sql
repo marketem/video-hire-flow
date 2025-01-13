@@ -15,8 +15,11 @@ END $$;
 CREATE INDEX IF NOT EXISTS candidates_video_token_idx 
 ON public.candidates(video_token);
 
+-- Drop the policy if it exists (to avoid errors on re-runs)
+DROP POLICY IF EXISTS "Allow reading candidates by video_token" ON public.candidates;
+
 -- Add RLS policy to allow reading candidates by video_token
-CREATE POLICY IF NOT EXISTS "Allow reading candidates by video_token" 
+CREATE POLICY "Allow reading candidates by video_token" 
 ON public.candidates
 FOR SELECT
 TO public
