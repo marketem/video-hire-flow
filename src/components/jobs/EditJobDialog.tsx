@@ -15,6 +15,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -29,11 +30,15 @@ interface EditJobDialogProps {
     department: string
     location: string
     description: string
+    video_instructions?: string
   } | null
   open: boolean
   onOpenChange: (open: boolean) => void
   onJobUpdated: () => void
 }
+
+const MAX_INSTRUCTIONS_LENGTH = 500
+const DEFAULT_VIDEO_INSTRUCTIONS = "We're so excited to meet you! Please record a 30-second video introducing yourself."
 
 export function EditJobDialog({ 
   job, 
@@ -50,10 +55,10 @@ export function EditJobDialog({
       department: "",
       location: "",
       description: "",
+      video_instructions: DEFAULT_VIDEO_INSTRUCTIONS,
     },
   })
 
-  // Reset form with new values when job changes or dialog opens
   useEffect(() => {
     if (job && open) {
       form.reset({
@@ -61,6 +66,7 @@ export function EditJobDialog({
         department: job.department,
         location: job.location,
         description: job.description,
+        video_instructions: job.video_instructions || DEFAULT_VIDEO_INSTRUCTIONS,
       })
     }
   }, [job, open, form])
@@ -70,6 +76,7 @@ export function EditJobDialog({
     department: string
     location: string
     description: string
+    video_instructions: string
   }) => {
     if (!job) return
 
@@ -158,6 +165,26 @@ export function EditJobDialog({
                   <FormControl>
                     <Textarea {...field} rows={5} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="video_instructions"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Video Instructions</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      {...field} 
+                      rows={3}
+                      maxLength={MAX_INSTRUCTIONS_LENGTH}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {field.value?.length || 0}/{MAX_INSTRUCTIONS_LENGTH} characters
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

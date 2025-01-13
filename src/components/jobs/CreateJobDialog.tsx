@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -18,14 +18,22 @@ interface JobFormData {
   department: string
   location: string
   description: string
+  video_instructions: string
 }
+
+const DEFAULT_VIDEO_INSTRUCTIONS = "We're so excited to meet you! Please record a 30-second video introducing yourself."
+const MAX_INSTRUCTIONS_LENGTH = 500
 
 export function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
   const [isLoading, setIsLoading] = useState(false)
   const supabase = useSupabaseClient()
   const user = useUser()
   const { toast } = useToast()
-  const form = useForm<JobFormData>()
+  const form = useForm<JobFormData>({
+    defaultValues: {
+      video_instructions: DEFAULT_VIDEO_INSTRUCTIONS
+    }
+  })
 
   const onSubmit = async (data: JobFormData) => {
     if (!user) {
@@ -47,6 +55,7 @@ export function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
             department: data.department,
             location: data.location,
             description: data.description,
+            video_instructions: data.video_instructions,
             status: 'open',
             user_id: user.id
           }
@@ -131,6 +140,27 @@ export function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
                       {...field} 
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="video_instructions"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Video Instructions</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter instructions for the video submission..."
+                      className="min-h-[100px]"
+                      maxLength={MAX_INSTRUCTIONS_LENGTH}
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {field.value?.length || 0}/{MAX_INSTRUCTIONS_LENGTH} characters
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
