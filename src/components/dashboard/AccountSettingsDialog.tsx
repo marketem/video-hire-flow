@@ -25,6 +25,8 @@ import * as z from "zod";
 const accountFormSchema = z.object({
   first_name: z.string().min(2, "First name must be at least 2 characters"),
   last_name: z.string().min(2, "Last name must be at least 2 characters"),
+  company_name: z.string().min(2, "Company name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address"),
 });
 
 type AccountFormValues = z.infer<typeof accountFormSchema>;
@@ -45,20 +47,38 @@ export function AccountSettingsDialog({ open, onOpenChange }: AccountSettingsDia
     defaultValues: {
       first_name: session?.user.user_metadata.first_name || "",
       last_name: session?.user.user_metadata.last_name || "",
+      company_name: session?.user.user_metadata.company_name || "",
+      email: session?.user.email || "",
     },
   });
 
   const onSubmit = async (data: AccountFormValues) => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({
+      // Update user metadata (first name, last name, company name)
+      const { error: metadataError } = await supabase.auth.updateUser({
         data: {
           first_name: data.first_name,
           last_name: data.last_name,
+          company_name: data.company_name,
         },
       });
 
-      if (error) throw error;
+      if (metadataError) throw metadataError;
+
+      // Update email if it has changed
+      if (data.email !== session?.user.email) {
+        const { error: emailError } = await supabase.auth.updateUser({
+          email: data.email,
+        });
+
+        if (emailError) throw emailError;
+
+        toast({
+          title: "Email update initiated",
+          description: "Please check your new email for a confirmation link.",
+        });
+      }
 
       toast({
         title: "Account updated",
@@ -68,7 +88,7 @@ export function AccountSettingsDialog({ open, onOpenChange }: AccountSettingsDia
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update account information. Please try again.",
+        description: error.message || "Failed to update account information. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -108,6 +128,32 @@ export function AccountSettingsDialog({ open, onOpenChange }: AccountSettingsDia
                   <FormLabel>Last Name</FormLabel>
                   <FormControl>
                     <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="company_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Company Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="email" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
