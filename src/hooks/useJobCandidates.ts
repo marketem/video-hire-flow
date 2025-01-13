@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
-import { useSupabaseClient } from "@supabase/auth-helpers-react"
+import { useSupabaseClient, useSession } from "@supabase/auth-helpers-react"
 import type { Candidate } from "@/types/candidate"
 
 export function useJobCandidates(jobId: string) {
   const supabase = useSupabaseClient()
+  const session = useSession()
 
   return useQuery({
     queryKey: ['job-candidates', jobId],
@@ -11,6 +12,23 @@ export function useJobCandidates(jobId: string) {
       if (!jobId) return []
       
       console.log('Fetching candidates for job:', jobId)
+      console.log('User authenticated:', !!session?.user)
+      console.log('User ID:', session?.user?.id)
+
+      // First verify job ownership
+      const { data: jobData, error: jobError } = await supabase
+        .from('job_openings')
+        .select('user_id')
+        .eq('id', jobId)
+        .single()
+
+      if (jobError) {
+        console.error('Error fetching job:', jobError)
+        throw jobError
+      }
+
+      console.log('Job belongs to user:', jobData?.user_id === session?.user?.id)
+
       const { data, error } = await supabase
         .from('candidates')
         .select('*')
