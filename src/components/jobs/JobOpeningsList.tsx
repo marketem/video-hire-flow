@@ -175,15 +175,7 @@ export function JobOpeningsList() {
             <TableRow key={job.id}>
               <TableCell className="font-medium">{job.title}</TableCell>
               <TableCell>{job.location}</TableCell>
-              <TableCell>
-                <Button
-                  variant="secondary"
-                  onClick={() => setSelectedJobForCandidates(job)}
-                  title="Request video submissions"
-                >
-                  Request Videos ({job.candidates_count})
-                </Button>
-              </TableCell>
+              <TableCell>{job.candidates_count}</TableCell>
               <TableCell>
                 <span 
                   className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
@@ -197,6 +189,13 @@ export function JobOpeningsList() {
               </TableCell>
               <TableCell>{new Date(job.created_at).toLocaleDateString()}</TableCell>
               <TableCell className="text-right space-x-1">
+                <Button
+                  variant="secondary"
+                  onClick={() => setSelectedJobForCandidates(job)}
+                  title="Request video submissions"
+                >
+                  Request Videos
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
