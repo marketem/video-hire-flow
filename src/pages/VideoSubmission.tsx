@@ -6,10 +6,6 @@ import { useToast } from "@/hooks/use-toast"
 import { Video, StopCircle, Play } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { useQuery } from "@tanstack/react-query"
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
-
-// Maximum file size in bytes (10MB)
-const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 export default function VideoSubmission() {
   const [searchParams] = useSearchParams()
@@ -20,7 +16,6 @@ export default function VideoSubmission() {
   const [isUploading, setIsUploading] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [timeLeft, setTimeLeft] = useState(30)
-  const [uploadError, setUploadError] = useState<string | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
@@ -124,129 +119,57 @@ export default function VideoSubmission() {
     }
   }, [recordedBlob])
 
-  const compressVideo = async (blob: Blob): Promise<Blob> => {
-    if (blob.size <= MAX_FILE_SIZE) {
-      return blob;
-    }
-
-    // Create a lower quality MediaRecorder
-    const mediaStream = new MediaStream([
-      new MediaStreamTrack()
-    ]);
-
-    return new Promise((resolve, reject) => {
-      try {
-        const compressedChunks: Blob[] = [];
-        const mediaRecorder = new MediaRecorder(mediaStream, {
-          mimeType: 'video/webm;codecs=vp8',
-          videoBitsPerSecond: 1000000 // 1 Mbps
-        });
-
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            compressedChunks.push(event.data);
-          }
-        };
-
-        mediaRecorder.onstop = () => {
-          const compressedBlob = new Blob(compressedChunks, { type: 'video/webm' });
-          resolve(compressedBlob);
-        };
-
-        mediaRecorder.onerror = (event) => {
-          reject(new Error('Media recording error: ' + event.error));
-        };
-
-        mediaRecorder.start();
-        setTimeout(() => mediaRecorder.stop(), 100);
-      } catch (error) {
-        console.error('Compression error:', error);
-        // If compression fails, return original blob but chunked into smaller pieces
-        resolve(blob);
-      }
-    });
-  };
-
   const handleUpload = async () => {
-    if (!recordedBlob || !candidate?.id) return;
-    setUploadError(null)
+    if (!recordedBlob || !candidate?.id) return
+
     setIsUploading(true)
-
     try {
-      // Check file size before attempting upload
-      if (recordedBlob.size > MAX_FILE_SIZE) {
-        throw new Error(`Video size (${Math.round(recordedBlob.size / (1024 * 1024))}MB) exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit. Please record a shorter video.`);
-      }
-
-      const fileName = `${candidate.id}-${Date.now()}.webm`;
-      const file = new File([recordedBlob], fileName, {
-        type: 'video/webm'
-      });
-
-      console.log('Preparing to upload file:', {
-        name: file.name,
-        size: file.size,
-        type: file.type
-      });
-
-      // First check if bucket exists and is accessible
-      const { data: bucketData, error: bucketError } = await supabase
-        .storage
-        .getBucket('videos');
-
-      if (bucketError) {
-        console.error('Bucket access error:', bucketError);
-        throw new Error('Unable to access storage bucket');
-      }
-
-      console.log('Bucket access confirmed:', bucketData);
-
-      // Proceed with upload
+      const fileName = `${candidate.id}-${Date.now()}.mp4`
+      console.log('Attempting to upload file:', fileName)
+      
       const { data, error: uploadError } = await supabase.storage
         .from('videos')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+        .upload(fileName, recordedBlob)
+
+      console.log('Upload response:', { data, error: uploadError })
 
       if (uploadError) {
-        console.error('Upload error:', uploadError);
-        throw uploadError;
+        throw uploadError
       }
 
-      console.log('Upload successful:', data);
+      console.log('Upload successful, updating candidate record')
 
-      // Update candidate record
       const { error: updateError } = await supabase
         .from('candidates')
         .update({ 
           video_url: fileName,
-          video_token: null
+          video_token: null // Clear token after successful submission
         })
-        .eq('id', candidate.id);
+        .eq('id', candidate.id)
+
+      console.log('Update response:', { error: updateError })
 
       if (updateError) {
-        console.error('Candidate update error:', updateError);
-        throw updateError;
+        console.error('Detailed update error:', updateError)
+        throw updateError
       }
 
       toast({
         title: "Success",
         description: "Your video has been uploaded successfully!",
-      });
+      })
 
-      navigate('/submission-success');
+      // Navigate to success page
+      navigate('/submission-success')
     } catch (error) {
-      console.error('Upload process error:', error);
-      const errorMessage = error instanceof Error ? error.message : "Upload failed. Please try again.";
-      setUploadError(errorMessage);
+      console.error('Full error object:', error)
       toast({
-        title: "Upload Failed",
-        description: errorMessage,
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to upload video. Please try again.",
         variant: "destructive",
-      });
+      })
     } finally {
-      setIsUploading(false);
+      setIsUploading(false)
     }
   }
 
@@ -254,45 +177,39 @@ export default function VideoSubmission() {
     try {
       console.log('Starting recording...')
       resetVideoElement()
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          width: 640, 
-          height: 480,
-          facingMode: 'user' // Explicitly request front camera
-        },
-        audio: true 
-      })
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       streamRef.current = stream
       
       if (videoRef.current) {
+        console.log('Setting up video preview for recording')
         videoRef.current.srcObject = stream
         videoRef.current.muted = true
-        await videoRef.current.play()
+        videoRef.current.play().catch(err => {
+          console.error('Error playing video preview:', err)
+        })
       }
 
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'video/webm'
+        mimeType: 'video/mp4'
       })
       mediaRecorderRef.current = mediaRecorder
       chunksRef.current = []
 
-      mediaRecorder.ondataavailable = (e: BlobEvent) => {
+      mediaRecorder.ondataavailable = (e) => {
+        console.log('Received data chunk:', { size: e.data.size, type: e.data.type })
         if (e.data.size > 0) {
           chunksRef.current.push(e.data)
         }
       }
 
-      mediaRecorder.onerror = (event: ErrorEvent) => {
-        console.error('MediaRecorder error:', event.error)
-        toast({
-          title: "Recording Error",
-          description: "An error occurred while recording. Please try again.",
-          variant: "destructive",
-        })
-      }
-
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'video/webm' })
+        console.log('Recording stopped, processing chunks:', {
+          numberOfChunks: chunksRef.current.length,
+          totalSize: chunksRef.current.reduce((acc, chunk) => acc + chunk.size, 0)
+        })
+        
+        const blob = new Blob(chunksRef.current, { type: 'video/mp4' })
+        console.log('Created blob:', { size: blob.size, type: blob.type })
         
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => track.stop())
@@ -306,10 +223,10 @@ export default function VideoSubmission() {
       setIsRecording(true)
       setTimeLeft(30)
     } catch (error) {
-      console.error('Error accessing camera:', error)
+      console.error('Detailed error accessing camera:', error)
       toast({
-        title: "Camera Access Error",
-        description: "Could not access camera. Please ensure you've granted camera and microphone permissions and try again.",
+        title: "Error",
+        description: "Could not access camera. Please ensure you've granted permission.",
         variant: "destructive",
       })
     }
@@ -363,13 +280,6 @@ export default function VideoSubmission() {
         <p className="text-muted-foreground text-center mb-8">
           Please record a 30-second video introducing yourself
         </p>
-
-        {uploadError && (
-          <Alert variant="destructive">
-            <AlertTitle>Upload Error</AlertTitle>
-            <AlertDescription>{uploadError}</AlertDescription>
-          </Alert>
-        )}
 
         {isRecording && (
           <div className="space-y-2">
