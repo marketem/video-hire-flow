@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, VideoIcon, Calendar, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { JobOpenings } from "@/components/jobs/JobOpenings";
 
 export default function Dashboard() {
   const session = useSession();
@@ -100,33 +101,8 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Interviews</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground text-center py-8">
-              No interviews yet. Click "Create New Interview" to get started.
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            <button className="w-full bg-primary text-primary-foreground px-4 py-2 rounded hover:bg-primary/90 transition-colors">
-              Create New Interview
-            </button>
-            <button className="w-full bg-secondary text-secondary-foreground px-4 py-2 rounded hover:bg-secondary/90 transition-colors">
-              View All Candidates
-            </button>
-            <button className="w-full bg-secondary text-secondary-foreground px-4 py-2 rounded hover:bg-secondary/90 transition-colors">
-              Schedule Interview
-            </button>
-          </CardContent>
-        </Card>
+      <div className="space-y-8">
+        <JobOpenings />
       </div>
     </div>
   );
