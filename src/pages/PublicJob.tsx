@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -32,6 +32,7 @@ export default function PublicJob() {
   useEffect(() => {
     const fetchJob = async () => {
       try {
+        console.log('Fetching job with ID:', id)
         const { data, error } = await supabase
           .from('job_openings')
           .select('*')
@@ -39,9 +40,14 @@ export default function PublicJob() {
           .eq('status', 'open')
           .single()
 
-        if (error) throw error
+        if (error) {
+          console.error('Error fetching job:', error)
+          throw error
+        }
+        console.log('Fetched job data:', data)
         setJob(data)
       } catch (error) {
+        console.error('Error in fetchJob:', error)
         toast({
           title: "Error",
           description: "This job posting is not available",
@@ -60,6 +66,8 @@ export default function PublicJob() {
     setIsSubmitting(true)
 
     try {
+      console.log('Starting application submission for job:', id)
+      
       // Validate file size (max 10MB)
       if (resume && resume.size > 10 * 1024 * 1024) {
         throw new Error("File size must be less than 10MB")
@@ -73,6 +81,7 @@ export default function PublicJob() {
       // Upload resume if provided
       let resumeUrl = null
       if (resume) {
+        console.log('Uploading resume file')
         const fileExt = resume.name.split('.').pop()
         const fileName = `${Math.random()}.${fileExt}`
         const { error: uploadError, data } = await supabase.storage
@@ -87,9 +96,18 @@ export default function PublicJob() {
           throw new Error(uploadError.message || "Failed to upload resume")
         }
         resumeUrl = data.path
+        console.log('Resume uploaded successfully:', resumeUrl)
       }
 
       // Add candidate to database
+      console.log('Inserting candidate data:', {
+        job_id: id,
+        name,
+        email,
+        phone,
+        resume_url: resumeUrl
+      })
+      
       const { error: dbError } = await supabase
         .from('candidates')
         .insert([
@@ -108,6 +126,7 @@ export default function PublicJob() {
         throw new Error(dbError.message || "Failed to submit application")
       }
 
+      console.log('Application submitted successfully')
       toast({
         title: "Success",
         description: "Your application has been submitted successfully",

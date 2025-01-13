@@ -1,6 +1,11 @@
 -- First disable RLS to make changes
 alter table "public"."candidates" disable row level security;
 
+-- Drop existing policies if they exist
+drop policy if exists "Enable insert access for all users" on "public"."candidates";
+drop policy if exists "Enable read access for job owners" on "public"."candidates";
+drop policy if exists "Enable update access for job owners" on "public"."candidates";
+
 -- Re-enable RLS with correct policies
 alter table "public"."candidates" enable row level security;
 
@@ -39,3 +44,6 @@ create policy "Enable update access for job owners"
         )
     )
     with check (true);
+
+-- Verify policies are created
+select * from pg_policies where tablename = 'candidates';
