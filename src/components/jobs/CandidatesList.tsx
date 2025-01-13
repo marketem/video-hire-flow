@@ -53,19 +53,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
     try {
       console.log('Attempting to access resume:', resumeUrl)
       
-      // Verify bucket exists and is accessible
-      const { data: bucketData, error: bucketError } = await supabase
-        .storage
-        .getBucket('resumes')
-      
-      if (bucketError) {
-        console.error('Bucket error:', bucketError)
-        throw new Error('Storage bucket not accessible')
-      }
-      
-      console.log('Bucket exists:', bucketData)
-
-      // Create signed URL directly with the filename
+      // Create signed URL directly without checking bucket
       const { data, error } = await supabase.storage
         .from('resumes')
         .createSignedUrl(resumeUrl, 60)
