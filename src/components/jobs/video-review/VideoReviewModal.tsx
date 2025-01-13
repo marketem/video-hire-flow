@@ -12,6 +12,7 @@ import { Phone, ThumbsDown, ThumbsUp } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useNavigate } from "react-router-dom"
 import type { Candidate } from "@/types/candidate"
+import { format } from "date-fns"
 
 interface VideoReviewModalProps {
   jobId: string | null
@@ -82,7 +83,7 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
     }
   }
 
-  const getVideoUrl = async (videoPath: string) => {
+  const getVideoUrl = async (videoPath: string, candidateName: string) => {
     if (!session) {
       toast({
         title: "Authentication Required",
@@ -114,10 +115,33 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
       return
     }
 
-    window.open(data.signedUrl, '_blank')
+    // Open in new window with candidate name in title
+    const videoWindow = window.open('', '_blank')
+    if (videoWindow) {
+      videoWindow.document.write(`
+        <html>
+          <head>
+            <title>Video Review - ${candidateName}</title>
+            <style>
+              body { margin: 0; background: #000; display: flex; flex-direction: column; min-height: 100vh; }
+              .header { background: #1a1a1a; color: white; padding: 1rem; font-family: system-ui; }
+              .video-container { flex: 1; display: flex; justify-content: center; align-items: center; }
+              video { max-width: 100%; max-height: 80vh; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h2>${candidateName}</h2>
+            </div>
+            <div class="video-container">
+              <video controls src="${data.signedUrl}"></video>
+            </div>
+          </body>
+        </html>
+      `)
+    }
   }
 
-  // Filter candidates based on their status and video submission state
   const readyForReview = candidates?.filter(c => 
     c.video_url && (c.status === 'new' || c.status === 'reviewing')
   ) || []
@@ -147,12 +171,17 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
           <div>
             <h4 className="font-medium">{candidate.name}</h4>
             <p className="text-sm text-muted-foreground">{candidate.email}</p>
+            {candidate.video_url && (
+              <p className="text-xs text-muted-foreground">
+                Uploaded {format(new Date(candidate.created_at), "MMM d, yyyy 'at' h:mm a")}
+              </p>
+            )}
           </div>
           <div className="flex gap-2">
             {candidate.video_url && (
               <Button
                 variant="secondary"
-                onClick={() => getVideoUrl(candidate.video_url!)}
+                onClick={() => getVideoUrl(candidate.video_url!, candidate.name)}
               >
                 Review Video
               </Button>
