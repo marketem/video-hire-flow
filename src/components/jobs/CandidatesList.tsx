@@ -27,26 +27,35 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
   }
 
   const handleDelete = async () => {
+    if (!selectedCandidates.length) return
+
     try {
+      console.log('Attempting to delete candidates:', selectedCandidates)
+      
       const { error } = await supabase
         .from('candidates')
         .delete()
         .in('id', selectedCandidates)
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase deletion error:', error)
+        throw error
+      }
 
+      console.log('Deletion successful')
+      
       toast({
         title: "Success",
         description: `${selectedCandidates.length} candidate(s) deleted successfully`,
       })
 
       setSelectedCandidates([])
-      refetch()
+      await refetch()
     } catch (error) {
       console.error('Error deleting candidates:', error)
       toast({
         title: "Error",
-        description: "Failed to delete candidates",
+        description: "Failed to delete candidates. Please try again.",
         variant: "destructive",
       })
     }
