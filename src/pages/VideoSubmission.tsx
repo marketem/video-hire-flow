@@ -104,7 +104,9 @@ export default function VideoSubmission() {
         })
       }
 
-      const mediaRecorder = new MediaRecorder(stream)
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'video/mp4' // Match the incoming chunk format
+      })
       mediaRecorderRef.current = mediaRecorder
       chunksRef.current = []
 
@@ -121,7 +123,7 @@ export default function VideoSubmission() {
           totalSize: chunksRef.current.reduce((acc, chunk) => acc + chunk.size, 0)
         })
         
-        const blob = new Blob(chunksRef.current, { type: 'video/webm' })
+        const blob = new Blob(chunksRef.current, { type: 'video/mp4' }) // Match the chunk format
         console.log('Created blob:', { size: blob.size, type: blob.type })
         
         // Clean up the stream first
