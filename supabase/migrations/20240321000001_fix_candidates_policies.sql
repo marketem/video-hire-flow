@@ -6,16 +6,21 @@ drop policy if exists "Enable insert access for all users" on "public"."candidat
 drop policy if exists "Enable read access for job owners" on "public"."candidates";
 drop policy if exists "Enable update access for job owners" on "public"."candidates";
 
--- Enable storage access for resumes bucket
-insert into storage.buckets (id, name, public) 
-values ('resumes', 'resumes', true)
-on conflict (id) do update set public = true;
+-- Create resumes bucket if it doesn't exist
+insert into storage.buckets (id, name, public)
+values ('resumes', 'resumes', false)
+on conflict (id) do nothing;
 
--- Create storage policy to allow uploads
-create policy "Allow public uploads"
+-- Enable storage access for authenticated users
+create policy "Allow authenticated uploads"
 on storage.objects for insert
-to public
+to authenticated
 with check (bucket_id = 'resumes');
+
+create policy "Allow authenticated downloads"
+on storage.objects for select
+to authenticated
+using (bucket_id = 'resumes');
 
 -- Re-enable RLS with correct policies
 alter table "public"."candidates" enable row level security;
