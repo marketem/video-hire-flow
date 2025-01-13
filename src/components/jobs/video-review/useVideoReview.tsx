@@ -124,9 +124,9 @@ export function useVideoReview(jobId: string | null) {
     }
   }
 
-  // Update the filtering logic to consider video_url presence
+  // Update the filtering logic to ensure mutual exclusivity
   const readyForReview = candidates?.filter(c => 
-    c.video_url && !['accepted', 'rejected'].includes(c.status)
+    c.video_url && c.status === 'new'
   ) || []
 
   const awaitingResponse = candidates?.filter(c => 
