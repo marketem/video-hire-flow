@@ -13,6 +13,11 @@ create table "public"."candidates" (
 -- Enable RLS on candidates table
 alter table "public"."candidates" enable row level security;
 
+-- Drop existing policies if they exist
+drop policy if exists "Allow public to insert candidates" on "public"."candidates";
+drop policy if exists "Allow users to view candidates for their jobs" on "public"."candidates";
+drop policy if exists "Allow users to update candidates for their jobs" on "public"."candidates";
+
 -- Allow anyone to insert new candidates (for job applications)
 create policy "Allow public to insert candidates"
     on "public"."candidates"
@@ -26,10 +31,11 @@ create policy "Allow users to view candidates for their jobs"
     for select
     to authenticated
     using (
-        job_id in (
-            select id 
+        exists (
+            select 1 
             from job_openings 
-            where user_id = auth.uid()
+            where job_openings.id = candidates.job_id
+            and job_openings.user_id = auth.uid()
         )
     );
 
@@ -39,9 +45,14 @@ create policy "Allow users to update candidates for their jobs"
     for update
     to authenticated
     using (
-        job_id in (
-            select id 
+        exists (
+            select 1 
             from job_openings 
-            where user_id = auth.uid()
+            where job_openings.id = candidates.job_id
+            and job_openings.user_id = auth.uid()
         )
-    );
+    )
+    with check (true);
+
+-- Add an index to improve query performance
+create index if not exists candidates_job_id_idx on candidates(job_id);

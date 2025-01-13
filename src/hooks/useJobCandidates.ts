@@ -40,9 +40,10 @@ export function useJobCandidates(jobId: string) {
         throw error
       }
       
+      console.log('Raw Supabase response:', { data, error })
       console.log('Fetched candidates:', data)
       return data as Candidate[]
     },
-    enabled: !!jobId,
+    enabled: !!jobId && !!session?.user?.id,
   })
 }
