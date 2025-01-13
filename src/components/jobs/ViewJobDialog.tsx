@@ -1,7 +1,6 @@
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
@@ -28,7 +27,6 @@ export function ViewJobDialog({ job, open, onOpenChange }: ViewJobDialogProps) {
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>{job.title}</DialogTitle>
-          <DialogDescription>Job details</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div>
