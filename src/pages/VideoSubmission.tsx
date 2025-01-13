@@ -42,7 +42,9 @@ export default function VideoSubmission() {
 
   useEffect(() => {
     if (recordedBlob && videoRef.current) {
-      videoRef.current.src = URL.createObjectURL(recordedBlob)
+      const url = URL.createObjectURL(recordedBlob)
+      videoRef.current.src = url
+      return () => URL.revokeObjectURL(url)
     }
   }, [recordedBlob])
 
@@ -175,7 +177,7 @@ export default function VideoSubmission() {
         <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
           <video
             ref={videoRef}
-            autoPlay
+            autoPlay={isPlaying}
             playsInline
             muted={isRecording}
             className="w-full h-full object-cover"
