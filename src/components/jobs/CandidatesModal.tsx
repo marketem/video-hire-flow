@@ -35,7 +35,7 @@ export function CandidatesModal({ jobId, jobTitle, open, onOpenChange }: Candida
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="list">Candidates List</TabsTrigger>
             <TabsTrigger value="add">Add Candidate</TabsTrigger>
-            <TabsTrigger value="upload">Upload CSV</TabsTrigger>
+            <TabsTrigger value="upload">Upload Candidates CSV</TabsTrigger>
           </TabsList>
           <TabsContent value="list">
             <CandidatesList jobId={jobId} />
