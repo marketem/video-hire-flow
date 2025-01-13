@@ -17,11 +17,26 @@ export function useSendVideoInvites(jobId: string) {
 
       for (const candidate of selectedCandidatesList) {
         const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${candidate.video_token}`
-        const message = `${user?.user_metadata?.name || 'The hiring manager'} has invited you to submit a quick video to finish your application to ${user?.user_metadata?.company_name || 'our company'}: ${videoSubmissionUrl}`
+        
+        // Send email using Supabase Edge Function
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-video-invite', {
+          body: {
+            to: candidate.email,
+            name: candidate.name,
+            companyName: user?.user_metadata?.company_name || 'our company',
+            senderName: user?.user_metadata?.name || 'The hiring manager',
+            submissionUrl: videoSubmissionUrl
+          }
+        })
 
-        console.log('SMS message:', message)
-        console.log('Would be sent to:', candidate.phone)
+        if (emailError) {
+          console.error('Error sending email:', emailError)
+          throw new Error('Failed to send email invitation')
+        }
 
+        console.log('Email sent successfully:', emailData)
+
+        // Update candidate status
         await supabase
           .from('candidates')
           .update({ status: 'requested' })
@@ -37,6 +52,7 @@ export function useSendVideoInvites(jobId: string) {
 
       return true
     } catch (error) {
+      console.error('Error sending invites:', error)
       toast({
         title: "Error",
         description: "Failed to send video invitations",
