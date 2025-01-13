@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react"
 import { useQueryClient } from "@tanstack/react-query"
+import { Bold, Italic, List } from "lucide-react"
 
 interface CreateJobDialogProps {
   open: boolean
@@ -35,6 +36,30 @@ export function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
       public_page_enabled: true
     }
   })
+
+  const insertFormatting = (tag: string) => {
+    const textarea = document.getElementById('description') as HTMLTextAreaElement
+    if (!textarea) return
+
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const text = textarea.value
+    const selectedText = text.substring(start, end)
+    
+    let newText = ''
+    if (tag === 'list') {
+      newText = `\n• ${selectedText}`
+    } else {
+      newText = `<${tag}>${selectedText}</${tag}>`
+    }
+    
+    const newValue = text.substring(0, start) + newText + text.substring(end)
+    form.setValue('description', newValue)
+    
+    // Restore focus and selection
+    textarea.focus()
+    textarea.setSelectionRange(start + newText.length, start + newText.length)
+  }
 
   const onSubmit = async (data: JobFormData) => {
     if (!user) {
@@ -64,7 +89,6 @@ export function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
 
       if (error) throw error
 
-      // Invalidate both queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['job-openings'] })
       queryClient.invalidateQueries({ queryKey: ['video-stats'] })
 
@@ -138,13 +162,42 @@ export function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Job Description</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Enter the job description..."
-                      className="min-h-[100px]"
-                      {...field} 
-                    />
-                  </FormControl>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => insertFormatting('b')}
+                      >
+                        <Bold className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => insertFormatting('i')}
+                      >
+                        <Italic className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => insertFormatting('list')}
+                      >
+                        <List className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <FormControl>
+                      <Textarea 
+                        id="description"
+                        placeholder="Enter the job description..."
+                        className="min-h-[200px] font-mono"
+                        {...field} 
+                      />
+                    </FormControl>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
