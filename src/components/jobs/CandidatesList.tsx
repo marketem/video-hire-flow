@@ -165,35 +165,14 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
         }
       }))
 
-      if (!updatedCandidate?.video_token) {
-        throw new Error('Failed to generate video token')
-      }
-
       const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${updatedCandidate.video_token}`
-      console.log('Generated video submission URL:', videoSubmissionUrl)
+      await navigator.clipboard.writeText(videoSubmissionUrl)
       
-      try {
-        await navigator.clipboard.writeText(videoSubmissionUrl)
-        toast({
-          title: "Success",
-          description: "Video submission link copied to clipboard",
-        })
-      } catch (clipboardError) {
-        console.error('Clipboard error:', clipboardError)
-        // Fallback for browsers that don't support clipboard API
-        const textArea = document.createElement('textarea')
-        textArea.value = videoSubmissionUrl
-        document.body.appendChild(textArea)
-        textArea.select()
-        document.execCommand('copy')
-        document.body.removeChild(textArea)
-        toast({
-          title: "Success",
-          description: "Video submission link copied to clipboard",
-        })
-      }
+      toast({
+        title: "Success",
+        description: "Video submission link copied to clipboard",
+      })
     } catch (error) {
-      console.error('Copy link error:', error)
       toast({
         title: "Error",
         description: "Failed to copy link to clipboard",
