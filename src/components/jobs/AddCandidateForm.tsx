@@ -33,14 +33,36 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
       if (resume) {
         const fileExt = resume.name.split('.').pop()
         const fileName = `${Math.random()}.${fileExt}`
+        console.log('Uploading file:', fileName)
+        
+        // First ensure the bucket exists and is properly configured
+        const { data: bucketData, error: bucketError } = await supabase
+          .storage
+          .getBucket('resumes')
+        
+        if (bucketError) {
+          console.error('Bucket error:', bucketError)
+          throw new Error('Storage bucket not configured properly')
+        }
+        
+        // Upload the file
         const { error: uploadError, data } = await supabase.storage
           .from('resumes')
-          .upload(fileName, resume)
+          .upload(fileName, resume, {
+            cacheControl: '3600',
+            upsert: false
+          })
 
-        if (uploadError) throw uploadError
-        resumeUrl = data.path
+        if (uploadError) {
+          console.error('Upload error:', uploadError)
+          throw uploadError
+        }
+        
+        console.log('Upload successful:', data)
+        resumeUrl = fileName // Store just the filename
       }
 
+      // Add candidate to database
       const { error } = await supabase
         .from('candidates')
         .insert([
@@ -64,9 +86,10 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
       queryClient.invalidateQueries({ queryKey: ['candidates', jobId] })
       onSuccess()
     } catch (error) {
+      console.error('Form submission error:', error)
       toast({
         title: "Error",
-        description: "Failed to add candidate",
+        description: error instanceof Error ? error.message : "Failed to add candidate",
         variant: "destructive",
       })
     } finally {

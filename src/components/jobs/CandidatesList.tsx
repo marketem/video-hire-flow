@@ -51,39 +51,35 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
 
   const handleViewResume = async (resumeUrl: string) => {
     try {
-      console.log('Creating signed URL for resume:', resumeUrl)
+      console.log('Attempting to access resume:', resumeUrl)
       
-      // Extract just the filename from the full path
-      const fileName = resumeUrl.split('/').pop()
-      if (!fileName) {
-        throw new Error('Invalid resume URL')
-      }
-
-      // First, check if the file exists
-      const { data: existsData, error: existsError } = await supabase.storage
-        .from('resumes')
-        .list('', {
-          search: fileName
-        })
-
-      if (existsError) throw existsError
+      // Verify bucket exists and is accessible
+      const { data: bucketData, error: bucketError } = await supabase
+        .storage
+        .getBucket('resumes')
       
-      if (!existsData || existsData.length === 0) {
-        throw new Error('Resume file not found')
+      if (bucketError) {
+        console.error('Bucket error:', bucketError)
+        throw new Error('Storage bucket not accessible')
       }
+      
+      console.log('Bucket exists:', bucketData)
 
-      // If file exists, create signed URL
+      // Create signed URL directly with the filename
       const { data, error } = await supabase.storage
         .from('resumes')
-        .createSignedUrl(fileName, 60)
+        .createSignedUrl(resumeUrl, 60)
 
-      if (error) throw error
+      if (error) {
+        console.error('Signed URL error:', error)
+        throw error
+      }
       
-      if (!data.signedUrl) {
+      if (!data?.signedUrl) {
         throw new Error('Failed to generate signed URL')
       }
 
-      // Open resume in new tab
+      console.log('Successfully generated signed URL')
       window.open(data.signedUrl, '_blank')
     } catch (error) {
       console.error('Error accessing resume:', error)
