@@ -6,25 +6,21 @@ import {
   Users, 
   MessageSquare, 
   Bell, 
-  UserPlus, 
-  FileSpreadsheet,
-  Shield,
-  Clock,
-  Building2
+  FileSpreadsheet
 } from "lucide-react";
 
 const features = [
+  {
+    icon: Users,
+    title: "Dashboard to Request and Review Candidate Videos",
+    description: "Track all candidates in one place with our intuitive dashboard. Monitor video response rates and review status.",
+    image: "/lovable-uploads/104b8677-3217-4914-9739-d5411b37b59b.png"
+  },
   {
     icon: Video,
     title: "Video Interview Platform",
     description: "Screen candidates efficiently with pre-recorded video submissions. Review and evaluate responses at your convenience.",
     image: "/lovable-uploads/388035ef-8cbe-472a-8e39-0f87ff9b2f55.png"
-  },
-  {
-    icon: Users,
-    title: "Comprehensive Candidate Management",
-    description: "Track all candidates in one place with our intuitive dashboard. Monitor video response rates and review status.",
-    image: "/lovable-uploads/104b8677-3217-4914-9739-d5411b37b59b.png"
   },
   {
     icon: FileSpreadsheet,
@@ -50,9 +46,9 @@ const Features = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow py-20">
+      <main className="flex-grow py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="text-center max-w-3xl mx-auto mb-12">
             <h1 className="text-4xl font-bold mb-4">
               Modern Video Hiring Platform
             </h1>
@@ -61,7 +57,7 @@ const Features = () => {
             </p>
           </div>
 
-          <div className="space-y-20">
+          <div className="space-y-12">
             {features.map((feature, index) => {
               const Icon = feature.icon;
               const isEven = index % 2 === 0;
@@ -88,7 +84,7 @@ const Features = () => {
                     <img 
                       src={feature.image} 
                       alt={feature.title}
-                      className="rounded-lg shadow-lg w-full"
+                      className="rounded-lg shadow-lg w-4/5 mx-auto" // Made images smaller with w-4/5
                     />
                   </div>
                 </div>
