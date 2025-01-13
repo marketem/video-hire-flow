@@ -45,6 +45,14 @@ export default function VideoSubmission() {
   // Reset video element when switching between recording and playback
   const resetVideoElement = () => {
     if (videoRef.current) {
+      console.log('Resetting video element:', {
+        currentTime: videoRef.current.currentTime,
+        duration: videoRef.current.duration,
+        readyState: videoRef.current.readyState,
+        paused: videoRef.current.paused,
+        muted: videoRef.current.muted,
+        error: videoRef.current.error
+      })
       videoRef.current.pause()
       videoRef.current.currentTime = 0
       videoRef.current.srcObject = null
@@ -56,9 +64,20 @@ export default function VideoSubmission() {
   // Handle recorded blob changes
   useEffect(() => {
     if (recordedBlob && videoRef.current) {
+      console.log('Setting up recorded blob playback:', {
+        blobSize: recordedBlob.size,
+        blobType: recordedBlob.type,
+        videoElement: {
+          readyState: videoRef.current.readyState,
+          error: videoRef.current.error
+        }
+      })
+      
       resetVideoElement()
       
       const videoURL = URL.createObjectURL(recordedBlob)
+      console.log('Created video URL:', videoURL)
+      
       videoRef.current.src = videoURL
       videoRef.current.muted = false
       videoRef.current.load()
@@ -71,14 +90,18 @@ export default function VideoSubmission() {
 
   const startRecording = async () => {
     try {
+      console.log('Starting recording...')
       resetVideoElement()
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       streamRef.current = stream
       
       if (videoRef.current) {
+        console.log('Setting up video preview for recording')
         videoRef.current.srcObject = stream
         videoRef.current.muted = true
-        videoRef.current.play()
+        videoRef.current.play().catch(err => {
+          console.error('Error playing video preview:', err)
+        })
       }
 
       const mediaRecorder = new MediaRecorder(stream)
@@ -86,13 +109,20 @@ export default function VideoSubmission() {
       chunksRef.current = []
 
       mediaRecorder.ondataavailable = (e) => {
+        console.log('Received data chunk:', { size: e.data.size, type: e.data.type })
         if (e.data.size > 0) {
           chunksRef.current.push(e.data)
         }
       }
 
       mediaRecorder.onstop = () => {
+        console.log('Recording stopped, processing chunks:', {
+          numberOfChunks: chunksRef.current.length,
+          totalSize: chunksRef.current.reduce((acc, chunk) => acc + chunk.size, 0)
+        })
+        
         const blob = new Blob(chunksRef.current, { type: 'video/webm' })
+        console.log('Created blob:', { size: blob.size, type: blob.type })
         
         // Clean up the stream first
         if (streamRef.current) {
@@ -100,7 +130,6 @@ export default function VideoSubmission() {
           streamRef.current = null
         }
         
-        // Then set the recorded blob
         setRecordedBlob(blob)
       }
 
@@ -108,7 +137,7 @@ export default function VideoSubmission() {
       setIsRecording(true)
       setTimeLeft(30)
     } catch (error) {
-      console.error('Error accessing camera:', error)
+      console.error('Detailed error accessing camera:', error)
       toast({
         title: "Error",
         description: "Could not access camera. Please ensure you've granted permission.",
@@ -118,6 +147,7 @@ export default function VideoSubmission() {
   }
 
   const stopRecording = () => {
+    console.log('Stopping recording...')
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop()
       setIsRecording(false)
@@ -129,10 +159,21 @@ export default function VideoSubmission() {
 
   const togglePlayback = () => {
     if (videoRef.current) {
+      console.log('Toggling playback:', {
+        currentTime: videoRef.current.currentTime,
+        duration: videoRef.current.duration,
+        readyState: videoRef.current.readyState,
+        paused: videoRef.current.paused,
+        muted: videoRef.current.muted,
+        error: videoRef.current.error
+      })
+      
       if (isPlaying) {
         videoRef.current.pause()
       } else {
-        videoRef.current.play()
+        videoRef.current.play().catch(err => {
+          console.error('Error during playback:', err)
+        })
       }
       setIsPlaying(!isPlaying)
     }
