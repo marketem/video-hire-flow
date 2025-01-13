@@ -31,5 +31,5 @@ create policy "Allow users to create their own job openings"
 create policy "Allow users to update their own job openings"
     on "public"."job_openings"
     for update
-    to authenticated
-    using (auth.uid() = user_id);
+    using (auth.uid() = user_id)
+    with check (auth.uid() = user_id);
