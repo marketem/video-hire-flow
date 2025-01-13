@@ -44,13 +44,16 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
 
       console.log('Deletion successful')
       
+      // Clear selection before refetching
+      setSelectedCandidates([])
+      
+      // Force a refetch of the candidates list
+      await refetch()
+      
       toast({
         title: "Success",
         description: `${selectedCandidates.length} candidate(s) deleted successfully`,
       })
-
-      setSelectedCandidates([])
-      await refetch()
     } catch (error) {
       console.error('Error deleting candidates:', error)
       toast({
