@@ -147,7 +147,7 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
   ) || []
 
   const awaitingResponse = candidates?.filter(c => 
-    (!c.video_url && c.video_token) || c.status === 'invited'
+    (!c.video_url && c.video_token) || ['invited', 'requested'].includes(c.status)
   ) || []
 
   const approvedCandidates = candidates?.filter(c => 
