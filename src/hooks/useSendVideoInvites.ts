@@ -20,11 +20,11 @@ export function useSendVideoInvites(jobId: string) {
         
         console.log('Sending invite to:', candidate.email, 'with URL:', videoSubmissionUrl)
         
-        // Use the auth.resetPasswordForEmail which uses the "invite" template
-        const { error: emailError } = await supabase.auth.resetPasswordForEmail(
-          candidate.email,
-          {
-            redirectTo: videoSubmissionUrl,
+        // Use signInWithOtp which allows metadata in the email template
+        const { error: emailError } = await supabase.auth.signInWithOtp({
+          email: candidate.email,
+          options: {
+            emailRedirectTo: videoSubmissionUrl,
             data: {
               type: 'video_invite',
               name: candidate.name,
@@ -33,7 +33,7 @@ export function useSendVideoInvites(jobId: string) {
               submissionUrl: videoSubmissionUrl
             }
           }
-        )
+        })
 
         if (emailError) {
           console.error('Error sending invite:', emailError)
