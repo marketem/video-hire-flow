@@ -31,7 +31,6 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
         .from('candidates')
         .select('*')
         .eq('job_id', jobId)
-        .not('video_url', 'is', null)
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -69,7 +68,7 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
   ) || []
 
   const awaitingResponse = candidates?.filter(c => 
-    !c.video_url && c.video_token
+    c.video_token && !c.video_url
   ) || []
 
   const approvedCandidates = candidates?.filter(c => 
