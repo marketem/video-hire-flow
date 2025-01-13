@@ -6,7 +6,7 @@ interface CandidateSectionProps {
   candidates: Candidate[]
   showActions?: boolean
   onVideoReview: (videoPath: string, candidateName: string) => void
-  onStatusChange?: (candidateId: string, status: 'reviewing' | 'rejected' | 'accepted') => void
+  onStatusChange?: (candidateId: string, status: 'reviewing' | 'rejected' | 'approved') => void
 }
 
 export function CandidateSection({

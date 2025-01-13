@@ -7,7 +7,7 @@ interface CandidateCardProps {
   candidate: Candidate
   showActions?: boolean
   onVideoReview: (videoPath: string, candidateName: string) => void
-  onStatusChange?: (candidateId: string, status: 'reviewing' | 'rejected' | 'accepted') => void
+  onStatusChange?: (candidateId: string, status: 'reviewing' | 'rejected' | 'approved') => void
 }
 
 export function CandidateCard({ 
@@ -48,7 +48,7 @@ export function CandidateCard({
             <Button
               variant="outline"
               size="icon"
-              onClick={() => onStatusChange(candidate.id, 'accepted')}
+              onClick={() => onStatusChange(candidate.id, 'approved')}
             >
               <ThumbsUp className="h-4 w-4" />
             </Button>
