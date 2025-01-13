@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, VideoIcon, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { JobOpenings } from "@/components/jobs/JobOpenings";
+import { VideoReviewCards } from "@/components/jobs/video-review/VideoReviewCards";
 
 export default function Dashboard() {
   const session = useSession();
@@ -143,6 +144,7 @@ export default function Dashboard() {
       </div>
 
       <div className="space-y-8">
+        <VideoReviewCards />
         <JobOpenings />
       </div>
     </div>
