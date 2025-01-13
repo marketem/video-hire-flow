@@ -36,7 +36,13 @@ export default function Dashboard() {
       const { count, error } = await supabase
         .from('candidates')
         .select('*', { count: 'exact', head: true })
-        .eq('status', 'new');
+        .eq('status', 'new')
+        .in('job_id', 
+          supabase
+            .from('job_openings')
+            .select('id')
+            .eq('status', 'open')
+        );
 
       if (error) throw error;
       return count || 0;
@@ -49,7 +55,13 @@ export default function Dashboard() {
       const { count, error } = await supabase
         .from('candidates')
         .select('*', { count: 'exact', head: true })
-        .not('video_url', 'is', null);
+        .not('video_url', 'is', null)
+        .in('job_id', 
+          supabase
+            .from('job_openings')
+            .select('id')
+            .eq('status', 'open')
+        );
 
       if (error) throw error;
       return count || 0;
