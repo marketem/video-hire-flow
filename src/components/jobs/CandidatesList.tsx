@@ -9,8 +9,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { FileText, Video } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { FileText, Video, Copy, Send } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useState } from "react"
 
 interface Candidate {
   id: string
@@ -31,6 +33,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
   const supabase = useSupabaseClient()
   const { toast } = useToast()
   const user = useUser()
+  const [selectedCandidates, setSelectedCandidates] = useState<string[]>([])
 
   const { data: candidates, isLoading } = useQuery({
     queryKey: ['candidates', jobId],
@@ -53,7 +56,6 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
     try {
       console.log('Attempting to access resume:', resumeUrl)
       
-      // Create signed URL directly without checking bucket
       const { data, error } = await supabase.storage
         .from('resumes')
         .createSignedUrl(resumeUrl, 60)
@@ -85,25 +87,66 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
     }
   }
 
-  const sendVideoInvite = async (candidate: Candidate) => {
+  const sendVideoInvites = async () => {
     try {
-      const videoSubmissionUrl = `${window.location.origin}/video-submission/${candidate.id}`
-      const message = `${user?.user_metadata?.name || 'The hiring manager'} has invited you to submit a quick video to finish your application to ${user?.user_metadata?.company_name || 'our company'}: ${videoSubmissionUrl}`
+      const selectedCandidatesList = candidates?.filter(c => 
+        selectedCandidates.includes(c.id)
+      ) || []
 
-      // Here we would integrate with an SMS service
-      // For now, we'll just show a toast with the message
+      for (const candidate of selectedCandidatesList) {
+        const videoSubmissionUrl = `${window.location.origin}/video-submission/${candidate.id}`
+        const message = `${user?.user_metadata?.name || 'The hiring manager'} has invited you to submit a quick video to finish your application to ${user?.user_metadata?.company_name || 'our company'}: ${videoSubmissionUrl}`
+
+        // Here we would integrate with an SMS service
+        console.log('SMS message:', message)
+        console.log('Would be sent to:', candidate.phone)
+      }
+
       toast({
-        title: "Demo Mode",
-        description: "In a production environment, this would send an SMS to the candidate with the video submission link.",
+        title: "Success",
+        description: `Video invites sent to ${selectedCandidatesList.length} candidates`,
       })
-      console.log('SMS message:', message)
-      console.log('Would be sent to:', candidate.phone)
+
+      setSelectedCandidates([])
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to send video invitation",
+        description: "Failed to send video invitations",
         variant: "destructive",
       })
+    }
+  }
+
+  const copyVideoLink = async (candidateId: string) => {
+    const videoSubmissionUrl = `${window.location.origin}/video-submission/${candidateId}`
+    try {
+      await navigator.clipboard.writeText(videoSubmissionUrl)
+      toast({
+        title: "Success",
+        description: "Video submission link copied to clipboard",
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to copy link to clipboard",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedCandidates(candidates?.map(c => c.id) || [])
+    } else {
+      setSelectedCandidates([])
+    }
+  }
+
+  const toggleCandidate = (candidateId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedCandidates(prev => [...prev, candidateId])
+    } else {
+      setSelectedCandidates(prev => prev.filter(id => id !== candidateId))
     }
   }
 
@@ -120,77 +163,112 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Phone</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Applied</TableHead>
-          <TableHead>Resume</TableHead>
-          <TableHead>Video</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {candidates?.map((candidate) => (
-          <TableRow key={candidate.id}>
-            <TableCell className="font-medium">{candidate.name}</TableCell>
-            <TableCell>{candidate.email}</TableCell>
-            <TableCell>{candidate.phone}</TableCell>
-            <TableCell>
-              <span 
-                className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
-                  candidate.status === 'new' 
-                    ? 'ring-blue-600/20 bg-blue-50 text-blue-700'
-                    : candidate.status === 'reviewing'
-                    ? 'ring-yellow-600/20 bg-yellow-50 text-yellow-700'
-                    : candidate.status === 'accepted'
-                    ? 'ring-green-600/20 bg-green-50 text-green-700'
-                    : 'ring-red-600/20 bg-red-50 text-red-700'
-                }`}
-              >
-                {candidate.status}
-              </span>
-            </TableCell>
-            <TableCell>{new Date(candidate.created_at).toLocaleDateString()}</TableCell>
-            <TableCell>
-              {candidate.resume_url ? (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleViewResume(candidate.resume_url!)}
-                  title="View Resume"
-                >
-                  <FileText className="h-4 w-4" />
-                </Button>
-              ) : (
-                <span className="text-muted-foreground text-sm">No resume</span>
-              )}
-            </TableCell>
-            <TableCell>
-              {candidate.video_url ? (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {/* TODO: Implement video viewing */}}
-                  title="View Video"
-                >
-                  <Video className="h-4 w-4" />
-                </Button>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => sendVideoInvite(candidate)}
-                >
-                  Request Video
-                </Button>
-              )}
-            </TableCell>
+    <div className="space-y-4">
+      {selectedCandidates.length > 0 && (
+        <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
+          <span className="text-sm text-muted-foreground">
+            {selectedCandidates.length} candidates selected
+          </span>
+          <Button
+            size="sm"
+            onClick={sendVideoInvites}
+            className="ml-auto"
+          >
+            <Send className="mr-2 h-4 w-4" />
+            Send Video Invites
+          </Button>
+        </div>
+      )}
+      
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-12">
+              <Checkbox 
+                checked={selectedCandidates.length === candidates.length}
+                onCheckedChange={(checked) => toggleSelectAll(checked as boolean)}
+              />
+            </TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Phone</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Applied</TableHead>
+            <TableHead>Resume</TableHead>
+            <TableHead>Video</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {candidates?.map((candidate) => (
+            <TableRow key={candidate.id}>
+              <TableCell>
+                <Checkbox 
+                  checked={selectedCandidates.includes(candidate.id)}
+                  onCheckedChange={(checked) => toggleCandidate(candidate.id, checked as boolean)}
+                />
+              </TableCell>
+              <TableCell className="font-medium">{candidate.name}</TableCell>
+              <TableCell>{candidate.email}</TableCell>
+              <TableCell>{candidate.phone}</TableCell>
+              <TableCell>
+                <span 
+                  className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
+                    candidate.status === 'new' 
+                      ? 'ring-blue-600/20 bg-blue-50 text-blue-700'
+                      : candidate.status === 'reviewing'
+                      ? 'ring-yellow-600/20 bg-yellow-50 text-yellow-700'
+                      : candidate.status === 'accepted'
+                      ? 'ring-green-600/20 bg-green-50 text-green-700'
+                      : 'ring-red-600/20 bg-red-50 text-red-700'
+                  }`}
+                >
+                  {candidate.status}
+                </span>
+              </TableCell>
+              <TableCell>{new Date(candidate.created_at).toLocaleDateString()}</TableCell>
+              <TableCell>
+                {candidate.resume_url ? (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleViewResume(candidate.resume_url!)}
+                    title="View Resume"
+                  >
+                    <FileText className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <span className="text-muted-foreground text-sm">No resume</span>
+                )}
+              </TableCell>
+              <TableCell>
+                {candidate.video_url ? (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {/* TODO: Implement video viewing */}}
+                    title="View Video"
+                  >
+                    <Video className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <span className="text-muted-foreground text-sm">No video</span>
+                )}
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => copyVideoLink(candidate.id)}
+                  title="Copy Video Invite Link"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   )
 }
