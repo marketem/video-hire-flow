@@ -86,7 +86,7 @@ export function VideoReviewCards() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Review Videos</h2>
+      <h2 className="text-2xl font-semibold tracking-tight">Review Videos</h2>
       <div className="grid gap-4 md:grid-cols-3">
         {videoStats.map((stat) => (
           <Card 
