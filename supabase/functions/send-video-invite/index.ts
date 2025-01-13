@@ -24,19 +24,14 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { error } = await supabaseClient.auth.admin.generateLink({
-      type: 'magiclink',
-      email: to,
-      options: {
-        data: {
-          name,
-          companyName,
-          senderName,
-          submissionUrl,
-        },
-        emailRedirectTo: submissionUrl,
-        emailTemplate: 'video-invite',
+    const { error } = await supabaseClient.auth.admin.inviteUserByEmail(to, {
+      data: {
+        name,
+        companyName,
+        senderName,
+        submissionUrl,
       },
+      redirectTo: submissionUrl,
     })
 
     if (error) {
