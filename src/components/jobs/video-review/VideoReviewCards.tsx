@@ -21,20 +21,10 @@ export function VideoReviewCards() {
     queryFn: async () => {
       console.log('Fetching video stats...')
       
-      // First, get all jobs that either:
-      // 1. Have candidates with videos
-      // 2. Have candidates with requested videos
+      // First, get all open jobs
       const { data: jobs, error: jobsError } = await supabase
         .from('job_openings')
-        .select(`
-          id,
-          title,
-          candidates (
-            id,
-            status,
-            video_url
-          )
-        `)
+        .select('id, title')
         .eq('status', 'open')
 
       if (jobsError) {
@@ -46,16 +36,26 @@ export function VideoReviewCards() {
 
       const stats: VideoStats[] = []
 
+      // Then, for each job, get its candidates
       for (const job of jobs) {
-        // Only process jobs that have candidates
-        if (!job.candidates?.length) continue
+        const { data: candidates, error: candidatesError } = await supabase
+          .from('candidates')
+          .select('*')
+          .eq('job_id', job.id)
 
-        const videosReceived = job.candidates.filter(c => c.video_url).length
-        const readyForReview = job.candidates.filter(c => 
+        if (candidatesError) {
+          console.error('Error fetching candidates for job', job.id, candidatesError)
+          continue
+        }
+
+        if (!candidates?.length) continue
+
+        const videosReceived = candidates.filter(c => c.video_url).length
+        const readyForReview = candidates.filter(c => 
           c.video_url && ['new', 'reviewing'].includes(c.status)
         ).length
-        const approved = job.candidates.filter(c => c.status === 'accepted').length
-        const hasRequestedVideos = job.candidates.some(c => c.status === 'requested')
+        const approved = candidates.filter(c => c.status === 'accepted').length
+        const hasRequestedVideos = candidates.some(c => c.status === 'requested')
 
         // Include job if it has any videos or requested videos
         if (videosReceived > 0 || hasRequestedVideos) {
