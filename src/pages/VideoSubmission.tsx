@@ -17,6 +17,7 @@ export default function VideoSubmission() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const timerRef = useRef<NodeJS.Timeout>()
+  const streamRef = useRef<MediaStream | null>(null)
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
@@ -44,6 +45,8 @@ export default function VideoSubmission() {
     if (recordedBlob && videoRef.current) {
       const videoURL = URL.createObjectURL(recordedBlob)
       videoRef.current.src = videoURL
+      videoRef.current.load() // Force the video to load the new source
+      
       return () => {
         URL.revokeObjectURL(videoURL)
       }
@@ -53,8 +56,11 @@ export default function VideoSubmission() {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      streamRef.current = stream
+      
       if (videoRef.current) {
         videoRef.current.srcObject = stream
+        videoRef.current.muted = true // Mute while recording to prevent feedback
       }
 
       const mediaRecorder = new MediaRecorder(stream)
@@ -69,11 +75,13 @@ export default function VideoSubmission() {
 
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: 'video/webm' })
-        setRecordedBlob(blob)
         if (videoRef.current) {
           videoRef.current.srcObject = null
         }
-        stream.getTracks().forEach(track => track.stop())
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop())
+        }
+        setRecordedBlob(blob)
       }
 
       mediaRecorder.start()
@@ -104,6 +112,7 @@ export default function VideoSubmission() {
       if (isPlaying) {
         videoRef.current.pause()
       } else {
+        videoRef.current.muted = false // Unmute for playback
         videoRef.current.play()
       }
       setIsPlaying(!isPlaying)
@@ -181,7 +190,6 @@ export default function VideoSubmission() {
             ref={videoRef}
             autoPlay
             playsInline
-            muted={isRecording}
             className="w-full h-full object-cover"
             onEnded={() => setIsPlaying(false)}
           />
