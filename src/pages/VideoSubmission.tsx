@@ -124,33 +124,54 @@ export default function VideoSubmission() {
 
     setIsUploading(true)
     try {
-      const fileName = `${candidate.id}-${Date.now()}.mp4`
-      console.log('Attempting to upload file:', fileName)
-      
+      // Convert blob to File object with proper MIME type
+      const file = new File([recordedBlob], `${candidate.id}-${Date.now()}.mp4`, {
+        type: 'video/mp4'
+      })
+
+      console.log('Preparing to upload file:', {
+        name: file.name,
+        size: file.size,
+        type: file.type
+      })
+
+      // First, ensure we have the correct bucket access
+      const { data: bucketData, error: bucketError } = await supabase
+        .storage
+        .getBucket('videos')
+
+      if (bucketError) {
+        console.error('Bucket access error:', bucketError)
+        throw new Error('Unable to access storage bucket')
+      }
+
+      // Attempt the upload with explicit content-type
       const { data, error: uploadError } = await supabase.storage
         .from('videos')
-        .upload(fileName, recordedBlob)
-
-      console.log('Upload response:', { data, error: uploadError })
+        .upload(file.name, file, {
+          contentType: 'video/mp4',
+          cacheControl: '3600',
+          upsert: false
+        })
 
       if (uploadError) {
+        console.error('Upload error details:', uploadError)
         throw uploadError
       }
 
-      console.log('Upload successful, updating candidate record')
+      console.log('Upload successful:', data)
 
+      // Update candidate record with video URL
       const { error: updateError } = await supabase
         .from('candidates')
         .update({ 
-          video_url: fileName,
+          video_url: file.name,
           video_token: null // Clear token after successful submission
         })
         .eq('id', candidate.id)
 
-      console.log('Update response:', { error: updateError })
-
       if (updateError) {
-        console.error('Detailed update error:', updateError)
+        console.error('Candidate update error:', updateError)
         throw updateError
       }
 
@@ -159,13 +180,12 @@ export default function VideoSubmission() {
         description: "Your video has been uploaded successfully!",
       })
 
-      // Navigate to success page
       navigate('/submission-success')
     } catch (error) {
-      console.error('Full error object:', error)
+      console.error('Upload process error:', error)
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to upload video. Please try again.",
+        title: "Upload Failed",
+        description: "There was a problem uploading your video. Please try again.",
         variant: "destructive",
       })
     } finally {
