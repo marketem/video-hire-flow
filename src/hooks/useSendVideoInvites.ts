@@ -25,7 +25,22 @@ export function useSendVideoInvites(jobId: string) {
       for (const candidate of selectedCandidatesList) {
         console.log('Processing candidate:', candidate)
         
-        const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${candidate.video_token}`
+        // Generate a unique video token
+        const videoToken = crypto.randomUUID()
+        
+        // Update the candidate with the video token
+        const { error: updateError } = await supabase
+          .from('candidates')
+          .update({ video_token: videoToken })
+          .eq('id', candidate.id)
+          .select()
+
+        if (updateError) {
+          console.error('Error updating video token:', updateError)
+          throw new Error('Failed to generate video token')
+        }
+
+        const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${videoToken}`
         console.log('Generated submission URL:', videoSubmissionUrl)
         
         const metadata = {
@@ -38,7 +53,6 @@ export function useSendVideoInvites(jobId: string) {
         console.log('Full metadata object:', metadata)
         console.log('User metadata:', user?.user_metadata)
         
-        // Try passing data directly in options
         const options = {
           email: candidate.email,
           options: {
@@ -61,13 +75,13 @@ export function useSendVideoInvites(jobId: string) {
         console.log('Successfully sent invite to:', candidate.email)
 
         // Update candidate status
-        const { error: updateError } = await supabase
+        const { error: statusError } = await supabase
           .from('candidates')
           .update({ status: 'requested' })
           .eq('id', candidate.id)
 
-        if (updateError) {
-          console.error('Error updating candidate status:', updateError)
+        if (statusError) {
+          console.error('Error updating candidate status:', statusError)
           throw new Error('Failed to update candidate status')
         }
       }
