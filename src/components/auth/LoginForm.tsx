@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +29,7 @@ export function LoginForm() {
       if (error.message.includes("Invalid login credentials")) {
         toast({
           title: "Login Failed",
-          description: "Invalid email or password. Please try again or sign up if you don't have an account.",
+          description: "Invalid email or password. Please try again or click here to sign up if you don't have an account.",
           variant: "destructive",
         });
       } else {
@@ -84,7 +84,7 @@ export function LoginForm() {
       </form>
       
       <div className="text-sm text-muted-foreground">
-        <p>First time? Please create an account using the Sign Up page before attempting to log in.</p>
+        <p>First time? Please <Link to="/signup" className="text-primary hover:underline">sign up</Link> before attempting to log in.</p>
       </div>
     </div>
   );
