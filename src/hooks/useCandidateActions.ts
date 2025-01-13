@@ -81,9 +81,10 @@ export function useCandidateActions() {
       return true
     } catch (error) {
       console.error('Error in copyVideoLink:', error)
+      const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${candidate?.video_token || '[token not generated]'}`
       toast({
         title: "Error",
-        description: "Failed to copy video submission link",
+        description: `Failed to copy video submission link: ${videoSubmissionUrl}`,
         variant: "destructive",
       })
       return false
