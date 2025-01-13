@@ -17,6 +17,12 @@ serve(async (req) => {
   }
 
   try {
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      throw new Error('No authorization header')
+    }
+
     const { to, name, companyName, senderName, submissionUrl } = await req.json() as RequestBody
 
     // Validate required fields
@@ -36,16 +42,19 @@ serve(async (req) => {
       }
     )
 
-    // Send the email using Supabase's built-in email service
-    const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(to, {
-      data: {
-        type: 'video_invite',
-        name,
-        companyName,
-        senderName,
-        submissionUrl,
-      },
-      redirectTo: submissionUrl,
+    // Use a more basic email sending approach instead of invite
+    const { error } = await supabaseAdmin.functions.invoke('send-email', {
+      body: {
+        to,
+        subject: 'Video Interview Request',
+        html: `
+          <h2>Hello ${name},</h2>
+          <p>${senderName} from ${companyName} has requested a video interview submission from you.</p>
+          <p>Please click the link below to record and submit your video:</p>
+          <p><a href="${submissionUrl}">${submissionUrl}</a></p>
+          <p>Best regards,<br>${companyName} Team</p>
+        `
+      }
     })
 
     if (error) {
