@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
-// Define types for our feature objects
 type FeatureImage = {
   src: string;
   alt: string;
@@ -66,16 +65,12 @@ const features: Feature[] = [
     description: "Save time by importing multiple candidates via CSV or create detailed job listings with custom requirements. Track applications and manage candidates all in one place.",
     images: [
       {
-        src: "/lovable-uploads/ec2c9532-cce8-4948-9b2b-b619e6f12935.png",
-        alt: "Bulk candidate import"
+        src: "/lovable-uploads/17c52080-5b12-4346-a55c-f23143f5af60.png",
+        alt: "Job posting form"
       },
       {
-        src: "/lovable-uploads/34d6e67c-e255-44a8-8ecd-ae9fcf75a403.png",
-        alt: "Add individual candidate"
-      },
-      {
-        src: "/lovable-uploads/67b0c217-7bca-4a45-b403-c56b959e6b98.png",
-        alt: "Job postings"
+        src: "/lovable-uploads/9f2d2b4c-1520-4481-bfc3-994ee0a959fa.png",
+        alt: "Candidates upload interface"
       }
     ]
   }
