@@ -11,6 +11,7 @@ interface RequestBody {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -18,14 +19,27 @@ serve(async (req) => {
   try {
     const { to, name, companyName, senderName, submissionUrl } = await req.json() as RequestBody
 
+    // Validate required fields
+    if (!to || !submissionUrl) {
+      throw new Error('Missing required fields')
+    }
+
     // Create a Supabase client with the service role key
-    const supabaseClient = createClient(
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
     )
 
-    const { error } = await supabaseClient.auth.admin.inviteUserByEmail(to, {
+    // Send the email using Supabase's built-in email service
+    const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(to, {
       data: {
+        type: 'video_invite',
         name,
         companyName,
         senderName,
@@ -41,13 +55,26 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        } 
+      }
     )
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Function error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      }),
+      { 
+        status: 400, 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        } 
+      }
     )
   }
 })
