@@ -20,17 +20,17 @@ export function useSendVideoInvites(jobId: string) {
         
         console.log('Sending invite to:', candidate.email, 'with URL:', videoSubmissionUrl)
         
-        // Use signInWithOtp which allows metadata in the email template
         const { error: emailError } = await supabase.auth.signInWithOtp({
           email: candidate.email,
           options: {
             emailRedirectTo: videoSubmissionUrl,
             data: {
-              type: 'video_invite',
-              name: candidate.name,
-              companyName: user?.user_metadata?.company_name || 'our company',
-              senderName: user?.user_metadata?.name || 'The hiring manager',
-              submissionUrl: videoSubmissionUrl
+              user_metadata: {
+                name: candidate.name,
+                company_name: user?.user_metadata?.company_name || 'our company',
+                sender_name: user?.user_metadata?.name || 'The hiring manager',
+                submission_url: videoSubmissionUrl
+              }
             }
           }
         })
