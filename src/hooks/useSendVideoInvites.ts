@@ -55,11 +55,10 @@ export function useSendVideoInvites(jobId: string) {
         // Get the company name and sender name from user metadata
         const metadata = {
           type: 'video_invitation',
-          candidate_name: candidate.name,
-          company_name: user?.user_metadata?.company_name || 'our company',
-          sender_name: user?.user_metadata?.name || 'The hiring team',
-          submission_url: videoSubmissionUrl,
-          job_title: jobTitle
+          name: candidate.name,
+          senderName: user?.user_metadata?.name || 'The hiring team',
+          companyName: user?.user_metadata?.company_name || 'our company',
+          submissionUrl: videoSubmissionUrl
         }
 
         console.log('Sending email with metadata:', metadata)
@@ -78,8 +77,6 @@ export function useSendVideoInvites(jobId: string) {
           console.error('Error sending invite:', emailError)
           throw new Error('Failed to send email invitation')
         }
-
-        console.log('Successfully sent invite to:', candidate.email)
 
         // Update candidate status
         const { error: statusError } = await supabase
