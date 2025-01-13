@@ -87,7 +87,7 @@ const Index = () => {
                     </li>
                     <li className="flex items-center space-x-3">
                       <CheckCircle2 className="h-5 w-5 text-success" />
-                      <span>Unlimited invitations via text or email</span>
+                      <span>Unlimited video requests</span>
                     </li>
                   </ul>
                   <Link to="/signup" className="mt-8 block">
