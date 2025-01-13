@@ -8,8 +8,31 @@ import {
   Bell, 
   FileSpreadsheet
 } from "lucide-react";
+import { LucideIcon } from "lucide-react";
 
-const features = [
+// Define types for our feature objects
+type FeatureImage = {
+  src: string;
+  alt: string;
+}
+
+type BaseFeature = {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+}
+
+type SingleImageFeature = BaseFeature & {
+  image: string;
+}
+
+type MultiImageFeature = BaseFeature & {
+  images: FeatureImage[];
+}
+
+type Feature = SingleImageFeature | MultiImageFeature;
+
+const features: Feature[] = [
   {
     icon: Users,
     title: "Dashboard to Request and Review Candidate Videos",
@@ -114,27 +137,7 @@ const Features = () => {
                           />
                         ))}
                       </div>
-                    ) : (
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-4">
-                          {feature.images.slice(0, 2).map((img, imgIndex) => (
-                            <img 
-                              key={imgIndex}
-                              src={img.src} 
-                              alt={img.alt}
-                              className="rounded-lg shadow-lg w-full"
-                            />
-                          ))}
-                        </div>
-                        <div>
-                          <img 
-                            src={feature.images[2].src}
-                            alt={feature.images[2].alt}
-                            className="rounded-lg shadow-lg w-full h-full object-cover"
-                          />
-                        </div>
-                      </div>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               );
