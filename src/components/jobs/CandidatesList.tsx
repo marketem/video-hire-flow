@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { useSupabaseClient } from "@supabase/auth-helpers-react"
+import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react"
 import {
   Table,
   TableBody,
@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { FileText } from "lucide-react"
+import { FileText, Video } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface Candidate {
@@ -20,6 +20,7 @@ interface Candidate {
   status: string
   created_at: string
   resume_url: string | null
+  video_url: string | null
 }
 
 interface CandidatesListProps {
@@ -29,13 +30,12 @@ interface CandidatesListProps {
 export function CandidatesList({ jobId }: CandidatesListProps) {
   const supabase = useSupabaseClient()
   const { toast } = useToast()
+  const user = useUser()
 
   const { data: candidates, isLoading } = useQuery({
     queryKey: ['candidates', jobId],
     queryFn: async () => {
-      if (!jobId) {
-        return []
-      }
+      if (!jobId) return []
       
       const { data, error } = await supabase
         .from('candidates')
@@ -85,6 +85,28 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
     }
   }
 
+  const sendVideoInvite = async (candidate: Candidate) => {
+    try {
+      const videoSubmissionUrl = `${window.location.origin}/video-submission/${candidate.id}`
+      const message = `${user?.user_metadata?.name || 'The hiring manager'} has invited you to submit a quick video to finish your application to ${user?.user_metadata?.company_name || 'our company'}: ${videoSubmissionUrl}`
+
+      // Here we would integrate with an SMS service
+      // For now, we'll just show a toast with the message
+      toast({
+        title: "Demo Mode",
+        description: "In a production environment, this would send an SMS to the candidate with the video submission link.",
+      })
+      console.log('SMS message:', message)
+      console.log('Would be sent to:', candidate.phone)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send video invitation",
+        variant: "destructive",
+      })
+    }
+  }
+
   if (isLoading) {
     return <div>Loading candidates...</div>
   }
@@ -107,6 +129,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
           <TableHead>Status</TableHead>
           <TableHead>Applied</TableHead>
           <TableHead>Resume</TableHead>
+          <TableHead>Video</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -143,6 +166,26 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
                 </Button>
               ) : (
                 <span className="text-muted-foreground text-sm">No resume</span>
+              )}
+            </TableCell>
+            <TableCell>
+              {candidate.video_url ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {/* TODO: Implement video viewing */}}
+                  title="View Video"
+                >
+                  <Video className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => sendVideoInvite(candidate)}
+                >
+                  Request Video
+                </Button>
               )}
             </TableCell>
           </TableRow>

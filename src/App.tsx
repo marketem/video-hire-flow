@@ -10,6 +10,7 @@ import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import PublicJob from "./pages/PublicJob";
+import VideoSubmission from "./pages/VideoSubmission";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/jobs/:id" element={<PublicJob />} />
+            <Route path="/video-submission/:candidateId" element={<VideoSubmission />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
