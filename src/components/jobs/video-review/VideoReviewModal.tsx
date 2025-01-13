@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { useSupabaseClient } from "@supabase/auth-helpers-react"
+import { useSupabaseClient, useSession } from "@supabase/auth-helpers-react"
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Phone, ThumbsDown, ThumbsUp } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useNavigate } from "react-router-dom"
 import type { Candidate } from "@/types/candidate"
 
 interface VideoReviewModalProps {
@@ -20,6 +21,8 @@ interface VideoReviewModalProps {
 
 export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModalProps) {
   const supabase = useSupabaseClient()
+  const session = useSession()
+  const navigate = useNavigate()
   const { toast } = useToast()
 
   const { data: candidates, refetch } = useQuery({
@@ -41,10 +44,20 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
       console.log('Fetched candidates:', data)
       return data as Candidate[]
     },
-    enabled: !!jobId,
+    enabled: !!jobId && !!session,
   })
 
   const handleReviewAction = async (candidateId: string, status: 'reviewing' | 'rejected' | 'accepted') => {
+    if (!session) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to review candidates",
+        variant: "destructive",
+      })
+      navigate('/login')
+      return
+    }
+
     try {
       const { error } = await supabase
         .from('candidates')
@@ -70,20 +83,38 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
   }
 
   const getVideoUrl = async (videoPath: string) => {
-    const { data } = await supabase
+    if (!session) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to view videos",
+        variant: "destructive",
+      })
+      navigate('/login')
+      return
+    }
+
+    const { data, error } = await supabase
       .storage
       .from('videos')
-      .createSignedUrl(videoPath, 3600) // URL valid for 1 hour
+      .createSignedUrl(videoPath, 3600, {
+        download: false,
+        transform: {
+          width: 800,
+          height: 600,
+          resize: 'contain'
+        }
+      })
 
-    if (data?.signedUrl) {
-      window.open(data.signedUrl, '_blank')
-    } else {
+    if (error || !data?.signedUrl) {
       toast({
         title: "Error",
         description: "Could not access video. Please try again.",
         variant: "destructive",
       })
+      return
     }
+
+    window.open(data.signedUrl, '_blank')
   }
 
   // Filter candidates based on their status and video submission state
