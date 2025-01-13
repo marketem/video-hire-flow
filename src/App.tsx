@@ -48,7 +48,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/jobs/:id" element={<PublicJob />} />
-            <Route path="/video-submission/:candidateId" element={<VideoSubmission />} />
+            <Route path="/video-submission" element={<VideoSubmission />} />
             <Route path="/submission-success" element={<SubmissionSuccess />} />
           </Routes>
         </BrowserRouter>

@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useSearchParams, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
 import { Video, StopCircle, Play } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
+import { useQuery } from "@tanstack/react-query"
 
 export default function VideoSubmission() {
-  const { candidateId } = useParams()
+  const [searchParams] = useSearchParams()
+  const token = searchParams.get('token')
   const navigate = useNavigate()
   const [isRecording, setIsRecording] = useState(false)
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null)
@@ -22,7 +24,33 @@ export default function VideoSubmission() {
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
-  // Timer effect for recording
+  // Fetch candidate data using the token
+  const { data: candidate, isLoading: isLoadingCandidate } = useQuery({
+    queryKey: ['candidate', token],
+    queryFn: async () => {
+      if (!token) throw new Error('No token provided')
+      
+      const { data, error } = await supabase
+        .from('candidates')
+        .select('*')
+        .eq('video_token', token)
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    enabled: !!token,
+    retry: false,
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Invalid or expired video submission link",
+        variant: "destructive",
+      })
+      navigate('/')
+    }
+  })
+
   useEffect(() => {
     if (isRecording) {
       timerRef.current = setInterval(() => {
@@ -88,6 +116,60 @@ export default function VideoSubmission() {
       }
     }
   }, [recordedBlob])
+
+  const handleUpload = async () => {
+    if (!recordedBlob || !candidate?.id) return
+
+    setIsUploading(true)
+    try {
+      const fileName = `${candidate.id}-${Date.now()}.mp4`
+      console.log('Attempting to upload file:', fileName)
+      
+      const { data, error: uploadError } = await supabase.storage
+        .from('videos')
+        .upload(fileName, recordedBlob)
+
+      console.log('Upload response:', { data, error: uploadError })
+
+      if (uploadError) {
+        throw uploadError
+      }
+
+      console.log('Upload successful, updating candidate record')
+
+      const { error: updateError } = await supabase
+        .from('candidates')
+        .update({ 
+          video_url: fileName,
+          video_token: null // Clear token after successful submission
+        })
+        .eq('id', candidate.id)
+
+      console.log('Update response:', { error: updateError })
+
+      if (updateError) {
+        console.error('Detailed update error:', updateError)
+        throw updateError
+      }
+
+      toast({
+        title: "Success",
+        description: "Your video has been uploaded successfully!",
+      })
+
+      // Navigate to success page
+      navigate('/submission-success')
+    } catch (error) {
+      console.error('Full error object:', error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to upload video. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsUploading(false)
+    }
+  }
 
   const startRecording = async () => {
     try {
@@ -181,55 +263,12 @@ export default function VideoSubmission() {
     }
   }
 
-  const handleUpload = async () => {
-    if (!recordedBlob || !candidateId) return
-
-    setIsUploading(true)
-    try {
-      const fileName = `${candidateId}-${Date.now()}.mp4`
-      console.log('Attempting to upload file:', fileName)
-      
-      const { data, error: uploadError } = await supabase.storage
-        .from('videos')
-        .upload(fileName, recordedBlob)
-
-      console.log('Upload response:', { data, error: uploadError })
-
-      if (uploadError) {
-        throw uploadError
-      }
-
-      console.log('Upload successful, updating candidate record')
-
-      const { error: updateError } = await supabase
-        .from('candidates')
-        .update({ video_url: fileName })
-        .eq('id', candidateId)
-
-      console.log('Update response:', { error: updateError })
-
-      if (updateError) {
-        console.error('Detailed update error:', updateError)
-        throw updateError
-      }
-
-      toast({
-        title: "Success",
-        description: "Your video has been uploaded successfully!",
-      })
-
-      // Navigate to success page
-      navigate('/submission-success')
-    } catch (error) {
-      console.error('Full error object:', error)
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to upload video. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsUploading(false)
-    }
+  if (isLoadingCandidate) {
+    return (
+      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+        <div className="text-center">Loading...</div>
+      </div>
+    )
   }
 
   return (
@@ -305,4 +344,3 @@ export default function VideoSubmission() {
       </div>
     </div>
   )
-}
