@@ -8,6 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import { FileText } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 interface Candidate {
   id: string
@@ -16,6 +19,7 @@ interface Candidate {
   phone: string
   status: string
   created_at: string
+  resume_url: string | null
 }
 
 interface CandidatesListProps {
@@ -24,6 +28,7 @@ interface CandidatesListProps {
 
 export function CandidatesList({ jobId }: CandidatesListProps) {
   const supabase = useSupabaseClient()
+  const { toast } = useToast()
 
   const { data: candidates, isLoading } = useQuery({
     queryKey: ['candidates', jobId],
@@ -38,6 +43,25 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       return data as Candidate[]
     },
   })
+
+  const handleViewResume = async (resumeUrl: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('resumes')
+        .createSignedUrl(resumeUrl, 60) // URL valid for 60 seconds
+
+      if (error) throw error
+      
+      // Open resume in new tab
+      window.open(data.signedUrl, '_blank')
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to access resume",
+        variant: "destructive",
+      })
+    }
+  }
 
   if (isLoading) {
     return <div>Loading candidates...</div>
@@ -60,6 +84,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
           <TableHead>Phone</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Applied</TableHead>
+          <TableHead>Resume</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -84,6 +109,20 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
               </span>
             </TableCell>
             <TableCell>{new Date(candidate.created_at).toLocaleDateString()}</TableCell>
+            <TableCell>
+              {candidate.resume_url ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleViewResume(candidate.resume_url!)}
+                  title="View Resume"
+                >
+                  <FileText className="h-4 w-4" />
+                </Button>
+              ) : (
+                <span className="text-muted-foreground text-sm">No resume</span>
+              )}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

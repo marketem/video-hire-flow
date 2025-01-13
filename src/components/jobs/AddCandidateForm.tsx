@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Upload } from "lucide-react"
 
 interface AddCandidateFormProps {
   jobId: string
@@ -15,6 +16,7 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
+  const [resume, setResume] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const supabase = useSupabaseClient()
   const queryClient = useQueryClient()
@@ -25,6 +27,20 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
     setIsSubmitting(true)
 
     try {
+      let resumeUrl = null
+      
+      // Upload resume if provided
+      if (resume) {
+        const fileExt = resume.name.split('.').pop()
+        const fileName = `${Math.random()}.${fileExt}`
+        const { error: uploadError, data } = await supabase.storage
+          .from('resumes')
+          .upload(fileName, resume)
+
+        if (uploadError) throw uploadError
+        resumeUrl = data.path
+      }
+
       const { error } = await supabase
         .from('candidates')
         .insert([
@@ -33,6 +49,7 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
             name,
             email,
             phone,
+            resume_url: resumeUrl,
             status: 'new'
           }
         ])
@@ -89,8 +106,34 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
           placeholder="+1234567890"
         />
       </div>
+      <div className="space-y-2">
+        <Label htmlFor="resume">Resume</Label>
+        <div className="flex items-center justify-center w-full">
+          <label htmlFor="resume" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/5 hover:bg-muted/10 border-muted-foreground/20">
+            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+              <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+              <p className="mb-2 text-sm text-muted-foreground">
+                <span className="font-semibold">Click to upload</span> or drag and drop
+              </p>
+              <p className="text-xs text-muted-foreground/75">PDF, DOC, or DOCX (Max 10MB)</p>
+            </div>
+            <Input
+              id="resume"
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={(e) => setResume(e.target.files?.[0] || null)}
+              className="hidden"
+            />
+          </label>
+        </div>
+        {resume && (
+          <p className="text-sm text-muted-foreground mt-2">
+            Selected file: {resume.name}
+          </p>
+        )}
+      </div>
       <Button type="submit" disabled={isSubmitting}>
-        Add Candidate
+        {isSubmitting ? "Adding..." : "Add Candidate"}
       </Button>
     </form>
   )
