@@ -33,6 +33,10 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
   const { data: candidates, isLoading } = useQuery({
     queryKey: ['candidates', jobId],
     queryFn: async () => {
+      if (!jobId) {
+        return []
+      }
+      
       const { data, error } = await supabase
         .from('candidates')
         .select('*')
@@ -42,6 +46,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       if (error) throw error
       return data as Candidate[]
     },
+    enabled: !!jobId, // Only run query if jobId exists
   })
 
   const handleViewResume = async (resumeUrl: string) => {
