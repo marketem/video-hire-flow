@@ -4,6 +4,9 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Upload } from "lucide-react"
 
 interface JobOpening {
   id: string
@@ -18,6 +21,11 @@ export default function PublicJob() {
   const { id } = useParams()
   const [job, setJob] = useState<JobOpening | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
+  const [resume, setResume] = useState<File | null>(null)
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
@@ -46,6 +54,61 @@ export default function PublicJob() {
 
     fetchJob()
   }, [id, supabase, toast])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+
+    try {
+      // Upload resume if provided
+      let resumeUrl = null
+      if (resume) {
+        const fileExt = resume.name.split('.').pop()
+        const fileName = `${Math.random()}.${fileExt}`
+        const { error: uploadError, data } = await supabase.storage
+          .from('resumes')
+          .upload(fileName, resume)
+
+        if (uploadError) throw uploadError
+        resumeUrl = data.path
+      }
+
+      // Add candidate to database
+      const { error } = await supabase
+        .from('candidates')
+        .insert([
+          {
+            job_id: id,
+            name,
+            email,
+            phone,
+            resume_url: resumeUrl,
+            status: 'new'
+          }
+        ])
+
+      if (error) throw error
+
+      toast({
+        title: "Success",
+        description: "Your application has been submitted successfully",
+      })
+
+      // Reset form
+      setName("")
+      setEmail("")
+      setPhone("")
+      setResume(null)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit application. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -78,16 +141,73 @@ export default function PublicJob() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="prose max-w-none">
+          <div className="prose max-w-none mb-8">
             <h3 className="text-lg font-semibold mb-2">About this role</h3>
             <div className="whitespace-pre-wrap">{job.description}</div>
           </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+                placeholder="+1234567890"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="resume">Resume</Label>
+              <div className="flex items-center justify-center w-full">
+                <label htmlFor="resume" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/5 hover:bg-muted/10 border-muted-foreground/20">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+                    <p className="mb-2 text-sm text-muted-foreground">
+                      <span className="font-semibold">Click to upload</span> or drag and drop
+                    </p>
+                    <p className="text-xs text-muted-foreground/75">PDF, DOC, or DOCX (Max 10MB)</p>
+                  </div>
+                  <Input
+                    id="resume"
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={(e) => setResume(e.target.files?.[0] || null)}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+              {resume && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Selected file: {resume.name}
+                </p>
+              )}
+            </div>
+            <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "Submit Application"}
+            </Button>
+          </form>
         </CardContent>
-        <CardFooter>
-          <Button size="lg" className="w-full">
-            Apply Now
-          </Button>
-        </CardFooter>
       </Card>
     </div>
   )
