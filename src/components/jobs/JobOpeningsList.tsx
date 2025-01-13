@@ -185,7 +185,7 @@ export function JobOpeningsList() {
                   title="Send video invites"
                 >
                   <Users className="h-4 w-4" />
-                  Send Invites
+                  Candidates
                 </Button>
                 <Button
                   variant="ghost"
