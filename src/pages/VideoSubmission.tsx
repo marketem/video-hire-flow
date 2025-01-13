@@ -4,17 +4,40 @@ import { Button } from "@/components/ui/button"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
 import { Video, StopCircle } from "lucide-react"
+import { Progress } from "@/components/ui/progress"
 
 export default function VideoSubmission() {
   const { candidateId } = useParams()
   const [isRecording, setIsRecording] = useState(false)
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [timeLeft, setTimeLeft] = useState(30)
   const videoRef = useRef<HTMLVideoElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
+  const timerRef = useRef<NodeJS.Timeout>()
   const supabase = useSupabaseClient()
   const { toast } = useToast()
+
+  useEffect(() => {
+    if (isRecording) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            stopRecording()
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+      }
+    }
+  }, [isRecording])
 
   useEffect(() => {
     if (recordedBlob && videoRef.current) {
@@ -48,16 +71,9 @@ export default function VideoSubmission() {
         }
       }
 
-      // Auto-stop after 30 seconds
-      setTimeout(() => {
-        if (mediaRecorder.state === 'recording') {
-          mediaRecorder.stop()
-          setIsRecording(false)
-        }
-      }, 30000)
-
       mediaRecorder.start()
       setIsRecording(true)
+      setTimeLeft(30)
     } catch (error) {
       console.error('Error accessing camera:', error)
       toast({
@@ -72,6 +88,9 @@ export default function VideoSubmission() {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop()
       setIsRecording(false)
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+      }
     }
   }
 
@@ -117,6 +136,16 @@ export default function VideoSubmission() {
         <p className="text-muted-foreground text-center mb-8">
           Please record a 30-second video introducing yourself
         </p>
+
+        {isRecording && (
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium">Time remaining:</span>
+              <span className="text-sm font-medium">{timeLeft}s</span>
+            </div>
+            <Progress value={((30 - timeLeft) / 30) * 100} />
+          </div>
+        )}
 
         <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
           <video
