@@ -42,11 +42,10 @@ export default function Dashboard() {
 
       if (!openJobIds) return 0;
 
-      // Then count candidates from those jobs
+      // Then count all candidates from those jobs
       const { count, error } = await supabase
         .from('candidates')
         .select('*', { count: 'exact', head: true })
-        .eq('status', 'new')
         .in('job_id', openJobIds.map(job => job.id));
 
       if (error) throw error;
@@ -113,7 +112,7 @@ export default function Dashboard() {
               {isLoadingCandidates ? "..." : candidatesCount}
             </div>
             <p className="text-xs text-muted-foreground">
-              Across all job openings
+              Across all open jobs
             </p>
           </CardContent>
         </Card>
