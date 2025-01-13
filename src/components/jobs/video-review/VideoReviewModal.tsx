@@ -128,6 +128,11 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
           </div>
         </div>
       ))}
+      {candidates.length === 0 && (
+        <p className="text-center text-muted-foreground py-4">
+          No candidates in this category
+        </p>
+      )}
     </div>
   )
 
@@ -142,32 +147,20 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
         </DialogHeader>
 
         <div className="space-y-6">
-          {readyForReview.length > 0 && (
-            <section>
-              <h3 className="font-semibold mb-4">Ready for Review ({readyForReview.length})</h3>
-              <CandidateList candidates={readyForReview} showActions />
-            </section>
-          )}
+          <section>
+            <h3 className="font-semibold mb-4">Ready for Review ({readyForReview.length})</h3>
+            <CandidateList candidates={readyForReview} showActions />
+          </section>
 
-          {awaitingResponse.length > 0 && (
-            <section>
-              <h3 className="font-semibold mb-4">Awaiting Response ({awaitingResponse.length})</h3>
-              <CandidateList candidates={awaitingResponse} />
-            </section>
-          )}
+          <section>
+            <h3 className="font-semibold mb-4">Awaiting Response ({awaitingResponse.length})</h3>
+            <CandidateList candidates={awaitingResponse} />
+          </section>
 
-          {rejectedCandidates.length > 0 && (
-            <section>
-              <h3 className="font-semibold mb-4">Rejected Candidates ({rejectedCandidates.length})</h3>
-              <CandidateList candidates={rejectedCandidates} />
-            </section>
-          )}
-
-          {(!candidates || candidates.length === 0) && (
-            <p className="text-center text-muted-foreground py-8">
-              No video submissions found for this job
-            </p>
-          )}
+          <section>
+            <h3 className="font-semibold mb-4">Rejected Candidates ({rejectedCandidates.length})</h3>
+            <CandidateList candidates={rejectedCandidates} />
+          </section>
         </div>
       </DialogContent>
     </Dialog>
