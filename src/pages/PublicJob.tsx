@@ -84,7 +84,7 @@ export default function PublicJob() {
 
         if (uploadError) {
           console.error('Resume upload error:', uploadError)
-          throw new Error("Failed to upload resume. Please try again.")
+          throw new Error(uploadError.message || "Failed to upload resume")
         }
         resumeUrl = data.path
       }
@@ -105,7 +105,7 @@ export default function PublicJob() {
 
       if (dbError) {
         console.error('Database error:', dbError)
-        throw new Error("Failed to submit application. Please try again.")
+        throw new Error(dbError.message || "Failed to submit application")
       }
 
       toast({
