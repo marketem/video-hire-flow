@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Users, Link as LinkIcon } from "lucide-react"
+import { Users, Link as LinkIcon, Eye, Edit, XOctagon } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface JobOpening {
@@ -19,6 +19,7 @@ interface JobOpening {
   location: string
   status: string
   created_at: string
+  description: string
 }
 
 export function JobOpeningsList() {
@@ -60,6 +61,30 @@ export function JobOpeningsList() {
     })
   }
 
+  const handleCloseJob = async (jobId: string) => {
+    try {
+      const { error } = await supabase
+        .from('job_openings')
+        .update({ status: 'closed' })
+        .eq('id', jobId)
+
+      if (error) throw error
+
+      toast({
+        title: "Success",
+        description: "Job has been closed",
+      })
+      
+      fetchJobs() // Refresh the list
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to close job",
+        variant: "destructive",
+      })
+    }
+  }
+
   if (isLoading) {
     return <div>Loading...</div>
   }
@@ -91,22 +116,57 @@ export function JobOpeningsList() {
             <TableCell>{job.department}</TableCell>
             <TableCell>{job.location}</TableCell>
             <TableCell>
-              <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ring-green-600/20 bg-green-50 text-green-700">
+              <span 
+                className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
+                  job.status === 'open' 
+                    ? 'ring-green-600/20 bg-green-50 text-green-700'
+                    : 'ring-red-600/20 bg-red-50 text-red-700'
+                }`}
+              >
                 {job.status}
               </span>
             </TableCell>
             <TableCell>{new Date(job.created_at).toLocaleDateString()}</TableCell>
-            <TableCell className="text-right">
+            <TableCell className="text-right space-x-1">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => copyPublicLink(job.id)}
+                title="Copy public link"
               >
                 <LinkIcon className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="icon">
+              <Button
+                variant="ghost"
+                size="icon"
+                title="View candidates"
+              >
                 <Users className="h-4 w-4" />
               </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                title="View details"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Edit job"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+              {job.status === 'open' && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleCloseJob(job.id)}
+                  title="Close job"
+                >
+                  <XOctagon className="h-4 w-4" />
+                </Button>
+              )}
             </TableCell>
           </TableRow>
         ))}
