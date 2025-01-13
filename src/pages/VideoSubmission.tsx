@@ -100,28 +100,42 @@ export default function VideoSubmission() {
     setIsUploading(true)
     try {
       const fileName = `${candidateId}-${Date.now()}.webm`
-      const { error: uploadError } = await supabase.storage
+      console.log('Attempting to upload file:', fileName)
+      
+      const { data, error: uploadError } = await supabase.storage
         .from('videos')
         .upload(fileName, recordedBlob)
 
-      if (uploadError) throw uploadError
+      console.log('Upload response:', { data, error: uploadError })
+
+      if (uploadError) {
+        console.error('Detailed upload error:', uploadError)
+        throw uploadError
+      }
+
+      console.log('Upload successful, updating candidate record')
 
       const { error: updateError } = await supabase
         .from('candidates')
         .update({ video_url: fileName })
         .eq('id', candidateId)
 
-      if (updateError) throw updateError
+      console.log('Update response:', { error: updateError })
+
+      if (updateError) {
+        console.error('Detailed update error:', updateError)
+        throw updateError
+      }
 
       toast({
         title: "Success",
         description: "Your video has been uploaded successfully!",
       })
     } catch (error) {
-      console.error('Upload error:', error)
+      console.error('Full error object:', error)
       toast({
         title: "Error",
-        description: "Failed to upload video. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to upload video. Please try again.",
         variant: "destructive",
       })
     } finally {
