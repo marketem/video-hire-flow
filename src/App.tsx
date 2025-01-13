@@ -13,6 +13,7 @@ import PublicJob from "./pages/PublicJob";
 import VideoSubmission from "./pages/VideoSubmission";
 import SubmissionSuccess from "./pages/SubmissionSuccess";
 import Terms from "./pages/Terms";
+import Features from "./pages/Features";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/video-submission" element={<VideoSubmission />} />
             <Route path="/submission-success" element={<SubmissionSuccess />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/features" element={<Features />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

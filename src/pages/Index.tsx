@@ -34,9 +34,9 @@ const Index = () => {
                     Start 14-Day Free Trial
                   </Button>
                 </Link>
-                <Link to="/demo">
+                <Link to="/features">
                   <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                    Watch Demo
+                    Features
                   </Button>
                 </Link>
               </div>
