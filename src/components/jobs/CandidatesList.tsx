@@ -56,7 +56,6 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
 
   const generateTokenMutation = useMutation({
     mutationFn: async (candidateId: string) => {
-      // Generate a random token
       const token = crypto.randomUUID()
       
       const { error } = await supabase
@@ -114,7 +113,6 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       ) || []
 
       for (const candidate of selectedCandidatesList) {
-        // Generate token if not exists
         if (!candidate.video_token) {
           await generateTokenMutation.mutateAsync(candidate.id)
         }
@@ -122,7 +120,6 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
         const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${candidate.video_token}`
         const message = `${user?.user_metadata?.name || 'The hiring manager'} has invited you to submit a quick video to finish your application to ${user?.user_metadata?.company_name || 'our company'}: ${videoSubmissionUrl}`
 
-        // Here we would integrate with an SMS service
         console.log('SMS message:', message)
         console.log('Would be sent to:', candidate.phone)
       }
@@ -146,7 +143,6 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
     try {
       console.log('Starting copyVideoLink for candidate:', candidateId);
       
-      // Find the candidate first to check if we have their data
       const candidate = candidates?.find(c => c.id === candidateId);
       console.log('Found candidate:', candidate);
       
@@ -154,13 +150,11 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
         throw new Error('Candidate not found');
       }
 
-      // Generate token if not exists
       if (!candidate.video_token) {
         console.log('No video token found, generating new one');
         await generateTokenMutation.mutateAsync(candidateId);
       }
       
-      // Get the updated candidate data after token generation
       const updatedCandidate = (await queryClient.fetchQuery({
         queryKey: ['candidates', jobId],
         queryFn: async () => {
@@ -176,7 +170,10 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
           }
           return data as Candidate;
         }
-      }));
+      })).catch(error => {
+        console.error('Error fetching updated candidate:', error);
+        return null;
+      });
 
       console.log('Updated candidate data:', updatedCandidate);
 
@@ -188,7 +185,6 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${updatedCandidate.video_token}`;
       console.log('Generated URL:', videoSubmissionUrl);
 
-      // Create a temporary textarea
       const textarea = document.createElement('textarea');
       textarea.value = videoSubmissionUrl;
       textarea.style.position = 'fixed';
@@ -198,33 +194,44 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       
       document.body.appendChild(textarea);
       
+      let copySuccess = false;
+      
       try {
         await navigator.clipboard.writeText(videoSubmissionUrl);
         console.log('Successfully copied using Clipboard API');
+        copySuccess = true;
       } catch (clipboardError) {
         console.log('Clipboard API failed, falling back to selection method', clipboardError);
         
         textarea.focus();
         textarea.select();
         
-        const successful = document.execCommand('copy');
-        if (!successful) {
-          console.error('execCommand copy failed');
-          throw new Error('Unable to copy to clipboard');
+        try {
+          copySuccess = document.execCommand('copy');
+          if (!copySuccess) {
+            console.error('execCommand copy failed');
+          } else {
+            console.log('Successfully copied using execCommand');
+          }
+        } catch (execError) {
+          console.error('Error using execCommand:', execError);
         }
-        console.log('Successfully copied using execCommand');
       } finally {
         document.body.removeChild(textarea);
       }
+
+      if (copySuccess) {
+        toast({
+          title: "Success",
+          description: "Video submission link copied to clipboard",
+        });
+      } else {
+        throw new Error('Failed to copy to clipboard');
+      }
       
-      toast({
-        title: "Success",
-        description: "Video submission link copied to clipboard",
-      });
     } catch (error) {
       console.error('Error in copyVideoLink:', error);
       
-      // Get the current token even if copying failed
       const currentToken = candidates?.find(c => c.id === candidateId)?.video_token;
       const fallbackUrl = currentToken 
         ? `${window.location.origin}/video-submission?token=${currentToken}`
@@ -235,8 +242,12 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
         description: `Failed to copy link. URL: ${fallbackUrl}`,
         variant: "destructive",
       });
+      
+      return false;
     }
-  }
+    
+    return true;
+  };
 
   const toggleSelectAll = (checked: boolean) => {
     if (checked) {
