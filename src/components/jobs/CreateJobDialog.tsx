@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react"
+import { useQueryClient } from "@tanstack/react-query"
 
 interface CreateJobDialogProps {
   open: boolean
@@ -27,6 +28,8 @@ export function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
   const supabase = useSupabaseClient()
   const user = useUser()
   const { toast } = useToast()
+  const queryClient = useQueryClient()
+  
   const form = useForm<JobFormData>({
     defaultValues: {
       public_page_enabled: true
@@ -60,6 +63,10 @@ export function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
         ])
 
       if (error) throw error
+
+      // Invalidate both queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['job-openings'] })
+      queryClient.invalidateQueries({ queryKey: ['video-stats'] })
 
       toast({
         title: "Success",
