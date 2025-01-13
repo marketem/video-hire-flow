@@ -33,7 +33,12 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
         .eq('job_id', jobId)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      if (error) {
+        console.error('Error fetching candidates:', error)
+        throw error
+      }
+      
+      console.log('Fetched candidates:', data)
       return data as Candidate[]
     },
     enabled: !!jobId,
@@ -55,6 +60,7 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
 
       refetch()
     } catch (error) {
+      console.error('Error updating candidate status:', error)
       toast({
         title: "Error",
         description: "Failed to update candidate status",
@@ -63,12 +69,13 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
     }
   }
 
+  // Filter candidates based on their status and video submission state
   const readyForReview = candidates?.filter(c => 
-    c.video_url && c.status === 'new'
+    c.video_url && (c.status === 'new' || c.status === 'reviewing')
   ) || []
 
   const awaitingResponse = candidates?.filter(c => 
-    c.video_token && !c.video_url
+    (!c.video_url && c.video_token) || c.status === 'invited'
   ) || []
 
   const approvedCandidates = candidates?.filter(c => 
