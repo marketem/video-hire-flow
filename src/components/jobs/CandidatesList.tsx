@@ -245,7 +245,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
             <TableHead>Applied</TableHead>
             <TableHead>Resume</TableHead>
             <TableHead>Video</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead>Invite</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
