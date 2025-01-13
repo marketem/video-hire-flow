@@ -146,14 +146,21 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
     try {
       console.log('Starting copyVideoLink for candidate:', candidateId);
       
-      // Generate token if not exists
+      // Find the candidate first to check if we have their data
       const candidate = candidates?.find(c => c.id === candidateId);
-      if (!candidate?.video_token) {
+      console.log('Found candidate:', candidate);
+      
+      if (!candidate) {
+        throw new Error('Candidate not found');
+      }
+
+      // Generate token if not exists
+      if (!candidate.video_token) {
         console.log('No video token found, generating new one');
         await generateTokenMutation.mutateAsync(candidateId);
       }
       
-      // Get the updated candidate data
+      // Get the updated candidate data after token generation
       const updatedCandidate = (await queryClient.fetchQuery({
         queryKey: ['candidates', jobId],
         queryFn: async () => {
@@ -163,7 +170,10 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
             .eq('id', candidateId)
             .single();
 
-          if (error) throw error;
+          if (error) {
+            console.error('Error fetching updated candidate:', error);
+            throw error;
+          }
           return data as Candidate;
         }
       }));
@@ -171,17 +181,16 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       console.log('Updated candidate data:', updatedCandidate);
 
       if (!updatedCandidate?.video_token) {
-        throw new Error('Failed to generate video token');
+        console.error('No video token found after generation');
+        throw new Error('Failed to generate or retrieve video token');
       }
 
       const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${updatedCandidate.video_token}`;
       console.log('Generated URL:', videoSubmissionUrl);
 
-      // Create a temporary textarea (better for longer text)
+      // Create a temporary textarea
       const textarea = document.createElement('textarea');
       textarea.value = videoSubmissionUrl;
-      
-      // Make it invisible but keep it in the viewport
       textarea.style.position = 'fixed';
       textarea.style.opacity = '0';
       textarea.style.top = '0';
@@ -190,17 +199,14 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       document.body.appendChild(textarea);
       
       try {
-        // Try modern clipboard API first
         await navigator.clipboard.writeText(videoSubmissionUrl);
         console.log('Successfully copied using Clipboard API');
       } catch (clipboardError) {
-        console.log('Clipboard API failed, falling back to selection method');
+        console.log('Clipboard API failed, falling back to selection method', clipboardError);
         
-        // Focus and select the text
         textarea.focus();
         textarea.select();
         
-        // Execute the copy command
         const successful = document.execCommand('copy');
         if (!successful) {
           console.error('execCommand copy failed');
@@ -208,7 +214,6 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
         }
         console.log('Successfully copied using execCommand');
       } finally {
-        // Always clean up
         document.body.removeChild(textarea);
       }
       
@@ -218,10 +223,16 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       });
     } catch (error) {
       console.error('Error in copyVideoLink:', error);
+      
+      // Get the current token even if copying failed
+      const currentToken = candidates?.find(c => c.id === candidateId)?.video_token;
+      const fallbackUrl = currentToken 
+        ? `${window.location.origin}/video-submission?token=${currentToken}`
+        : 'No video token available';
+      
       toast({
         title: "Error",
-        description: "Failed to copy link. The URL is: " + 
-          `${window.location.origin}/video-submission?token=${candidates?.find(c => c.id === candidateId)?.video_token}`,
+        description: `Failed to copy link. URL: ${fallbackUrl}`,
         variant: "destructive",
       });
     }
