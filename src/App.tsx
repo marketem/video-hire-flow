@@ -21,7 +21,7 @@ if (!import.meta.env.VITE_SUPABASE_ANON_KEY) {
 }
 
 const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
+  "https://elirvptqddqsscylwczk.supabase.co/auth/v1/token?grant_type=password",
   import.meta.env.VITE_SUPABASE_ANON_KEY,
   {
     auth: {
