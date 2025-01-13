@@ -20,7 +20,16 @@ const features = [
     icon: Bell,
     title: "Automated Video Invites",
     description: "Send automated video interview requests to candidates. Track response rates and follow up with ease.",
-    image: "/lovable-uploads/df5493e2-3eb5-49f6-8040-5b36cbeb4193.png"
+    images: [
+      {
+        src: "/lovable-uploads/df5493e2-3eb5-49f6-8040-5b36cbeb4193.png",
+        alt: "Video invite email"
+      },
+      {
+        src: "/lovable-uploads/d41c1b8c-c037-4bfe-b022-c6b159569574.png",
+        alt: "Video recording interface"
+      }
+    ]
   },
   {
     icon: Video,
@@ -94,6 +103,17 @@ const Features = () => {
                         alt={feature.title}
                         className="rounded-lg shadow-lg w-4/5 mx-auto"
                       />
+                    ) : 'images' in feature ? (
+                      <div className="grid grid-cols-2 gap-4">
+                        {feature.images.map((img, imgIndex) => (
+                          <img 
+                            key={imgIndex}
+                            src={img.src} 
+                            alt={img.alt}
+                            className="rounded-lg shadow-lg w-full"
+                          />
+                        ))}
+                      </div>
                     ) : (
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-4">
