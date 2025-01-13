@@ -42,7 +42,11 @@ export default function VideoSubmission() {
 
   useEffect(() => {
     if (recordedBlob && videoRef.current) {
-      videoRef.current.src = URL.createObjectURL(recordedBlob)
+      const videoURL = URL.createObjectURL(recordedBlob)
+      videoRef.current.src = videoURL
+      return () => {
+        URL.revokeObjectURL(videoURL)
+      }
     }
   }, [recordedBlob])
 
@@ -66,10 +70,10 @@ export default function VideoSubmission() {
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: 'video/webm' })
         setRecordedBlob(blob)
-        stream.getTracks().forEach(track => track.stop())
         if (videoRef.current) {
           videoRef.current.srcObject = null
         }
+        stream.getTracks().forEach(track => track.stop())
       }
 
       mediaRecorder.start()
