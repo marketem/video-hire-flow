@@ -20,19 +20,20 @@ export function useSendVideoInvites(jobId: string) {
         
         console.log('Sending invite to:', candidate.email, 'with URL:', videoSubmissionUrl)
         
-        const { error: emailError } = await supabase.auth.signInWithOtp({
-          email: candidate.email,
-          options: {
+        // Use the auth.resetPasswordForEmail which uses the "invite" template
+        const { error: emailError } = await supabase.auth.resetPasswordForEmail(
+          candidate.email,
+          {
+            redirectTo: videoSubmissionUrl,
             data: {
               type: 'video_invite',
               name: candidate.name,
               companyName: user?.user_metadata?.company_name || 'our company',
               senderName: user?.user_metadata?.name || 'The hiring manager',
               submissionUrl: videoSubmissionUrl
-            },
-            emailRedirectTo: videoSubmissionUrl,
+            }
           }
-        })
+        )
 
         if (emailError) {
           console.error('Error sending invite:', emailError)
