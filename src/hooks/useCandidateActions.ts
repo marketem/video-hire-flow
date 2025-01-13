@@ -50,30 +50,26 @@ export function useCandidateActions() {
   }
 
   const copyVideoLink = async (candidateId: string) => {
-    let videoToken: string | null = null;
-    
     try {
-      const { data: candidate } = await queryClient.fetchQuery({
-        queryKey: ['candidates', candidateId],
-        queryFn: async () => {
-          const { data, error } = await supabase
-            .from('candidates')
-            .select('*')
-            .eq('id', candidateId)
-            .single()
+      // First, fetch the current candidate data
+      const { data: candidate } = await supabase
+        .from('candidates')
+        .select('*')
+        .eq('id', candidateId)
+        .single()
 
-          if (error) throw error
-          return data
-        }
-      })
-
-      if (!candidate.video_token) {
-        await generateTokenMutation.mutateAsync(candidateId)
+      if (!candidate) {
+        throw new Error('Candidate not found')
       }
 
-      videoToken = candidate.video_token;
-      const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${videoToken}`
-      
+      // Generate token if it doesn't exist
+      let token = candidate.video_token
+      if (!token) {
+        const result = await generateTokenMutation.mutateAsync(candidateId)
+        token = result.token
+      }
+
+      const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${token}`
       await copyToClipboard(videoSubmissionUrl)
       
       toast({
@@ -84,10 +80,9 @@ export function useCandidateActions() {
       return true
     } catch (error) {
       console.error('Error in copyVideoLink:', error)
-      const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${videoToken || '[token not generated]'}`
       toast({
         title: "Error",
-        description: `Failed to copy video submission link: ${videoSubmissionUrl}`,
+        description: "Failed to generate or copy video submission link. Please try again.",
         variant: "destructive",
       })
       return false
