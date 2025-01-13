@@ -7,7 +7,6 @@ import { useState } from "react"
 interface VideoStats {
   jobId: string
   jobTitle: string
-  invitesSent: number
   videosReceived: number
   pendingReview: number
   approved: number
@@ -30,13 +29,6 @@ export function VideoReviewCards() {
       const stats: VideoStats[] = []
 
       for (const job of jobs) {
-        // Count invites where video_token is not null OR video_url is not null
-        const { count: invitesSent } = await supabase
-          .from('candidates')
-          .select('*', { count: 'exact', head: true })
-          .eq('job_id', job.id)
-          .or('video_token.not.is.null,video_url.not.is.null')
-
         const { count: videosReceived } = await supabase
           .from('candidates')
           .select('*', { count: 'exact', head: true })
@@ -56,11 +48,10 @@ export function VideoReviewCards() {
           .eq('job_id', job.id)
           .eq('status', 'accepted')
 
-        if (invitesSent || videosReceived || pendingReview || approved) {
+        if (videosReceived || pendingReview || approved) {
           stats.push({
             jobId: job.id,
             jobTitle: job.title,
-            invitesSent: invitesSent || 0,
             videosReceived: videosReceived || 0,
             pendingReview: pendingReview || 0,
             approved: approved || 0,
@@ -87,10 +78,6 @@ export function VideoReviewCards() {
             </CardHeader>
             <CardContent>
               <dl className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <dt>Invites Sent:</dt>
-                  <dd>{stat.invitesSent}</dd>
-                </div>
                 <div className="flex justify-between">
                   <dt>Videos Received:</dt>
                   <dd>{stat.videosReceived}</dd>
