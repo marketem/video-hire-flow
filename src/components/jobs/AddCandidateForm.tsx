@@ -29,13 +29,11 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
     try {
       let resumeUrl = null
       
-      // Upload resume if provided
       if (resume) {
         const fileExt = resume.name.split('.').pop()
         const fileName = `${Math.random()}.${fileExt}`
         console.log('Uploading file:', fileName)
         
-        // First ensure the bucket exists and is properly configured
         const { data: bucketData, error: bucketError } = await supabase
           .storage
           .getBucket('resumes')
@@ -45,7 +43,6 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
           throw new Error('Storage bucket not configured properly')
         }
         
-        // Upload the file
         const { error: uploadError, data } = await supabase.storage
           .from('resumes')
           .upload(fileName, resume, {
@@ -59,10 +56,10 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
         }
         
         console.log('Upload successful:', data)
-        resumeUrl = fileName // Store just the filename
+        resumeUrl = fileName
       }
 
-      // Add candidate to database
+      console.log('Adding candidate to database:', { jobId, name, email, phone, resumeUrl })
       const { error } = await supabase
         .from('candidates')
         .insert([
@@ -78,8 +75,8 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
 
       if (error) throw error
 
-      // Invalidate all relevant queries
-      queryClient.invalidateQueries({ queryKey: ['candidates', jobId] })
+      // Invalidate all relevant queries with correct query keys
+      queryClient.invalidateQueries({ queryKey: ['job-candidates', jobId] })
       queryClient.invalidateQueries({ queryKey: ['video-stats'] })
       queryClient.invalidateQueries({ queryKey: ['job-openings'] })
 
