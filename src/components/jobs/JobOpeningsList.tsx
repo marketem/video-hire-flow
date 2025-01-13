@@ -13,6 +13,7 @@ import { Users, Link as LinkIcon, Eye, Edit, XOctagon, RefreshCw } from "lucide-
 import { useToast } from "@/hooks/use-toast"
 import { ViewJobDialog } from "./ViewJobDialog"
 import { EditJobDialog } from "./EditJobDialog"
+import { CandidatesModal } from "./CandidatesModal"
 
 interface JobOpening {
   id: string
@@ -30,6 +31,7 @@ export function JobOpeningsList() {
   const [selectedJob, setSelectedJob] = useState<JobOpening | null>(null)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [selectedJobForCandidates, setSelectedJobForCandidates] = useState<JobOpening | null>(null)
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
@@ -179,6 +181,7 @@ export function JobOpeningsList() {
                 <Button
                   variant="ghost"
                   size="icon"
+                  onClick={() => setSelectedJobForCandidates(job)}
                   title="View candidates"
                 >
                   <Users className="h-4 w-4" />
@@ -235,6 +238,13 @@ export function JobOpeningsList() {
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         onJobUpdated={fetchJobs}
+      />
+
+      <CandidatesModal
+        jobId={selectedJobForCandidates?.id || ""}
+        jobTitle={selectedJobForCandidates?.title || ""}
+        open={!!selectedJobForCandidates}
+        onOpenChange={(open) => !open && setSelectedJobForCandidates(null)}
       />
     </>
   )
