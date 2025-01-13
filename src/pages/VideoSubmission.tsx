@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react"
-import { useParams } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
-import { Video, StopCircle, PlayCircle } from "lucide-react"
+import { Video, StopCircle, Play } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 
 export default function VideoSubmission() {
@@ -121,7 +120,6 @@ export default function VideoSubmission() {
       console.log('Upload response:', { data, error: uploadError })
 
       if (uploadError) {
-        console.error('Detailed upload error:', uploadError)
         throw uploadError
       }
 
@@ -182,6 +180,14 @@ export default function VideoSubmission() {
             className="w-full h-full object-cover"
             onEnded={() => setIsPlaying(false)}
           />
+          {recordedBlob && !isPlaying && !isRecording && (
+            <div 
+              className="absolute inset-0 flex items-center justify-center bg-black/20 cursor-pointer"
+              onClick={togglePlayback}
+            >
+              <Play className="w-16 h-16 text-white" />
+            </div>
+          )}
         </div>
 
         <div className="flex justify-center gap-4">
@@ -201,10 +207,6 @@ export default function VideoSubmission() {
 
           {recordedBlob && !isUploading && (
             <div className="flex w-full gap-2">
-              <Button onClick={togglePlayback} variant="outline" className="flex-1">
-                <PlayCircle className="mr-2 h-4 w-4" />
-                {isPlaying ? 'Pause' : 'Play'}
-              </Button>
               <Button onClick={() => setRecordedBlob(null)} variant="outline" className="flex-1">
                 Record Again
               </Button>
