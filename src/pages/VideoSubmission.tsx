@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress"
 
 export default function VideoSubmission() {
   const { candidateId } = useParams()
+  const navigate = useNavigate()
   const [isRecording, setIsRecording] = useState(false)
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -105,7 +106,7 @@ export default function VideoSubmission() {
       }
 
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'video/mp4' // Match the incoming chunk format
+        mimeType: 'video/mp4'
       })
       mediaRecorderRef.current = mediaRecorder
       chunksRef.current = []
@@ -123,10 +124,9 @@ export default function VideoSubmission() {
           totalSize: chunksRef.current.reduce((acc, chunk) => acc + chunk.size, 0)
         })
         
-        const blob = new Blob(chunksRef.current, { type: 'video/mp4' }) // Match the chunk format
+        const blob = new Blob(chunksRef.current, { type: 'video/mp4' })
         console.log('Created blob:', { size: blob.size, type: blob.type })
         
-        // Clean up the stream first
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => track.stop())
           streamRef.current = null
@@ -186,7 +186,7 @@ export default function VideoSubmission() {
 
     setIsUploading(true)
     try {
-      const fileName = `${candidateId}-${Date.now()}.webm`
+      const fileName = `${candidateId}-${Date.now()}.mp4`
       console.log('Attempting to upload file:', fileName)
       
       const { data, error: uploadError } = await supabase.storage
@@ -217,6 +217,9 @@ export default function VideoSubmission() {
         title: "Success",
         description: "Your video has been uploaded successfully!",
       })
+
+      // Navigate to success page
+      navigate('/submission-success')
     } catch (error) {
       console.error('Full error object:', error)
       toast({
