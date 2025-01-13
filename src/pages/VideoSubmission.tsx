@@ -282,8 +282,7 @@ export default function VideoSubmission() {
         }
       }
 
-      // Fix: Use MediaRecorderErrorEvent instead of Event
-      mediaRecorder.onerror = (event: MediaRecorderErrorEvent) => {
+      mediaRecorder.onerror = (event: ErrorEvent) => {
         console.error('MediaRecorder error:', event.error)
         toast({
           title: "Recording Error",
