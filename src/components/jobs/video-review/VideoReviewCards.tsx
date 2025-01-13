@@ -94,11 +94,11 @@ export function VideoReviewCards() {
                   <dt>Videos Received:</dt>
                   <dd>{stat.videosReceived}</dd>
                 </div>
-                <div className="flex justify-between">
+                <div className={`flex justify-between font-medium ${stat.pendingReview > 1 ? 'text-red-600' : ''}`}>
                   <dt>Pending Review:</dt>
                   <dd>{stat.pendingReview}</dd>
                 </div>
-                <div className="flex justify-between font-medium">
+                <div className="flex justify-between">
                   <dt>Approved:</dt>
                   <dd>{stat.approved}</dd>
                 </div>
