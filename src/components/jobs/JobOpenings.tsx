@@ -10,7 +10,7 @@ export function JobOpenings() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold tracking-tight">Add Jobs and Candidates</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">Request Videos</h2>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Create Job Opening

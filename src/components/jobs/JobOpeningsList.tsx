@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Link as LinkIcon, Eye, Edit, XOctagon, RefreshCw } from "lucide-react"
+import { Link as LinkIcon, Eye, Edit, XOctagon, RefreshCw, Users } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { ViewJobDialog } from "./ViewJobDialog"
 import { EditJobDialog } from "./EditJobDialog"
@@ -164,9 +164,9 @@ export function JobOpeningsList() {
           <TableRow>
             <TableHead>Title</TableHead>
             <TableHead>Location</TableHead>
+            <TableHead>Created</TableHead>
             <TableHead>Candidates</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Created</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -175,6 +175,7 @@ export function JobOpeningsList() {
             <TableRow key={job.id}>
               <TableCell className="font-medium">{job.title}</TableCell>
               <TableCell>{job.location}</TableCell>
+              <TableCell>{new Date(job.created_at).toLocaleDateString()}</TableCell>
               <TableCell>{job.candidates_count}</TableCell>
               <TableCell>
                 <span 
@@ -187,14 +188,14 @@ export function JobOpeningsList() {
                   {job.status}
                 </span>
               </TableCell>
-              <TableCell>{new Date(job.created_at).toLocaleDateString()}</TableCell>
               <TableCell className="text-right space-x-1">
                 <Button
                   variant="secondary"
                   onClick={() => setSelectedJobForCandidates(job)}
-                  title="Request video submissions"
+                  title="Manage candidates"
                 >
-                  Request Videos
+                  <Users className="mr-2 h-4 w-4" />
+                  Manage
                 </Button>
                 <Button
                   variant="ghost"
