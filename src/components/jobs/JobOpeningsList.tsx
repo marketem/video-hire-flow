@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Users, Link as LinkIcon, Eye, Edit, XOctagon, RefreshCw } from "lucide-react"
+import { Link as LinkIcon, Eye, Edit, XOctagon, RefreshCw } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { ViewJobDialog } from "./ViewJobDialog"
 import { EditJobDialog } from "./EditJobDialog"
@@ -175,7 +175,15 @@ export function JobOpeningsList() {
             <TableRow key={job.id}>
               <TableCell className="font-medium">{job.title}</TableCell>
               <TableCell>{job.location}</TableCell>
-              <TableCell>{job.candidates_count}</TableCell>
+              <TableCell>
+                <Button
+                  variant="secondary"
+                  onClick={() => setSelectedJobForCandidates(job)}
+                  title="Request video submissions"
+                >
+                  Request Videos ({job.candidates_count})
+                </Button>
+              </TableCell>
               <TableCell>
                 <span 
                   className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
@@ -196,15 +204,6 @@ export function JobOpeningsList() {
                   title="Copy public link"
                 >
                   <LinkIcon className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="secondary"
-                  className="gap-2"
-                  onClick={() => setSelectedJobForCandidates(job)}
-                  title="Request video submissions"
-                >
-                  <Users className="h-4 w-4" />
-                  Request Videos
                 </Button>
                 <Button
                   variant="ghost"
