@@ -35,7 +35,11 @@ export function AccountMenu() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+          <Button 
+            variant="ghost" 
+            className="relative h-10 w-10 rounded-full"
+            type="button"
+          >
             <div className="flex h-full w-full items-center justify-center rounded-full bg-muted">
               <User className="h-4 w-4" />
             </div>
