@@ -6,8 +6,13 @@ export const Navbar = () => {
     <nav className="border-b">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          <Link to="/" className="flex items-center">
-            <span className="text-2xl font-bold text-primary">InterviewPro</span>
+          <Link to="/" className="flex items-center space-x-2">
+            <img 
+              src="/lovable-uploads/658547e3-9dac-4df0-84d6-a891876840a9.png" 
+              alt="VibeCheck Logo" 
+              className="h-8 w-auto"
+            />
+            <span className="text-2xl font-bold text-primary">VibeCheck</span>
           </Link>
           <div className="flex items-center gap-4">
             <Link to="/login">

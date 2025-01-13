@@ -6,7 +6,14 @@ export const Footer = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-lg font-semibold mb-4">InterviewPro</h3>
+            <div className="flex items-center space-x-2 mb-4">
+              <img 
+                src="/lovable-uploads/658547e3-9dac-4df0-84d6-a891876840a9.png" 
+                alt="VibeCheck Logo" 
+                className="h-8 w-auto"
+              />
+              <h3 className="text-lg font-semibold">VibeCheck</h3>
+            </div>
             <p className="text-gray-600">
               Streamline your hiring process with asynchronous video interviews.
             </p>
@@ -59,7 +66,7 @@ export const Footer = () => {
         </div>
         <div className="mt-8 pt-8 border-t">
           <p className="text-gray-500 text-center">
-            © {new Date().getFullYear()} InterviewPro. All rights reserved.
+            © {new Date().getFullYear()} VibeCheck. All rights reserved.
           </p>
         </div>
       </div>

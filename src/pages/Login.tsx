@@ -6,13 +6,17 @@ export default function Login() {
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
         <div className="absolute inset-0 bg-blue-900" />
         <div className="relative z-20 flex items-center text-lg font-medium">
-          <img src="/placeholder.svg" alt="Logo" className="h-8 w-8 mr-2" />
-          InterviewPro
+          <img 
+            src="/lovable-uploads/658547e3-9dac-4df0-84d6-a891876840a9.png" 
+            alt="VibeCheck Logo" 
+            className="h-8 w-auto mr-2"
+          />
+          VibeCheck
         </div>
         <div className="relative z-20 mt-auto">
           <blockquote className="space-y-2">
             <p className="text-lg">
-              "InterviewPro has completely transformed our hiring process. We're able to screen candidates more efficiently than ever before."
+              "VibeCheck has completely transformed our hiring process. We're able to screen candidates more efficiently than ever before."
             </p>
             <footer className="text-sm">Sarah Chen, HR Director</footer>
           </blockquote>
