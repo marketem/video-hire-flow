@@ -6,6 +6,7 @@ create table "public"."job_openings" (
     "location" text not null,
     "description" text not null,
     "status" text not null default 'open',
+    "public_page_enabled" boolean default true,
     "user_id" uuid references auth.users(id),
     constraint job_openings_pkey primary key (id)
 );
@@ -32,4 +33,12 @@ create policy "Allow users to update their own job openings"
     on "public"."job_openings"
     for update
     to authenticated
-    using (auth.uid() = user_id);
+    using (auth.uid() = user_id)
+    with check (auth.uid() = user_id);
+
+-- Create policy to allow public access to enabled job openings
+create policy "Allow public access to enabled job openings"
+    on "public"."job_openings"
+    for select
+    to public
+    using (public_page_enabled = true and status = 'open');
