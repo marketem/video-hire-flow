@@ -12,7 +12,7 @@ export const Navbar = () => {
               alt="VibeCheck Logo" 
               className="h-8 w-auto"
             />
-            <span className="text-2xl font-bold text-primary">VibeCheck</span>
+            <span className="text-2xl font-bold text-black">VibeCheck</span>
           </Link>
           <div className="flex items-center gap-4">
             <Link to="/login">
