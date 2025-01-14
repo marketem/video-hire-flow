@@ -32,7 +32,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Create email message
     const msg = {
       to: 'info@videovibecheck.com',
-      from: 'no-reply@videovibecheck.com', // This should be a verified sender in SendGrid
+      from: 'info@videovibecheck.com', // Updated sender email
       subject: `New Contact Form Submission from ${name}`,
       text: `
 Name: ${name}
