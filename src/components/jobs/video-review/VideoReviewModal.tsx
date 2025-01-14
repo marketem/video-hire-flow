@@ -9,6 +9,12 @@ import { CandidateSection } from "./CandidateSection"
 import { useVideoReview } from "./useVideoReview"
 import { useState } from "react"
 import { X } from "lucide-react"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 interface VideoReviewModalProps {
   jobId: string | null
@@ -72,33 +78,69 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
-            <CandidateSection
-              title="Ready for Review"
-              candidates={readyForReview}
-              showActions
-              onVideoReview={handleVideoClick}
-              onStatusChange={handleReviewAction}
-            />
+          <Accordion type="single" defaultValue="ready-for-review" className="space-y-4">
+            <AccordionItem value="ready-for-review" className="border-none">
+              <AccordionTrigger className="hover:no-underline">
+                <span className="text-lg font-semibold">
+                  Ready for Review ({readyForReview.length})
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <CandidateSection
+                  title=""
+                  candidates={readyForReview}
+                  showActions
+                  onVideoReview={handleVideoClick}
+                  onStatusChange={handleReviewAction}
+                />
+              </AccordionContent>
+            </AccordionItem>
 
-            <CandidateSection
-              title="Approved Candidates"
-              candidates={approvedCandidates}
-              onVideoReview={handleVideoClick}
-            />
+            <AccordionItem value="approved" className="border-none">
+              <AccordionTrigger className="hover:no-underline">
+                <span className="text-lg font-semibold">
+                  Approved Candidates ({approvedCandidates.length})
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <CandidateSection
+                  title=""
+                  candidates={approvedCandidates}
+                  onVideoReview={handleVideoClick}
+                />
+              </AccordionContent>
+            </AccordionItem>
 
-            <CandidateSection
-              title="Awaiting Response"
-              candidates={awaitingResponse}
-              onVideoReview={handleVideoClick}
-            />
+            <AccordionItem value="awaiting" className="border-none">
+              <AccordionTrigger className="hover:no-underline">
+                <span className="text-lg font-semibold">
+                  Awaiting Response ({awaitingResponse.length})
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <CandidateSection
+                  title=""
+                  candidates={awaitingResponse}
+                  onVideoReview={handleVideoClick}
+                />
+              </AccordionContent>
+            </AccordionItem>
 
-            <CandidateSection
-              title="Rejected Candidates"
-              candidates={rejectedCandidates}
-              onVideoReview={handleVideoClick}
-            />
-          </div>
+            <AccordionItem value="rejected" className="border-none">
+              <AccordionTrigger className="hover:no-underline">
+                <span className="text-lg font-semibold">
+                  Rejected Candidates ({rejectedCandidates.length})
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <CandidateSection
+                  title=""
+                  candidates={rejectedCandidates}
+                  onVideoReview={handleVideoClick}
+                />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         )}
       </DialogContent>
     </Dialog>
