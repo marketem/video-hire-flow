@@ -84,7 +84,7 @@ export function useVideoReview(jobId: string | null) {
     }
   }
 
-  const getVideoUrl = async (videoPath: string, candidateName: string) => {
+  const getVideoUrl = async (videoPath: string, candidateName: string): Promise<string | null> => {
     if (!session) {
       toast({
         title: "Authentication Required",
@@ -92,7 +92,7 @@ export function useVideoReview(jobId: string | null) {
         variant: "destructive",
       })
       navigate('/login')
-      return
+      return null
     }
 
     try {
@@ -109,80 +109,18 @@ export function useVideoReview(jobId: string | null) {
           description: "Could not access video. Please try again.",
           variant: "destructive",
         })
-        return
+        return null
       }
 
-      console.log('Opening video in new window:', data.signedUrl)
-      const videoWindow = window.open('', '_blank')
-      if (videoWindow) {
-        videoWindow.document.write(`
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <title>Video Review - ${candidateName}</title>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <style>
-                body { 
-                  margin: 0; 
-                  background: #000; 
-                  display: flex; 
-                  flex-direction: column; 
-                  min-height: 100vh; 
-                  font-family: system-ui, -apple-system, sans-serif;
-                }
-                .header { 
-                  background: #1a1a1a; 
-                  color: white; 
-                  padding: 1rem; 
-                }
-                .video-container { 
-                  flex: 1; 
-                  display: flex; 
-                  justify-content: center; 
-                  align-items: center; 
-                  padding: 2rem;
-                }
-                video { 
-                  max-width: 100%; 
-                  max-height: 80vh;
-                  background: #000;
-                }
-              </style>
-            </head>
-            <body>
-              <div class="header">
-                <h2>${candidateName}</h2>
-              </div>
-              <div class="video-container">
-                <video 
-                  controls 
-                  playsinline
-                  preload="auto"
-                  crossorigin="anonymous"
-                >
-                  <source src="${data.signedUrl}" type="video/webm">
-                  <source src="${data.signedUrl}" type="video/mp4">
-                  Your browser does not support the video tag.
-                </video>
-              </div>
-              <script>
-                document.querySelector('video').addEventListener('error', function(e) {
-                  console.error('Video error:', e);
-                });
-              </script>
-            </body>
-          </html>
-        `)
-        videoWindow.document.close()
-      }
+      return data.signedUrl
     } catch (error) {
       console.error('Error in getVideoUrl:', error)
       toast({
         title: "Error",
-        description: "Failed to open video review window",
+        description: "Failed to load video",
         variant: "destructive",
       })
+      return null
     }
   }
 
