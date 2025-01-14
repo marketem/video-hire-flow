@@ -120,6 +120,8 @@ export function useVideoReview(jobId: string | null) {
           <html>
             <head>
               <title>Video Review - ${candidateName}</title>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
               <style>
                 body { 
                   margin: 0; 
@@ -153,8 +155,22 @@ export function useVideoReview(jobId: string | null) {
                 <h2>${candidateName}</h2>
               </div>
               <div class="video-container">
-                <video controls autoplay src="${data.signedUrl}"></video>
+                <video 
+                  controls 
+                  playsinline
+                  preload="auto"
+                  crossorigin="anonymous"
+                >
+                  <source src="${data.signedUrl}" type="video/webm">
+                  <source src="${data.signedUrl}" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
               </div>
+              <script>
+                document.querySelector('video').addEventListener('error', function(e) {
+                  console.error('Video error:', e);
+                });
+              </script>
             </body>
           </html>
         `)
