@@ -43,6 +43,18 @@ export function useVideoRecording() {
     }
   }
 
+  const getSupportedMimeType = () => {
+    const types = [
+      'video/webm;codecs=vp8,opus',
+      'video/webm;codecs=vp9,opus',
+      'video/webm;codecs=h264,opus',
+      'video/webm',
+      'video/mp4'
+    ]
+    
+    return types.find(type => MediaRecorder.isTypeSupported(type)) || ''
+  }
+
   const startRecording = async () => {
     try {
       console.log("Starting recording process...")
@@ -74,9 +86,14 @@ export function useVideoRecording() {
         await videoRef.current.play()
       }
 
-      console.log("Creating MediaRecorder...")
+      const mimeType = getSupportedMimeType()
+      if (!mimeType) {
+        throw new Error("No supported video MIME type found in this browser")
+      }
+      
+      console.log("Creating MediaRecorder with MIME type:", mimeType)
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'video/webm'
+        mimeType
       })
       mediaRecorderRef.current = mediaRecorder
       chunksRef.current = []
@@ -98,7 +115,7 @@ export function useVideoRecording() {
 
       mediaRecorder.onstop = () => {
         console.log("Recording stopped, creating blob...")
-        const blob = new Blob(chunksRef.current, { type: 'video/webm' })
+        const blob = new Blob(chunksRef.current, { type: mimeType })
         
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => track.stop())
