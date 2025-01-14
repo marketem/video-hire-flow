@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -24,6 +25,8 @@ const formSchema = z.object({
 const Contact = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const supabase = useSupabaseClient();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -33,14 +36,36 @@ const Contact = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
-    toast({
-      title: "Message sent!",
-      description: "We'll get back to you as soon as possible.",
-    });
-    form.reset();
-    navigate("/contact-success");
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // Call Supabase Edge Function to send email
+      const { data, error } = await supabase.functions.invoke('send-email', {
+        body: {
+          name: values.name,
+          email: values.email,
+          message: values.message
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Message sent!",
+        description: "We'll get back to you as soon as possible.",
+      });
+      
+      form.reset();
+      navigate("/contact-success");
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again later.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
