@@ -38,8 +38,6 @@ const Contact = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
       // Call Supabase Edge Function to send email
       const { data, error } = await supabase.functions.invoke('send-email', {
         body: {
