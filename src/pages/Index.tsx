@@ -73,7 +73,7 @@ const Index = () => {
                 <div className="px-6 py-8">
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">Annual Plan</h3>
                   <div className="mt-4">
-                    <span className="text-4xl font-bold">$99</span>
+                    <span className="text-4xl font-bold">$199</span>
                     <span className="text-gray-600">/year</span>
                   </div>
                   <ul className="mt-6 space-y-4">
