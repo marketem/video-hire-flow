@@ -52,35 +52,19 @@ export function useSendVideoInvites(jobId: string) {
         const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${videoToken}`
         console.log('Generated submission URL:', videoSubmissionUrl)
 
-        // Send the OTP email with template variables in the data field
-        const { error: emailError } = await supabase.auth.signInWithOtp({
-          email: candidate.email,
-          options: {
-            emailRedirectTo: videoSubmissionUrl,
-            data: {
-              type: 'video_invitation',
-              name: candidate.name,
-              companyName: user?.user_metadata?.company_name || 'our company',
-              senderName: user?.user_metadata?.name || 'The hiring team',
-              submissionUrl: videoSubmissionUrl
-            }
+        // Call our new Edge Function to send the email
+        const { error: emailError } = await supabase.functions.invoke('send-video-invite', {
+          body: {
+            name: candidate.name,
+            email: candidate.email,
+            companyName: user?.user_metadata?.company_name || 'our company',
+            senderName: user?.user_metadata?.name || 'The hiring team',
+            submissionUrl: videoSubmissionUrl
           }
         })
 
         if (emailError) {
           console.error('Error sending invite:', emailError)
-          
-          // Check if it's a rate limit error
-          if (emailError.message?.includes('can only request this after')) {
-            const waitSeconds = emailError.message.match(/\d+/)?.[0] || '60'
-            toast({
-              title: "Please wait",
-              description: `For security reasons, please wait ${waitSeconds} seconds before sending another invitation.`,
-              variant: "destructive",
-            })
-            return false
-          }
-          
           throw new Error('Failed to send email invitation')
         }
 
