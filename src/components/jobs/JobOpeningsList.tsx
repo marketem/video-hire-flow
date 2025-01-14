@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react"
-import { useSupabaseClient } from "@supabase/auth-helpers-react"
+import { useState, useEffect } from "react"
 import {
   Table,
   TableBody,
@@ -8,133 +7,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Link as LinkIcon, Eye, Edit, XOctagon, RefreshCw, Users } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
 import { ViewJobDialog } from "./ViewJobDialog"
 import { EditJobDialog } from "./EditJobDialog"
 import { CandidatesModal } from "./CandidatesModal"
-
-interface JobOpening {
-  id: string
-  title: string
-  department: string
-  location: string
-  status: string
-  created_at: string
-  description: string
-  candidates_count: number
-  public_page_enabled: boolean
-}
+import { JobActions } from "./JobActions"
+import { useJobOpenings } from "./useJobOpenings"
+import type { JobOpening } from "./types"
 
 export function JobOpeningsList() {
-  const [jobs, setJobs] = useState<JobOpening[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { jobs, isLoading, fetchJobs } = useJobOpenings()
   const [selectedJob, setSelectedJob] = useState<JobOpening | null>(null)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedJobForCandidates, setSelectedJobForCandidates] = useState<JobOpening | null>(null)
-  const supabase = useSupabaseClient()
-  const { toast } = useToast()
-
-  const fetchJobs = async () => {
-    try {
-      const { data: jobsData, error: jobsError } = await supabase
-        .from('job_openings')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (jobsError) throw jobsError
-
-      // Fetch candidates count for each job
-      const jobsWithCounts = await Promise.all(
-        (jobsData || []).map(async (job) => {
-          const { count, error: countError } = await supabase
-            .from('candidates')
-            .select('*', { count: 'exact', head: true })
-            .eq('job_id', job.id)
-
-          if (countError) throw countError
-
-          return {
-            ...job,
-            candidates_count: count || 0
-          }
-        })
-      )
-
-      setJobs(jobsWithCounts)
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch job openings",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   useEffect(() => {
     fetchJobs()
-  }, [])
-
-  const copyPublicLink = (jobId: string) => {
-    const link = `${window.location.origin}/jobs/${jobId}`
-    navigator.clipboard.writeText(link)
-    toast({
-      title: "Link Copied",
-      description: "Public job link copied to clipboard",
-    })
-  }
-
-  const handleCloseJob = async (jobId: string) => {
-    try {
-      const { error } = await supabase
-        .from('job_openings')
-        .update({ status: 'closed' })
-        .eq('id', jobId)
-
-      if (error) throw error
-
-      toast({
-        title: "Success",
-        description: "Job has been closed",
-      })
-      
-      fetchJobs()
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to close job",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const handleReopenJob = async (jobId: string) => {
-    try {
-      const { error } = await supabase
-        .from('job_openings')
-        .update({ status: 'open' })
-        .eq('id', jobId)
-
-      if (error) throw error
-
-      toast({
-        title: "Success",
-        description: "Job has been reopened",
-      })
-      
-      fetchJobs()
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to reopen job",
-        variant: "destructive",
-      })
-    }
-  }
+  }, [fetchJobs])
 
   const handleViewJob = (job: JobOpening) => {
     setSelectedJob(job)
@@ -189,59 +78,14 @@ export function JobOpeningsList() {
                   {job.status}
                 </span>
               </TableCell>
-              <TableCell className="text-right space-x-1">
-                <Button
-                  variant="secondary"
-                  onClick={() => setSelectedJobForCandidates(job)}
-                  title="Manage candidates"
-                >
-                  <Users className="mr-2 h-4 w-4" />
-                  Manage
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => copyPublicLink(job.id)}
-                  disabled={!job.public_page_enabled}
-                  title={job.public_page_enabled ? "Copy public link" : "Public page disabled"}
-                >
-                  <LinkIcon className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleViewJob(job)}
-                  title="View details"
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleEditJob(job)}
-                  title="Edit job"
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-                {job.status === 'open' ? (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleCloseJob(job.id)}
-                    title="Close job"
-                  >
-                    <XOctagon className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleReopenJob(job.id)}
-                    title="Reopen job"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                  </Button>
-                )}
+              <TableCell className="text-right">
+                <JobActions
+                  job={job}
+                  onView={handleViewJob}
+                  onEdit={handleEditJob}
+                  onManageCandidates={setSelectedJobForCandidates}
+                  onJobsUpdated={fetchJobs}
+                />
               </TableCell>
             </TableRow>
           ))}
