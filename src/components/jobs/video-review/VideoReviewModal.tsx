@@ -8,7 +8,7 @@ import {
 import { CandidateSection } from "./CandidateSection"
 import { useVideoReview } from "./useVideoReview"
 import { useState } from "react"
-import { X } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import {
   Accordion,
   AccordionContent,
@@ -53,15 +53,14 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
 
         {activeVideo ? (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">{activeVideo.name}</h3>
-              <button 
-                onClick={() => setActiveVideo(null)}
-                className="p-1 hover:bg-gray-100 rounded-full"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+            <button 
+              onClick={() => setActiveVideo(null)}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to candidates</span>
+            </button>
+            <h3 className="text-lg font-semibold">{activeVideo.name}</h3>
             <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
               <video 
                 controls 
