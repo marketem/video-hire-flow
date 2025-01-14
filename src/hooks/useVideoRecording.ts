@@ -123,6 +123,13 @@ export function useVideoRecording() {
         }
         
         setRecordedBlob(blob)
+        
+        // Set up video for playback
+        if (videoRef.current) {
+          videoRef.current.srcObject = null
+          videoRef.current.src = URL.createObjectURL(blob)
+          videoRef.current.muted = false
+        }
       }
 
       console.log("Starting MediaRecorder...")
@@ -133,7 +140,6 @@ export function useVideoRecording() {
     } catch (error) {
       console.error('Error during recording setup:', error)
       
-      // Handle specific error types
       if (error instanceof DOMException) {
         if (error.name === 'NotAllowedError') {
           toast({
@@ -188,6 +194,11 @@ export function useVideoRecording() {
       } else {
         videoRef.current.play().catch(err => {
           console.error('Error during playback:', err)
+          toast({
+            title: "Playback Error",
+            description: "An error occurred while playing the video.",
+            variant: "destructive",
+          })
         })
       }
       setIsPlaying(!isPlaying)
