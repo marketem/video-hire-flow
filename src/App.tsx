@@ -15,7 +15,6 @@ import SubmissionSuccess from "./pages/SubmissionSuccess";
 import Terms from "./pages/Terms";
 import Features from "./pages/Features";
 import About from "./pages/About";
-import Contact from "./pages/Contact";
 
 const queryClient = new QueryClient();
 
@@ -57,7 +56,6 @@ const App = () => (
             <Route path="/terms" element={<Terms />} />
             <Route path="/features" element={<Features />} />
             <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
