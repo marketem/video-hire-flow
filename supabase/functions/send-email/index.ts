@@ -27,7 +27,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Configure SendGrid
     sgMail.setApiKey(SENDGRID_API_KEY);
 
-    const { name, email, message } = await req.json();
+    const { name, email, message } = await req.json() as EmailRequest;
 
     // Create email message
     const msg = {
