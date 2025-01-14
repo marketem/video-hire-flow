@@ -18,7 +18,7 @@ export function CandidateSection({
 }: CandidateSectionProps) {
   return (
     <section>
-      <h3 className="font-semibold mb-4">{title} ({candidates.length})</h3>
+      {title && <h3 className="font-semibold mb-4">{title}</h3>}
       <div className="space-y-4">
         {candidates.map(candidate => (
           <CandidateCard
