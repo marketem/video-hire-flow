@@ -95,50 +95,78 @@ export function useVideoReview(jobId: string | null) {
       return
     }
 
-    const { data, error } = await supabase
-      .storage
-      .from('videos')
-      .createSignedUrl(videoPath, 3600, {
-        download: false,
-        transform: {
-          width: 800,
-          height: 600,
-          resize: 'contain'
-        }
-      })
+    try {
+      console.log('Getting signed URL for video:', videoPath)
+      const { data, error } = await supabase
+        .storage
+        .from('videos')
+        .createSignedUrl(videoPath, 3600)
 
-    if (error || !data?.signedUrl) {
+      if (error || !data?.signedUrl) {
+        console.error('Error getting signed URL:', error)
+        toast({
+          title: "Error",
+          description: "Could not access video. Please try again.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      console.log('Opening video in new window:', data.signedUrl)
+      const videoWindow = window.open('', '_blank')
+      if (videoWindow) {
+        videoWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>Video Review - ${candidateName}</title>
+              <style>
+                body { 
+                  margin: 0; 
+                  background: #000; 
+                  display: flex; 
+                  flex-direction: column; 
+                  min-height: 100vh; 
+                  font-family: system-ui, -apple-system, sans-serif;
+                }
+                .header { 
+                  background: #1a1a1a; 
+                  color: white; 
+                  padding: 1rem; 
+                }
+                .video-container { 
+                  flex: 1; 
+                  display: flex; 
+                  justify-content: center; 
+                  align-items: center; 
+                  padding: 2rem;
+                }
+                video { 
+                  max-width: 100%; 
+                  max-height: 80vh;
+                  background: #000;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="header">
+                <h2>${candidateName}</h2>
+              </div>
+              <div class="video-container">
+                <video controls autoplay src="${data.signedUrl}"></video>
+              </div>
+            </body>
+          </html>
+        `)
+        videoWindow.document.close()
+      }
+    } catch (error) {
+      console.error('Error in getVideoUrl:', error)
       toast({
         title: "Error",
-        description: "Could not access video. Please try again.",
+        description: "Failed to open video review window",
         variant: "destructive",
       })
-      return
-    }
-
-    const videoWindow = window.open('', '_blank')
-    if (videoWindow) {
-      videoWindow.document.write(`
-        <html>
-          <head>
-            <title>Video Review - ${candidateName}</title>
-            <style>
-              body { margin: 0; background: #000; display: flex; flex-direction: column; min-height: 100vh; }
-              .header { background: #1a1a1a; color: white; padding: 1rem; font-family: system-ui; }
-              .video-container { flex: 1; display: flex; justify-content: center; align-items: center; }
-              video { max-width: 100%; max-height: 80vh; }
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <h2>${candidateName}</h2>
-            </div>
-            <div class="video-container">
-              <video controls src="${data.signedUrl}"></video>
-            </div>
-          </body>
-        </html>
-      `)
     }
   }
 
