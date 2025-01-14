@@ -45,7 +45,16 @@ export function useVideoRecording() {
 
   const startRecording = async () => {
     try {
+      console.log("Starting recording process...")
       resetVideoElement()
+      
+      // First check if we already have a stream
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop())
+        streamRef.current = null
+      }
+
+      console.log("Requesting media devices...")
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
           width: 640, 
@@ -54,14 +63,18 @@ export function useVideoRecording() {
         },
         audio: true 
       })
+      
+      console.log("Media stream obtained successfully")
       streamRef.current = stream
       
       if (videoRef.current) {
+        console.log("Setting up video preview...")
         videoRef.current.srcObject = stream
         videoRef.current.muted = true
         await videoRef.current.play()
       }
 
+      console.log("Creating MediaRecorder...")
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'video/webm'
       })
@@ -84,6 +97,7 @@ export function useVideoRecording() {
       }
 
       mediaRecorder.onstop = () => {
+        console.log("Recording stopped, creating blob...")
         const blob = new Blob(chunksRef.current, { type: 'video/webm' })
         
         if (streamRef.current) {
@@ -94,20 +108,53 @@ export function useVideoRecording() {
         setRecordedBlob(blob)
       }
 
+      console.log("Starting MediaRecorder...")
       mediaRecorder.start()
       setIsRecording(true)
       setTimeLeft(30)
+      
     } catch (error) {
-      console.error('Error accessing camera:', error)
-      toast({
-        title: "Camera Access Error",
-        description: "Could not access camera. Please ensure you've granted camera and microphone permissions and try again.",
-        variant: "destructive",
-      })
+      console.error('Error during recording setup:', error)
+      
+      // Handle specific error types
+      if (error instanceof DOMException) {
+        if (error.name === 'NotAllowedError') {
+          toast({
+            title: "Permission Denied",
+            description: "Camera access was denied. Please allow camera and microphone access in your browser settings.",
+            variant: "destructive",
+          })
+        } else if (error.name === 'NotFoundError') {
+          toast({
+            title: "Device Not Found",
+            description: "No camera or microphone found. Please ensure your devices are properly connected.",
+            variant: "destructive",
+          })
+        } else if (error.name === 'NotReadableError') {
+          toast({
+            title: "Hardware Error",
+            description: "Your camera or microphone may be in use by another application.",
+            variant: "destructive",
+          })
+        } else {
+          toast({
+            title: "Camera Error",
+            description: `Error accessing media devices: ${error.message}`,
+            variant: "destructive",
+          })
+        }
+      } else {
+        toast({
+          title: "Recording Error",
+          description: "An unexpected error occurred while setting up the recording.",
+          variant: "destructive",
+        })
+      }
     }
   }
 
   const stopRecording = () => {
+    console.log("Stopping recording...")
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop()
       setIsRecording(false)
