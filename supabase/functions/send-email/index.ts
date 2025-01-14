@@ -1,4 +1,4 @@
-import { serve } from "https://deno.fresh.dev/std@v9.6.1/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import * as sgMail from "https://esm.sh/@sendgrid/mail@7.7.0";
 
 const corsHeaders = {
