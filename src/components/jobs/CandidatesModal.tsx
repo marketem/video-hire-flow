@@ -28,7 +28,7 @@ export function CandidatesModal({
   const [isSending, setIsSending] = useState(false)
   const { candidates, isLoading, fetchCandidates } = useJobCandidates(jobId)
   const { selectedCandidates, toggleSelectAll, toggleCandidate } = useCandidateSelection()
-  const { deleteCandidates } = useCandidateActions(jobId)
+  const { handleDelete } = useCandidateActions(jobId)
   const { sendVideoInvites } = useSendVideoInvites(jobId)
 
   const handleSendInvites = async () => {
@@ -43,11 +43,6 @@ export function CandidatesModal({
     }
   }
 
-  const handleDelete = async () => {
-    await deleteCandidates(selectedCandidates)
-    await fetchCandidates()
-  }
-
   const content = (
     <div className="space-y-4">
       {candidates?.length > 0 && (
@@ -55,7 +50,7 @@ export function CandidatesModal({
           selectedCount={selectedCandidates.length}
           totalCount={candidates.length}
           onSendInvites={handleSendInvites}
-          onDelete={handleDelete}
+          onDelete={() => handleDelete(selectedCandidates)}
           onToggleSelectAll={(checked) => toggleSelectAll(candidates, checked)}
           allSelected={selectedCandidates.length === candidates.length}
           isSending={isSending}

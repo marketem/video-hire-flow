@@ -6,7 +6,7 @@ export function useJobCandidates(jobId: string) {
   const supabase = useSupabaseClient()
   const session = useSession()
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['job-candidates', jobId],
     queryFn: async () => {
       if (!jobId) return []
@@ -46,4 +46,10 @@ export function useJobCandidates(jobId: string) {
     },
     enabled: !!jobId && !!session?.user?.id,
   })
+
+  return {
+    ...query,
+    candidates: query.data || [],
+    fetchCandidates: () => query.refetch()
+  }
 }
