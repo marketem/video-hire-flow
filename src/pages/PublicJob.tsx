@@ -33,24 +33,36 @@ export default function PublicJob() {
     const fetchJob = async () => {
       try {
         console.log('Fetching job with ID:', id)
+        
+        // Sign out any existing session to ensure we're accessing as public
+        await supabase.auth.signOut()
+        
         const { data, error } = await supabase
           .from('job_openings')
           .select('*')
           .eq('id', id)
-          .eq('status', 'open')
-          .single()
+          .maybeSingle()
 
         if (error) {
           console.error('Error fetching job:', error)
           throw error
         }
+
+        if (!data) {
+          throw new Error('Job not found')
+        }
+
+        if (data.status !== 'open' || !data.public_page_enabled) {
+          throw new Error('This job posting is not available')
+        }
+
         console.log('Fetched job data:', data)
         setJob(data)
       } catch (error) {
         console.error('Error in fetchJob:', error)
         toast({
           title: "Error",
-          description: "This job posting is not available",
+          description: error instanceof Error ? error.message : "This job posting is not available",
           variant: "destructive",
         })
       } finally {
