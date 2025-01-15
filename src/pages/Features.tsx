@@ -43,7 +43,7 @@ const features: Feature[] = [
   {
     icon: Bell,
     title: "Automated Video Invites",
-    description: "Send automated video interview requests to candidates. Track response rates and follow up with ease.",
+    description: "Send video submission requests to candidates via text and email. Track response rates and follow up with ease.",
     images: [
       {
         src: "/lovable-uploads/df5493e2-3eb5-49f6-8040-5b36cbeb4193.png",
