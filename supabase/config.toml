@@ -2,4 +2,3 @@ project_id = "elirvptqddqsscylwczk"
 
 [functions.send-sms-invite]
 verify_jwt = false
-import_map = "./import_map.json"

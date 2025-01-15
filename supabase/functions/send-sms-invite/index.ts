@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import twilio from 'twilio'
+import { Twilio } from 'npm:twilio'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -26,43 +26,34 @@ const handler = async (req: Request): Promise<Response> => {
     const TWILIO_PHONE_NUMBER = Deno.env.get('TWILIO_PHONE_NUMBER')
 
     if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
-      console.error('Missing Twilio credentials')
       throw new Error('Missing Twilio credentials')
     }
 
     const { name, phone, companyName, senderName, submissionUrl } = await req.json() as SMSRequest
     console.log('Sending SMS to:', { name, phone, companyName, senderName })
 
-    try {
-      const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-      const message = `Hi ${name}, ${senderName} from ${companyName} has requested a video introduction. Please click this link to record and submit your video: ${submissionUrl}`
+    const client = new Twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    const message = `Hi ${name}, ${senderName} from ${companyName} has requested a video introduction. Please click this link to record and submit your video: ${submissionUrl}`
 
-      const result = await client.messages.create({
-        body: message,
-        to: phone,
-        from: TWILIO_PHONE_NUMBER
-      })
+    const result = await client.messages.create({
+      body: message,
+      to: phone,
+      from: TWILIO_PHONE_NUMBER
+    })
 
-      console.log('SMS sent successfully:', result.sid)
+    console.log('SMS sent successfully:', result.sid)
 
-      return new Response(
-        JSON.stringify({ success: true, messageId: result.sid }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
-      )
-    } catch (twilioError) {
-      console.error('Twilio error:', twilioError)
-      throw new Error(`Twilio error: ${twilioError.message}`)
-    }
+    return new Response(
+      JSON.stringify({ success: true, messageId: result.sid }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    )
   } catch (error) {
     console.error('Error sending SMS:', error)
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: error instanceof Error ? error.message : 'Unknown error'
-      }),
+      JSON.stringify({ error: error.message }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 
