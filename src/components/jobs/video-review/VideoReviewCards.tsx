@@ -127,22 +127,22 @@ export function VideoReviewCards() {
             onClick={() => setSelectedJobId(stat.jobId)}
           >
             <CardHeader className="p-3 pb-0">
-              <CardTitle className="text-base truncate flex items-start justify-between gap-2">
+              <CardTitle className="text-base truncate">
                 <span>{stat.jobTitle}</span>
-                <div className="flex items-center gap-2">
-                  {stat.oldestPending && getPriorityIndicator(stat)}
-                  {stat.readyForReview > 0 && (
-                    <div className="flex items-center gap-1">
-                      <span className="shrink-0 flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
-                        {stat.readyForReview}
-                      </span>
-                      <span className="text-xs text-red-600">ready for review</span>
-                    </div>
-                  )}
-                </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                {stat.oldestPending && getPriorityIndicator(stat)}
+                {stat.readyForReview > 0 && (
+                  <div className="flex items-center gap-1">
+                    <span className="shrink-0 flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+                      {stat.readyForReview}
+                    </span>
+                    <span className="text-sm text-muted-foreground">ready for review</span>
+                  </div>
+                )}
+              </div>
               <div className="text-sm text-muted-foreground">
                 {stat.videosReceived}/{stat.totalInvitesSent} videos received
               </div>
