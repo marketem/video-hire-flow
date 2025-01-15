@@ -101,7 +101,6 @@ export function VideoReviewCards() {
     const now = new Date()
     const daysWaiting = differenceInDays(now, stat.oldestPending)
     
-    // Only show if at least 24 hours have passed
     if (daysWaiting < 1) return null
 
     const dayText = daysWaiting === 1 ? 'day' : 'days'
@@ -144,15 +143,15 @@ export function VideoReviewCards() {
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-xs">{stat.awaitingResponse} no response</span>
+                  <span className="text-xs">{stat.awaitingResponse} Not Responded</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <ThumbsUp className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-xs">{stat.approvedCount} approved</span>
+                  <span className="text-xs">{stat.approvedCount} Approved</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <ThumbsDown className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-xs">{stat.rejectedCount} rejected</span>
+                  <span className="text-xs">{stat.rejectedCount} Rejected</span>
                 </div>
               </div>
             </CardContent>
