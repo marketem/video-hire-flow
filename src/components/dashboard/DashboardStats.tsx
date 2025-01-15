@@ -52,12 +52,12 @@ export function DashboardStats() {
 
   return (
     <div className="grid gap-3 md:gap-6 grid-cols-3 mb-4 md:mb-8">
-      <div className="bg-muted/30 rounded-lg p-3 md:p-4">
-        <div className="flex items-center justify-between mb-2">
+      <div className="bg-muted/30 rounded-lg p-2 md:p-4">
+        <div className="flex items-center justify-between mb-1 md:mb-2">
           <p className="text-xs md:text-sm font-medium text-muted-foreground">Total Candidates</p>
           <Users className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
         </div>
-        <div className="space-y-1">
+        <div className="space-y-0.5 md:space-y-1">
           <p className="text-lg md:text-2xl font-bold">
             {isLoadingCandidates ? "..." : candidatesCount}
           </p>
@@ -66,24 +66,24 @@ export function DashboardStats() {
           </p>
         </div>
       </div>
-      <div className="bg-muted/30 rounded-lg p-3 md:p-4">
-        <div className="flex items-center justify-between mb-2">
+      <div className="bg-muted/30 rounded-lg p-2 md:p-4">
+        <div className="flex items-center justify-between mb-1 md:mb-2">
           <p className="text-xs md:text-sm font-medium text-muted-foreground">Response Rate</p>
           <Activity className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
         </div>
-        <div className="space-y-1">
+        <div className="space-y-0.5 md:space-y-1">
           <p className="text-lg md:text-2xl font-bold">{responseRate}%</p>
           <p className="text-[10px] md:text-xs text-muted-foreground">
             Of invited
           </p>
         </div>
       </div>
-      <div className="bg-muted/30 rounded-lg p-3 md:p-4">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-xs md:text-sm font-medium text-muted-foreground">Videos</p>
+      <div className="bg-muted/30 rounded-lg p-2 md:p-4">
+        <div className="flex items-center justify-between mb-1 md:mb-2">
+          <p className="text-xs md:text-sm font-medium text-muted-foreground">Total Videos</p>
           <VideoIcon className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
         </div>
-        <div className="space-y-1">
+        <div className="space-y-0.5 md:space-y-1">
           <p className="text-lg md:text-2xl font-bold">{videoResponsesCount}</p>
           <p className="text-[10px] md:text-xs text-muted-foreground">
             Responses
