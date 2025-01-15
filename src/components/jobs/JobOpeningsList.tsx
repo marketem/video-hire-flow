@@ -53,16 +53,37 @@ export function JobOpeningsList() {
   if (isMobile) {
     return (
       <>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {jobs.map((job) => (
             <div 
               key={job.id} 
-              className="bg-card p-4 rounded-lg border space-y-3"
+              className="bg-card p-3 rounded-lg border"
             >
-              <div className="flex justify-between items-start">
-                <h3 className="font-medium">{job.title}</h3>
+              <div className="flex justify-between items-start gap-2">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium truncate">{job.title}</h3>
+                  <div className="mt-1 text-xs text-muted-foreground space-y-0.5">
+                    <p className="flex items-center gap-1">
+                      <span>📍</span>
+                      <span className="truncate">{job.location}</span>
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <p className="flex items-center gap-1">
+                        <span>👥</span>
+                        <span>{job.candidates_count} candidates</span>
+                      </p>
+                      <JobActions
+                        job={job}
+                        onView={handleViewJob}
+                        onEdit={handleEditJob}
+                        onManageCandidates={setSelectedJobForCandidates}
+                        onJobsUpdated={fetchJobs}
+                      />
+                    </div>
+                  </div>
+                </div>
                 <span 
-                  className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
+                  className={`shrink-0 inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
                     job.status === 'open' 
                       ? 'ring-green-600/20 bg-green-50 text-green-700'
                       : 'ring-red-600/20 bg-red-50 text-red-700'
@@ -70,22 +91,6 @@ export function JobOpeningsList() {
                 >
                   {job.status}
                 </span>
-              </div>
-              
-              <div className="space-y-1 text-sm text-muted-foreground">
-                <p>📍 {job.location}</p>
-                <p>📅 {new Date(job.created_at).toLocaleDateString()}</p>
-                <p>👥 {job.candidates_count} candidates</p>
-              </div>
-
-              <div className="flex justify-end">
-                <JobActions
-                  job={job}
-                  onView={handleViewJob}
-                  onEdit={handleEditJob}
-                  onManageCandidates={setSelectedJobForCandidates}
-                  onJobsUpdated={fetchJobs}
-                />
               </div>
             </div>
           ))}
