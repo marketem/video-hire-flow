@@ -16,8 +16,13 @@ export default function ForgotPassword() {
     setIsLoading(true);
 
     try {
+      // Use window.location.origin in development, hardcoded URL in production
+      const baseUrl = import.meta.env.DEV 
+        ? window.location.origin 
+        : "https://videovibecheck.com";
+        
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: "https://videovibecheck.com/reset-password?type=recovery",
+        redirectTo: `${baseUrl}/reset-password?type=recovery`,
       });
 
       if (error) {
