@@ -85,29 +85,36 @@ export function VideoReviewCards() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <h2 className="text-2xl font-semibold tracking-tight">Review Videos</h2>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-3">
         {videoStats.map((stat) => (
           <Card 
             key={stat.jobId}
             className="cursor-pointer hover:bg-accent/50 transition-colors"
             onClick={() => setSelectedJobId(stat.jobId)}
           >
-            <CardHeader>
-              <CardTitle className="text-lg">{stat.jobTitle}</CardTitle>
+            <CardHeader className="p-3 pb-0">
+              <CardTitle className="text-base truncate">{stat.jobTitle}</CardTitle>
             </CardHeader>
-            <CardContent>
-              <dl className="space-y-2 text-sm">
-                <div className="flex justify-between">
+            <CardContent className="p-3">
+              <dl className="space-y-1.5 text-sm">
+                <div className="flex justify-between items-center">
                   <dt>Videos Received:</dt>
                   <dd>{stat.videosReceived}</dd>
                 </div>
-                <div className={`flex justify-between font-medium ${stat.readyForReview > 0 ? 'text-red-600' : ''}`}>
-                  <dt>Ready for Review:</dt>
-                  <dd>{stat.readyForReview}</dd>
-                </div>
-                <div className="flex justify-between">
+                {stat.readyForReview > 0 ? (
+                  <div className="flex justify-between items-center px-2 py-1 -mx-2 bg-red-50 text-red-700 rounded-md font-medium">
+                    <dt>Ready for Review:</dt>
+                    <dd>{stat.readyForReview}</dd>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-center">
+                    <dt>Ready for Review:</dt>
+                    <dd>{stat.readyForReview}</dd>
+                  </div>
+                )}
+                <div className="flex justify-between items-center">
                   <dt>Approved:</dt>
                   <dd>{stat.approved}</dd>
                 </div>
