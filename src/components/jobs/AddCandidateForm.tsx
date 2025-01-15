@@ -16,33 +16,61 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
+  const [phoneError, setPhoneError] = useState("")
   const [resume, setResume] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const supabase = useSupabaseClient()
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
-  const formatPhoneNumber = (phone: string) => {
-    // Remove all non-numeric characters
-    const cleaned = phone.replace(/\D/g, '')
+  const validatePhoneNumber = (phone: string) => {
+    // Remove all whitespace
+    const cleaned = phone.trim()
     
-    // Check if the number already has a country code
-    if (cleaned.startsWith('1')) {
-      return `+${cleaned}`
+    // Check if starts with +
+    if (!cleaned.startsWith('+')) {
+      return { isValid: false, error: "Phone number must start with +" }
     }
-    // Add +1 for US numbers if no country code
-    return `+1${cleaned}`
+
+    // Check if there's at least one digit after the +
+    if (cleaned.length < 2) {
+      return { isValid: false, error: "Country code is required" }
+    }
+
+    // Check if all remaining characters are digits
+    const digits = cleaned.slice(1)
+    if (!/^\d+$/.test(digits)) {
+      return { isValid: false, error: "Phone number can only contain digits after the +" }
+    }
+
+    // Ensure minimum length for international number (+ plus at least 7 digits)
+    if (cleaned.length < 8) {
+      return { isValid: false, error: "Phone number is too short" }
+    }
+
+    return { isValid: true, error: "" }
+  }
+
+  const handlePhoneChange = (value: string) => {
+    setPhone(value)
+    const validation = validatePhoneNumber(value)
+    setPhoneError(validation.error)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate phone number before submission
+    const phoneValidation = validatePhoneNumber(phone)
+    if (!phoneValidation.isValid) {
+      setPhoneError(phoneValidation.error)
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
       let resumeUrl = null
-      
-      // Format phone number before submission
-      const formattedPhone = formatPhoneNumber(phone)
       
       if (resume) {
         const fileExt = resume.name.split('.').pop()
@@ -74,7 +102,7 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
         resumeUrl = fileName
       }
 
-      console.log('Adding candidate to database:', { jobId, name, email, formattedPhone, resumeUrl })
+      console.log('Adding candidate to database:', { jobId, name, email, phone, resumeUrl })
       const { error } = await supabase
         .from('candidates')
         .insert([
@@ -82,7 +110,7 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
             job_id: jobId,
             name,
             email,
-            phone: formattedPhone,
+            phone,
             resume_url: resumeUrl,
             status: 'new'
           }
@@ -90,7 +118,6 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
 
       if (error) throw error
 
-      // Invalidate all relevant queries with correct query keys
       queryClient.invalidateQueries({ queryKey: ['job-candidates', jobId] })
       queryClient.invalidateQueries({ queryKey: ['video-stats'] })
       queryClient.invalidateQueries({ queryKey: ['job-openings'] })
@@ -140,10 +167,16 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
           id="phone"
           type="tel"
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={(e) => handlePhoneChange(e.target.value)}
           required
           placeholder="+1 (234) 567-8900"
+          className={phoneError ? "border-red-500" : ""}
         />
+        {phoneError && (
+          <p className="text-sm text-red-500 mt-1">
+            {phoneError}
+          </p>
+        )}
         <p className="text-xs text-muted-foreground">
           Enter phone number with country code (e.g., +1 for US numbers)
         </p>
@@ -174,7 +207,7 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
           </p>
         )}
       </div>
-      <Button type="submit" disabled={isSubmitting}>
+      <Button type="submit" disabled={isSubmitting || !!phoneError}>
         {isSubmitting ? "Adding..." : "Add Candidate"}
       </Button>
     </form>
