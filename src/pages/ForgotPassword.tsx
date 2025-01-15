@@ -17,7 +17,7 @@ export default function ForgotPassword() {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password?type=recovery`,
+        redirectTo: "https://videovibecheck.com/reset-password?type=recovery",
       });
 
       if (error) {
