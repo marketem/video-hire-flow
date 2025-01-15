@@ -23,7 +23,7 @@ export function JobOpenings() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
+      <div className="flex items-center justify-between gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">Request Videos</h2>
         <Button 
           onClick={() => setIsCreateDialogOpen(true)}
