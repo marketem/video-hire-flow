@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Upload } from "lucide-react"
+import { formatPhoneNumber } from "@/utils/phoneUtils"
 
 interface AddCandidateFormProps {
   jobId: string
@@ -16,57 +17,14 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
-  const [phoneError, setPhoneError] = useState("")
   const [resume, setResume] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const supabase = useSupabaseClient()
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
-  const validatePhoneNumber = (phone: string) => {
-    // Remove all whitespace
-    const cleaned = phone.trim()
-    
-    // Check if starts with +
-    if (!cleaned.startsWith('+')) {
-      return { isValid: false, error: "Phone number must start with +" }
-    }
-
-    // Check if there's at least one digit after the +
-    if (cleaned.length < 2) {
-      return { isValid: false, error: "Country code is required" }
-    }
-
-    // Check if all remaining characters are digits
-    const digits = cleaned.slice(1)
-    if (!/^\d+$/.test(digits)) {
-      return { isValid: false, error: "Phone number can only contain digits after the +" }
-    }
-
-    // Ensure minimum length for international number (+ plus at least 7 digits)
-    if (cleaned.length < 8) {
-      return { isValid: false, error: "Phone number is too short" }
-    }
-
-    return { isValid: true, error: "" }
-  }
-
-  const handlePhoneChange = (value: string) => {
-    setPhone(value)
-    const validation = validatePhoneNumber(value)
-    setPhoneError(validation.error)
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    // Validate phone number before submission
-    const phoneValidation = validatePhoneNumber(phone)
-    if (!phoneValidation.isValid) {
-      setPhoneError(phoneValidation.error)
-      return
-    }
-
     setIsSubmitting(true)
 
     try {
@@ -102,7 +60,9 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
         resumeUrl = fileName
       }
 
-      console.log('Adding candidate to database:', { jobId, name, email, phone, resumeUrl })
+      const formattedPhone = formatPhoneNumber(phone)
+
+      console.log('Adding candidate to database:', { jobId, name, email, formattedPhone, resumeUrl })
       const { error } = await supabase
         .from('candidates')
         .insert([
@@ -110,7 +70,7 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
             job_id: jobId,
             name,
             email,
-            phone,
+            phone: formattedPhone,
             resume_url: resumeUrl,
             status: 'new'
           }
@@ -167,18 +127,12 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
           id="phone"
           type="tel"
           value={phone}
-          onChange={(e) => handlePhoneChange(e.target.value)}
+          onChange={(e) => setPhone(e.target.value)}
           required
           placeholder="+1 (234) 567-8900"
-          className={phoneError ? "border-red-500" : ""}
         />
-        {phoneError && (
-          <p className="text-sm text-red-500 mt-1">
-            {phoneError}
-          </p>
-        )}
         <p className="text-xs text-muted-foreground">
-          Enter phone number with country code (e.g., +1 for US numbers)
+          Enter phone number in any format - we'll format it automatically
         </p>
       </div>
       <div className="space-y-2">
@@ -207,7 +161,7 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
           </p>
         )}
       </div>
-      <Button type="submit" disabled={isSubmitting || !!phoneError}>
+      <Button type="submit" disabled={isSubmitting}>
         {isSubmitting ? "Adding..." : "Add Candidate"}
       </Button>
     </form>
