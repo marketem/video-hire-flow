@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { VideoReviewModal } from "./VideoReviewModal"
 import { useState } from "react"
 import { Clock, AlertCircle, Mail } from "lucide-react"
@@ -147,16 +146,6 @@ export function VideoReviewCards() {
                   <span>{stat.awaitingResponse} {stat.awaitingResponse === 1 ? 'invite' : 'invites'} awaiting response</span>
                 </div>
               )}
-              <Button 
-                variant="destructive" 
-                className="w-full"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setSelectedJobId(stat.jobId)
-                }}
-              >
-                Review
-              </Button>
             </CardContent>
           </Card>
         ))}
