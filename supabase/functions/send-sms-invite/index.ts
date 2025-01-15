@@ -33,28 +33,36 @@ const handler = async (req: Request): Promise<Response> => {
     const { name, phone, companyName, senderName, submissionUrl } = await req.json() as SMSRequest
     console.log('Sending SMS to:', { name, phone, companyName, senderName })
 
-    const client = new Twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-    const message = `Hi ${name}, ${senderName} from ${companyName} has requested a video introduction. Please click this link to record and submit your video: ${submissionUrl}`
+    try {
+      const client = new Twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+      const message = `Hi ${name}, ${senderName} from ${companyName} has requested a video introduction. Please click this link to record and submit your video: ${submissionUrl}`
 
-    const result = await client.messages.create({
-      body: message,
-      to: phone,
-      from: TWILIO_PHONE_NUMBER
-    })
+      const result = await client.messages.create({
+        body: message,
+        to: phone,
+        from: TWILIO_PHONE_NUMBER
+      })
 
-    console.log('SMS sent successfully:', result.sid)
+      console.log('SMS sent successfully:', result.sid)
 
-    return new Response(
-      JSON.stringify({ success: true, messageId: result.sid }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
-    )
+      return new Response(
+        JSON.stringify({ success: true, messageId: result.sid }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      )
+    } catch (twilioError) {
+      console.error('Twilio error:', twilioError)
+      throw new Error(`Twilio error: ${twilioError.message}`)
+    }
   } catch (error) {
     console.error('Error sending SMS:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 
