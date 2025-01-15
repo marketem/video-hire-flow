@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { AuthError, AuthApiError } from "@supabase/supabase-js";
 
 export function useLoginForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -11,9 +12,30 @@ export function useLoginForm() {
   const navigate = useNavigate();
   const supabase = useSupabaseClient();
 
+  const getErrorMessage = (error: AuthError) => {
+    console.error("Auth error details:", error);
+    
+    if (error instanceof AuthApiError) {
+      switch (error.status) {
+        case 400:
+          return "Invalid email or password format. Please check your credentials.";
+        case 401:
+          return "Invalid login credentials. Please try again.";
+        case 403:
+          return "Email not confirmed. Please check your email for verification link.";
+        case 422:
+          return "Invalid email or password format.";
+        default:
+          return error.message;
+      }
+    }
+    return error.message;
+  };
+
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    console.log("Attempting login with email:", email);
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -22,33 +44,40 @@ export function useLoginForm() {
       });
 
       if (error) {
-        console.error("Login error:", error.message);
-        
-        if (error.message.includes("Invalid login credentials")) {
-          toast({
-            title: "Login Failed",
-            description: "Invalid email or password. Please try again or click here to sign up if you don't have an account.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: "An error occurred during login. Please try again.",
-            variant: "destructive",
-          });
-        }
+        console.error("Login error:", error);
+        toast({
+          title: "Login Failed",
+          description: getErrorMessage(error),
+          variant: "destructive",
+        });
         return;
       }
 
       if (data?.user) {
+        console.log("Login successful, user:", data.user);
+        
+        // Verify session is active
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session verification error:", sessionError);
+          throw sessionError;
+        }
+
+        if (!sessionData.session) {
+          console.error("No active session found after login");
+          throw new Error("Failed to establish session");
+        }
+
         toast({
           title: "Success",
           description: "You've successfully logged in!",
         });
+        
         navigate('/dashboard', { replace: true });
       }
     } catch (error) {
-      console.error("Unexpected error:", error);
+      console.error("Unexpected error during login:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
