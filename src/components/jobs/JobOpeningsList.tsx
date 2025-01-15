@@ -72,7 +72,7 @@ export function JobOpeningsList() {
           {jobs.map((job) => (
             <div 
               key={job.id} 
-              className="bg-card p-3 rounded-lg border"
+              className="bg-muted/30 p-3 rounded-lg"
             >
               <div className="space-y-2">
                 <div className="flex justify-between items-start">
