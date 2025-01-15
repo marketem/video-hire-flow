@@ -77,18 +77,6 @@ export function VideoReviewCards() {
           : undefined
 
         if (videosReceived > 0 || awaitingResponse > 0) {
-          console.log('Adding job to stats:', {
-            jobId: job.id,
-            jobTitle: job.title,
-            videosReceived,
-            readyForReview,
-            awaitingResponse,
-            approvedCount,
-            rejectedCount,
-            oldestPending,
-            totalInvitesSent
-          })
-
           stats.push({
             jobId: job.id,
             jobTitle: job.title,
@@ -113,19 +101,16 @@ export function VideoReviewCards() {
     
     const now = new Date()
     const daysWaiting = differenceInDays(now, stat.oldestPending)
-    console.log('Days waiting:', daysWaiting, 'for job:', stat.jobTitle)
-    console.log('Now:', now.toISOString())
-    console.log('Oldest pending:', stat.oldestPending.toISOString())
     
-    // Show if 1 or more days have passed
+    // Only show if at least 24 hours have passed
     if (daysWaiting < 1) return null
 
-    const waitingTime = formatDistanceToNow(stat.oldestPending, { addSuffix: true })
+    const dayText = daysWaiting === 1 ? 'day' : 'days'
     
     return (
       <div className="flex items-center gap-1 text-xs text-red-600">
         <AlertCircle className="h-4 w-4" />
-        <span>Waiting {waitingTime}</span>
+        <span>Waiting {daysWaiting} {dayText}</span>
       </div>
     )
   }
