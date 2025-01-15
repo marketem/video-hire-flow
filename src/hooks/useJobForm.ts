@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useSupabaseClient } from "@supabase/auth-helpers-react"
+import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
 
 export function useJobForm(onSuccess?: () => void) {
@@ -11,6 +11,7 @@ export function useJobForm(onSuccess?: () => void) {
 
   const supabase = useSupabaseClient()
   const { toast } = useToast()
+  const user = useUser()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -23,6 +24,7 @@ export function useJobForm(onSuccess?: () => void) {
           department,
           location,
           description,
+          user_id: user?.id,
         },
       ])
 
@@ -37,6 +39,7 @@ export function useJobForm(onSuccess?: () => void) {
         onSuccess()
       }
     } catch (error) {
+      console.error('Error creating job opening:', error)
       toast({
         title: "Error",
         description: "Failed to create job opening",
