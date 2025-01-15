@@ -22,12 +22,27 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
+  const formatPhoneNumber = (phone: string) => {
+    // Remove all non-numeric characters
+    const cleaned = phone.replace(/\D/g, '')
+    
+    // Check if the number already has a country code
+    if (cleaned.startsWith('1')) {
+      return `+${cleaned}`
+    }
+    // Add +1 for US numbers if no country code
+    return `+1${cleaned}`
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
     try {
       let resumeUrl = null
+      
+      // Format phone number before submission
+      const formattedPhone = formatPhoneNumber(phone)
       
       if (resume) {
         const fileExt = resume.name.split('.').pop()
@@ -59,7 +74,7 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
         resumeUrl = fileName
       }
 
-      console.log('Adding candidate to database:', { jobId, name, email, phone, resumeUrl })
+      console.log('Adding candidate to database:', { jobId, name, email, formattedPhone, resumeUrl })
       const { error } = await supabase
         .from('candidates')
         .insert([
@@ -67,7 +82,7 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
             job_id: jobId,
             name,
             email,
-            phone,
+            phone: formattedPhone,
             resume_url: resumeUrl,
             status: 'new'
           }
@@ -127,8 +142,11 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           required
-          placeholder="+1234567890"
+          placeholder="+1 (234) 567-8900"
         />
+        <p className="text-xs text-muted-foreground">
+          Enter phone number with country code (e.g., +1 for US numbers)
+        </p>
       </div>
       <div className="space-y-2">
         <Label htmlFor="resume">Resume</Label>

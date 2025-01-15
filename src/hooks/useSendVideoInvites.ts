@@ -9,6 +9,18 @@ export function useSendVideoInvites(jobId: string) {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
+  const formatPhoneNumber = (phone: string) => {
+    // Remove all non-numeric characters
+    const cleaned = phone.replace(/\D/g, '')
+    
+    // Check if the number already has a country code
+    if (cleaned.startsWith('1')) {
+      return `+${cleaned}`
+    }
+    // Add +1 for US numbers if no country code
+    return `+1${cleaned}`
+  }
+
   const sendVideoInvites = async (selectedCandidates: string[], candidates: Candidate[]) => {
     try {
       console.log('Starting sendVideoInvites function')
@@ -70,11 +82,14 @@ export function useSendVideoInvites(jobId: string) {
 
         // Send SMS invite if phone number exists
         if (candidate.phone) {
+          const formattedPhone = formatPhoneNumber(candidate.phone)
+          console.log('Sending SMS to formatted phone:', formattedPhone)
+          
           promises.push(
             supabase.functions.invoke('send-sms-invite', {
               body: {
                 name: candidate.name,
-                phone: candidate.phone,
+                phone: formattedPhone,
                 companyName: user?.user_metadata?.company_name || 'our company',
                 senderName: user?.user_metadata?.name || 'The hiring team',
                 submissionUrl: videoSubmissionUrl
