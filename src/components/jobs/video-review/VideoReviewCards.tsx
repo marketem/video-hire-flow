@@ -116,7 +116,7 @@ export function VideoReviewCards() {
           </Card>
         ))}
         {videoStats.length === 0 && (
-          <div className="col-span-3 text-center py-8 text-muted-foreground">
+          <div className="col-span-3 text-center py-3 text-sm text-muted-foreground">
             No video submissions or pending requests yet
           </div>
         )}
