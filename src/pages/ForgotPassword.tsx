@@ -64,6 +64,17 @@ export default function ForgotPassword() {
             <span className="text-xl font-bold">VibeCheck</span>
           </Link>
         </div>
+        
+        {/* New header and description */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold tracking-tight mb-2">
+            Forgot Password
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            We'll send you a reset email from Supabase Auth
+          </p>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
