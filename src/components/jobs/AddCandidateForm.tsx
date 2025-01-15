@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Upload, MessageSquare } from "lucide-react"
+import { Upload } from "lucide-react"
 import { formatPhoneNumber } from "@/utils/phoneUtils"
 import { Checkbox } from "@/components/ui/checkbox"
 
@@ -20,8 +20,7 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
   const [phone, setPhone] = useState("")
   const [resume, setResume] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [smsConsent, setSmsConsent] = useState(false)
-  const [termsAccepted, setTermsAccepted] = useState(false)
+  const [hasConsented, setHasConsented] = useState(false)
   const supabase = useSupabaseClient()
   const queryClient = useQueryClient()
   const { toast } = useToast()
@@ -29,10 +28,10 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!smsConsent || !termsAccepted) {
+    if (!hasConsented) {
       toast({
-        title: "Required Consent",
-        description: "Please accept both the terms and conditions and SMS consent to proceed.",
+        title: "Consent Required",
+        description: "Please confirm that the candidate has provided consent to proceed.",
         variant: "destructive",
       })
       return
@@ -46,16 +45,6 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
       if (resume) {
         const fileExt = resume.name.split('.').pop()
         const fileName = `${Math.random()}.${fileExt}`
-        console.log('Uploading file:', fileName)
-        
-        const { data: bucketData, error: bucketError } = await supabase
-          .storage
-          .getBucket('resumes')
-        
-        if (bucketError) {
-          console.error('Bucket error:', bucketError)
-          throw new Error('Storage bucket not configured properly')
-        }
         
         const { error: uploadError, data } = await supabase.storage
           .from('resumes')
@@ -64,18 +53,12 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
             upsert: false
           })
 
-        if (uploadError) {
-          console.error('Upload error:', uploadError)
-          throw uploadError
-        }
-        
-        console.log('Upload successful:', data)
+        if (uploadError) throw uploadError
         resumeUrl = fileName
       }
 
       const formattedPhone = formatPhoneNumber(phone)
 
-      console.log('Adding candidate to database:', { jobId, name, email, formattedPhone, resumeUrl })
       const { error } = await supabase
         .from('candidates')
         .insert([
@@ -175,45 +158,23 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
         )}
       </div>
 
-      <div className="space-y-4 border rounded-lg p-4 bg-muted/5">
-        <div className="flex items-start space-x-2">
-          <Checkbox 
-            id="terms" 
-            checked={termsAccepted}
-            onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
-            className="mt-1"
-          />
-          <div className="grid gap-1.5 leading-none">
-            <label
-              htmlFor="terms"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Accept Terms and Conditions
-            </label>
-            <p className="text-sm text-muted-foreground">
-              By checking this box, you agree to our Terms of Service and Privacy Policy.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-start space-x-2">
-          <Checkbox 
-            id="sms" 
-            checked={smsConsent}
-            onCheckedChange={(checked) => setSmsConsent(checked as boolean)}
-            className="mt-1"
-          />
-          <div className="grid gap-1.5 leading-none">
-            <label
-              htmlFor="sms"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              SMS Communication Consent
-            </label>
-            <p className="text-sm text-muted-foreground">
-              I consent to receive SMS messages about my application status. Message and data rates may apply. Reply STOP to opt out.
-            </p>
-          </div>
+      <div className="flex items-start space-x-2 border rounded-lg p-4 bg-muted/5">
+        <Checkbox 
+          id="consent" 
+          checked={hasConsented}
+          onCheckedChange={(checked) => setHasConsented(checked as boolean)}
+          className="mt-1"
+        />
+        <div className="grid gap-1.5 leading-none">
+          <label
+            htmlFor="consent"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Consent Confirmation
+          </label>
+          <p className="text-sm text-muted-foreground">
+            I confirm that the candidate has consented to receive SMS communications and agreed to VibeCheck's Terms of Service and Privacy Policy. Message and data rates may apply.
+          </p>
         </div>
       </div>
 
