@@ -52,23 +52,49 @@ export function useSendVideoInvites(jobId: string) {
         const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${videoToken}`
         console.log('Generated submission URL:', videoSubmissionUrl)
 
-        // Call our new Edge Function to send the email
-        const { error: emailError } = await supabase.functions.invoke('send-video-invite', {
-          body: {
-            name: candidate.name,
-            email: candidate.email,
-            companyName: user?.user_metadata?.company_name || 'our company',
-            senderName: user?.user_metadata?.name || 'The hiring team',
-            submissionUrl: videoSubmissionUrl
-          }
-        })
+        // Send both email and SMS invites
+        const promises = []
 
-        if (emailError) {
-          console.error('Error sending invite:', emailError)
-          throw new Error('Failed to send email invitation')
+        // Send email invite
+        promises.push(
+          supabase.functions.invoke('send-video-invite', {
+            body: {
+              name: candidate.name,
+              email: candidate.email,
+              companyName: user?.user_metadata?.company_name || 'our company',
+              senderName: user?.user_metadata?.name || 'The hiring team',
+              submissionUrl: videoSubmissionUrl
+            }
+          })
+        )
+
+        // Send SMS invite if phone number exists
+        if (candidate.phone) {
+          promises.push(
+            supabase.functions.invoke('send-sms-invite', {
+              body: {
+                name: candidate.name,
+                phone: candidate.phone,
+                companyName: user?.user_metadata?.company_name || 'our company',
+                senderName: user?.user_metadata?.name || 'The hiring team',
+                submissionUrl: videoSubmissionUrl
+              }
+            })
+          )
         }
 
-        console.log('Successfully sent invite to:', candidate.email)
+        // Wait for both email and SMS to be sent
+        const results = await Promise.allSettled(promises)
+        
+        // Check for errors
+        const errors = results
+          .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
+          .map(result => result.reason)
+        
+        if (errors.length > 0) {
+          console.error('Errors sending invites:', errors)
+          throw new Error('Failed to send some invitations')
+        }
 
         // Update candidate status
         const { error: statusError } = await supabase
