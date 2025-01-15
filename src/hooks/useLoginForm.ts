@@ -20,19 +20,14 @@ export function useLoginForm() {
       console.log("Auth API Error code:", error.status);
       console.log("Auth API Error message:", error.message);
       
-      // Check for email verification error specifically
-      if (error.message.includes("Email not confirmed")) {
-        return "Please verify your email address before logging in. Check your inbox for the verification link.";
-      }
-      
       switch (error.status) {
         case 400:
           if (error.message.includes("Invalid login credentials")) {
-            return "Invalid email or password. If you haven't verified your email yet, please check your inbox for the verification link.";
+            return "Invalid email or password. Please make sure you've verified your email address.";
           }
-          return "Invalid email or password. Please try again.";
+          return "Invalid email or password.";
         case 401:
-          return "Invalid login credentials. Please try again.";
+          return "Invalid login credentials. Please check your email and password.";
         case 403:
           return "Email not confirmed. Please check your email for verification link.";
         case 422:
