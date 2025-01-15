@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,12 +13,16 @@ export default function ResetPassword() {
   const supabase = useSupabaseClient();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    // Check if we have a session when the component mounts
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const params = new URLSearchParams(location.search);
+      const type = params.get('type');
+
+      // Check if we have a session and if this is a recovery flow
+      if (!session || type !== 'recovery') {
         toast({
           title: "Error",
           description: "Invalid or expired reset link. Please request a new one.",
@@ -29,7 +33,7 @@ export default function ResetPassword() {
     };
 
     checkSession();
-  }, [supabase.auth, navigate, toast]);
+  }, [supabase.auth, navigate, toast, location]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
