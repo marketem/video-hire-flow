@@ -25,6 +25,14 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
+  const resetForm = () => {
+    setName("")
+    setEmail("")
+    setPhone("")
+    setResume(null)
+    setHasConsented(false)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -83,6 +91,7 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
         description: "Candidate added successfully",
       })
 
+      resetForm()
       onSuccess()
     } catch (error) {
       console.error('Form submission error:', error)
