@@ -32,7 +32,8 @@ export default function VideoSubmission() {
     togglePlayback,
     resetRecording,
     resetVideoElement,
-    initializeCamera
+    initializeCamera,
+    stopStream
   } = useVideoRecording()
 
   const { data: candidate, isLoading: isLoadingCandidate } = useQuery({
@@ -96,6 +97,10 @@ export default function VideoSubmission() {
         .eq('id', candidate.id)
 
       if (updateError) throw updateError
+
+      // Stop the stream and reset camera state before navigating
+      stopStream()
+      setCameraInitialized(false)
 
       toast({
         title: "Success",

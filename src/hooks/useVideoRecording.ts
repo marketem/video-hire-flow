@@ -82,6 +82,7 @@ export function useVideoRecording() {
     togglePlayback,
     resetRecording,
     resetVideoElement,
-    initializeCamera
+    initializeCamera,
+    stopStream
   }
 }
