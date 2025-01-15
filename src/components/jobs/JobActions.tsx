@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Eye, Pencil, Users, Trash } from "lucide-react"
+import { MoreHorizontal, Eye, Pencil, ExternalLink, Copy, Trash } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +21,8 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import type { JobOpening } from "./types"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard"
+import { useToast } from "@/hooks/use-toast"
 
 interface JobActionsProps {
   job: JobOpening
@@ -44,6 +46,8 @@ export function JobActions({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const supabase = useSupabaseClient()
   const isMobile = useIsMobile()
+  const { copyToClipboard } = useCopyToClipboard()
+  const { toast } = useToast()
 
   const handleDelete = async () => {
     const { error } = await supabase
@@ -53,6 +57,18 @@ export function JobActions({
 
     if (!error) {
       onJobsUpdated()
+    }
+  }
+
+  const handleCopyPost = async () => {
+    const postUrl = `${window.location.origin}/jobs/${job.id}`
+    const success = await copyToClipboard(postUrl)
+    
+    if (success) {
+      toast({
+        title: "Link copied",
+        description: "Job post link has been copied to clipboard",
+      })
     }
   }
 
@@ -68,9 +84,14 @@ export function JobActions({
       onClick: () => onEdit(job)
     },
     !hideMobileManage && {
-      label: "Manage Candidates",
-      icon: Users,
+      label: "Visit Post",
+      icon: ExternalLink,
       onClick: () => onManageCandidates(job)
+    },
+    {
+      label: "Copy Post",
+      icon: Copy,
+      onClick: handleCopyPost
     },
     {
       label: "Delete Job",
