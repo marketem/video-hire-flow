@@ -35,11 +35,7 @@ export function JobOpenings() {
           {buttonText}
         </Button>
       </div>
-      <JobOpeningsList 
-        jobs={jobs}
-        isLoading={isLoading}
-        fetchJobs={fetchJobs}
-      />
+      <JobOpeningsList />
       <CreateJobDialog 
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
