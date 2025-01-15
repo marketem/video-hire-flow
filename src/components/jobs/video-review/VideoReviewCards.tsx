@@ -127,22 +127,18 @@ export function VideoReviewCards() {
           >
             <CardHeader className="p-3 pb-0">
               <CardTitle className="text-base truncate flex items-start justify-between gap-2">
-                <div className="flex flex-col items-start">
-                  <span>{stat.jobTitle}</span>
-                </div>
-                <div className="shrink-0 flex flex-col items-end gap-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">Ready for Review</span>
-                    <span className="flex items-center justify-center min-w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full px-1.5">
-                      {stat.readyForReview}
-                    </span>
-                  </div>
-                  {getPriorityIndicator(stat)}
-                </div>
+                <span>{stat.jobTitle}</span>
+                {getPriorityIndicator(stat)}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-3 pt-2">
               <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center min-w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full px-1.5">
+                    {stat.readyForReview}
+                  </div>
+                  <span className="text-xs">Ready for Review</span>
+                </div>
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span className="text-xs">{stat.awaitingResponse} Not Responded</span>
