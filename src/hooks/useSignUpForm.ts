@@ -49,10 +49,18 @@ export function useSignUpForm() {
       if (signUpData?.user) {
         console.log('Signup successful:', signUpData);
         
-        toast({
-          title: "Account created!",
-          description: "Please check your email to confirm your account.",
-        });
+        // Check if email confirmation is required
+        if (signUpData.session === null) {
+          toast({
+            title: "Verification email sent!",
+            description: "Please check your email to verify your account before logging in.",
+          });
+        } else {
+          toast({
+            title: "Account created!",
+            description: "Your account has been created successfully.",
+          });
+        }
         
         navigate('/login');
         return;
