@@ -9,7 +9,6 @@ import { RecordingTimer } from "@/components/video-submission/RecordingTimer"
 import { RecordingControls } from "@/components/video-submission/RecordingControls"
 import { useVideoRecording } from "@/hooks/useVideoRecording"
 
-// Maximum file size in bytes (10MB)
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 export default function VideoSubmission() {
@@ -18,6 +17,7 @@ export default function VideoSubmission() {
   const navigate = useNavigate()
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [cameraInitialized, setCameraInitialized] = useState(false)
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
@@ -31,10 +31,10 @@ export default function VideoSubmission() {
     stopRecording,
     togglePlayback,
     resetRecording,
-    resetVideoElement
+    resetVideoElement,
+    initializeCamera
   } = useVideoRecording()
 
-  // Fetch candidate data using the token
   const { data: candidate, isLoading: isLoadingCandidate } = useQuery({
     queryKey: ['candidate', token],
     queryFn: async () => {
@@ -117,6 +117,20 @@ export default function VideoSubmission() {
     }
   }
 
+  const handleStartCamera = async () => {
+    try {
+      await initializeCamera()
+      setCameraInitialized(true)
+    } catch (error) {
+      console.error('Camera initialization error:', error)
+      toast({
+        title: "Camera Error",
+        description: "Failed to access camera. Please check your camera permissions and try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
   if (isLoadingCandidate) {
     return (
       <div className="min-h-screen bg-background p-4 flex items-center justify-center">
@@ -169,6 +183,8 @@ export default function VideoSubmission() {
             stopRecording={stopRecording}
             handleUpload={handleUpload}
             resetRecording={resetRecording}
+            cameraInitialized={cameraInitialized}
+            onStartCamera={handleStartCamera}
           />
         </div>
       </div>

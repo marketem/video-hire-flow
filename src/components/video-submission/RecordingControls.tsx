@@ -5,24 +5,35 @@ interface RecordingControlsProps {
   isRecording: boolean
   recordedBlob: Blob | null
   isUploading: boolean
+  cameraInitialized: boolean
   startRecording: () => Promise<void>
   stopRecording: () => void
   handleUpload: () => Promise<void>
   resetRecording: () => void
+  onStartCamera: () => Promise<void>
 }
 
 export function RecordingControls({
   isRecording,
   recordedBlob,
   isUploading,
+  cameraInitialized,
   startRecording,
   stopRecording,
   handleUpload,
-  resetRecording
+  resetRecording,
+  onStartCamera
 }: RecordingControlsProps) {
   return (
     <div className="flex justify-center gap-4">
-      {!isRecording && !recordedBlob && (
+      {!cameraInitialized && !recordedBlob && (
+        <Button onClick={onStartCamera} className="w-full">
+          <Video className="mr-2 h-4 w-4" />
+          Start Camera
+        </Button>
+      )}
+      
+      {cameraInitialized && !isRecording && !recordedBlob && (
         <Button onClick={startRecording} className="w-full">
           <Video className="mr-2 h-4 w-4" />
           Start Recording
