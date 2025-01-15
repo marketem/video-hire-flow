@@ -16,14 +16,10 @@ export function useLoginForm() {
     console.error("Auth error details:", error);
     
     if (error instanceof AuthApiError) {
-      // Log the specific error code for debugging
-      console.log("Auth API Error code:", error.status);
-      console.log("Auth API Error message:", error.message);
-      
       switch (error.status) {
         case 400:
           if (error.message.includes("Invalid login credentials")) {
-            return "Invalid email or password. Please make sure you've verified your email address.";
+            return "Invalid email or password. Please check your credentials and verify your email address.";
           }
           return "Invalid email or password.";
         case 401:
@@ -51,13 +47,13 @@ export function useLoginForm() {
           description: "Please enter both email and password.",
           variant: "destructive",
         });
-        setIsLoading(false);
         return;
       }
 
+      // Remove trim() from the credentials to avoid body manipulation
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password: password.trim(),
+        email,
+        password,
       });
 
       if (error) {
