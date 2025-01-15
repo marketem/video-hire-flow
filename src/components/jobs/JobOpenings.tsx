@@ -20,20 +20,12 @@ export function JobOpenings() {
         <h2 className="text-2xl font-semibold tracking-tight">Request Videos</h2>
         <Button 
           onClick={() => setIsCreateDialogOpen(true)}
-          className={`${jobs.length === 0 ? 'w-full' : 'w-auto'} sm:w-auto`}
+          className={jobs.length === 0 ? 'w-full sm:w-auto' : 'w-auto'}
           size={jobs.length === 0 ? "default" : "sm"}
+          variant="default"
         >
-          {jobs.length === 0 ? (
-            <>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Job Opening
-            </>
-          ) : (
-            <>
-              <Plus className="mr-1 h-3 w-3" />
-              Job
-            </>
-          )}
+          <Plus className={jobs.length === 0 ? "mr-2 h-4 w-4" : "mr-1 h-3 w-3"} />
+          {jobs.length === 0 ? "Create Job Opening" : "Job"}
         </Button>
       </div>
       <JobOpeningsList />
