@@ -15,14 +15,22 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 // Create a single instance of the Supabase client
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: true,
-    detectSessionInUrl: true,
     autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
   },
   global: {
     headers: {
-      'apikey': supabaseAnonKey
+      'apikey': supabaseAnonKey,
+      'Content-Type': 'application/json'
     }
+  },
+  db: {
+    schema: 'public'
+  },
+  storage: {
+    retryAttempts: 3,
+    multipartUploadThreshold: 10 * 1024 * 1024 // 10MB
   }
 });
 
