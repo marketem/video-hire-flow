@@ -110,7 +110,9 @@ export function VideoReviewCards() {
 
   const getPriorityIndicator = (stat: VideoStats) => {
     if (!stat.oldestPending) return null
-    const waitingTime = formatDistanceToNow(stat.oldestPending)
+    
+    // Use formatDistanceToNow with addSuffix option for consistent formatting
+    const waitingTime = formatDistanceToNow(stat.oldestPending, { addSuffix: true })
     const daysWaiting = differenceInDays(new Date(), stat.oldestPending)
     const isUrgent = daysWaiting > 1
 
@@ -154,7 +156,7 @@ export function VideoReviewCards() {
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-yellow-500" />
-                  <span className="text-xs">{stat.awaitingResponse} invites sent</span>
+                  <span className="text-xs">{stat.awaitingResponse} no response</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <ThumbsUp className="h-4 w-4 text-green-500" />
