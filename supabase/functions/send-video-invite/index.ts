@@ -18,16 +18,35 @@ interface EmailData {
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 204
+    })
   }
 
   try {
+    console.log('Starting send-video-invite function')
+    
     if (!SENDGRID_API_KEY) {
+      console.error('SendGrid API key not found')
       throw new Error('SendGrid API key not found')
     }
 
+    console.log('Parsing request body...')
     const emailData: EmailData = await req.json()
-    console.log('Received email data:', emailData)
+    console.log('Received email data:', {
+      name: emailData.name,
+      email: emailData.email,
+      companyName: emailData.companyName,
+      senderName: emailData.senderName,
+      // Don't log the full URL for security
+      hasSubmissionUrl: !!emailData.submissionUrl
+    })
+
+    // Validate required fields
+    if (!emailData.email || !emailData.name || !emailData.submissionUrl) {
+      throw new Error('Missing required fields in request')
+    }
 
     const emailContent = {
       personalizations: [
@@ -52,7 +71,7 @@ const handler = async (req: Request): Promise<Response> => {
       ],
     }
 
-    console.log('Sending email with payload:', emailContent)
+    console.log('Sending email via SendGrid...')
 
     const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
@@ -65,23 +84,50 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('SendGrid API error:', errorText)
-      throw new Error(`SendGrid API error: ${errorText}`)
+      console.error('SendGrid API error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      })
+      throw new Error(`SendGrid API error: ${response.status} - ${errorText}`)
     }
 
+    console.log('Email sent successfully')
+
     return new Response(
-      JSON.stringify({ message: 'Email sent successfully' }),
+      JSON.stringify({ 
+        success: true,
+        message: 'Email sent successfully'
+      }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        },
         status: 200,
       },
     )
   } catch (error) {
-    console.error('Error sending email:', error)
+    console.error('Error in send-video-invite function:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    })
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false,
+        error: error.message,
+        details: {
+          name: error.name,
+          type: error.constructor.name
+        }
+      }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        },
         status: 500,
       },
     )
