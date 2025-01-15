@@ -84,9 +84,22 @@ export function VideoReviewCards() {
     refetchInterval: 5000,
   })
 
+  const totalReadyForReview = videoStats.reduce((sum, stat) => sum + stat.readyForReview, 0)
+
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-semibold tracking-tight">Review Videos</h2>
+      <div className="flex items-center gap-3">
+        <h2 className="text-2xl font-semibold tracking-tight">Review Videos</h2>
+        {totalReadyForReview > 0 ? (
+          <div className="flex items-center justify-center w-6 h-6 text-sm font-medium text-white bg-red-500 rounded-full">
+            {totalReadyForReview}
+          </div>
+        ) : (
+          <div className="flex items-center justify-center w-6 h-6 text-sm font-medium text-gray-600 bg-gray-100 rounded-full">
+            0
+          </div>
+        )}
+      </div>
       <div className="grid gap-3 md:grid-cols-3">
         {videoStats.map((stat) => (
           <Card 
