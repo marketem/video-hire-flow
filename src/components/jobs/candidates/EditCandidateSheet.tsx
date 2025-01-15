@@ -25,6 +25,7 @@ export function EditCandidateSheet({ candidate, open, onOpenChange, jobId }: Edi
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
+  const [phoneError, setPhoneError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const supabase = useSupabaseClient()
   const queryClient = useQueryClient()
@@ -36,32 +37,64 @@ export function EditCandidateSheet({ candidate, open, onOpenChange, jobId }: Edi
       setName(candidate.name)
       setEmail(candidate.email)
       setPhone(candidate.phone)
+      setPhoneError("")
     }
   }, [candidate])
 
-  const formatPhoneNumber = (phone: string) => {
-    const cleaned = phone.replace(/\D/g, '')
-    if (cleaned.startsWith('1')) {
-      return `+${cleaned}`
+  const validatePhoneNumber = (phone: string) => {
+    // Remove all whitespace
+    const cleaned = phone.trim()
+    
+    // Check if starts with +
+    if (!cleaned.startsWith('+')) {
+      return { isValid: false, error: "Phone number must start with +" }
     }
-    return `+1${cleaned}`
+
+    // Check if there's at least one digit after the +
+    if (cleaned.length < 2) {
+      return { isValid: false, error: "Country code is required" }
+    }
+
+    // Check if all remaining characters are digits
+    const digits = cleaned.slice(1)
+    if (!/^\d+$/.test(digits)) {
+      return { isValid: false, error: "Phone number can only contain digits after the +" }
+    }
+
+    // Ensure minimum length for international number (+ plus at least 7 digits)
+    if (cleaned.length < 8) {
+      return { isValid: false, error: "Phone number is too short" }
+    }
+
+    return { isValid: true, error: "" }
+  }
+
+  const handlePhoneChange = (value: string) => {
+    setPhone(value)
+    const validation = validatePhoneNumber(value)
+    setPhoneError(validation.error)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!candidate) return
 
+    // Validate phone number before submission
+    const phoneValidation = validatePhoneNumber(phone)
+    if (!phoneValidation.isValid) {
+      setPhoneError(phoneValidation.error)
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
-      const formattedPhone = formatPhoneNumber(phone)
-      
       const { error } = await supabase
         .from('candidates')
         .update({
           name,
           email,
-          phone: formattedPhone,
+          phone,
         })
         .eq('id', candidate.id)
 
@@ -122,10 +155,16 @@ export function EditCandidateSheet({ candidate, open, onOpenChange, jobId }: Edi
               id="phone"
               type="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => handlePhoneChange(e.target.value)}
               required
               placeholder="+1 (234) 567-8900"
+              className={phoneError ? "border-red-500" : ""}
             />
+            {phoneError && (
+              <p className="text-sm text-red-500 mt-1">
+                {phoneError}
+              </p>
+            )}
             <p className="text-xs text-muted-foreground">
               Enter phone number with country code (e.g., +1 for US numbers)
             </p>
@@ -139,7 +178,7 @@ export function EditCandidateSheet({ candidate, open, onOpenChange, jobId }: Edi
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || !!phoneError}>
               {isSubmitting ? "Saving..." : "Save Changes"}
             </Button>
           </div>
