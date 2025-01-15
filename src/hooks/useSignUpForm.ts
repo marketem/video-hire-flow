@@ -23,11 +23,10 @@ export function useSignUpForm() {
         throw new Error("Password must be at least 8 characters long");
       }
 
-      // Get the current origin for the redirect URL
-      const origin = window.location.origin;
-      const redirectTo = `${origin}/login?verified=true`;
+      // Set the full redirect URL including the domain
+      const redirectTo = 'https://videovibecheck.com/login?verified=true';
 
-      console.log('Redirect URL:', redirectTo); // Add this to debug
+      console.log('Redirect URL:', redirectTo); // Debug log
 
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
