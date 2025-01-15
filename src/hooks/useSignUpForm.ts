@@ -40,8 +40,8 @@ export function useSignUpForm() {
       if (signUpError) {
         console.error('Signup error:', signUpError);
         
-        if (signUpError.message.includes('unique constraint')) {
-          throw new Error("This email is already registered. Please try logging in instead.");
+        if (signUpError.message.includes('User already registered')) {
+          throw new Error("User already exists");
         }
         throw signUpError;
       }
