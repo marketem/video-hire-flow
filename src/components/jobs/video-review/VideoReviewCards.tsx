@@ -3,7 +3,7 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { VideoReviewModal } from "./VideoReviewModal"
 import { useState } from "react"
-import { Clock, AlertCircle } from "lucide-react"
+import { Clock, AlertCircle, Mail } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
 interface VideoStats {
@@ -11,7 +11,7 @@ interface VideoStats {
   jobTitle: string
   videosReceived: number
   readyForReview: number
-  approved: number
+  awaitingResponse: number
   oldestPending?: Date
 }
 
@@ -56,8 +56,9 @@ export function VideoReviewCards() {
         const readyForReview = candidates.filter(c => 
           c.video_url && ['new', 'reviewing'].includes(c.status)
         ).length
-        const approved = candidates.filter(c => c.status === 'accepted').length
-        const hasRequestedVideos = candidates.some(c => c.status === 'requested')
+        const awaitingResponse = candidates.filter(c => 
+          c.status === 'requested' && !c.video_url
+        ).length
 
         // Find oldest pending review
         const pendingVideos = candidates.filter(c => 
@@ -67,14 +68,13 @@ export function VideoReviewCards() {
           ? new Date(pendingVideos[0].created_at) 
           : undefined
 
-        if (videosReceived > 0 || hasRequestedVideos) {
+        if (videosReceived > 0 || awaitingResponse > 0) {
           console.log('Adding job to stats:', {
             jobId: job.id,
             jobTitle: job.title,
             videosReceived,
             readyForReview,
-            approved,
-            hasRequestedVideos,
+            awaitingResponse,
             oldestPending
           })
 
@@ -83,7 +83,7 @@ export function VideoReviewCards() {
             jobTitle: job.title,
             videosReceived,
             readyForReview,
-            approved,
+            awaitingResponse,
             oldestPending
           })
         }
@@ -93,8 +93,6 @@ export function VideoReviewCards() {
     },
     refetchInterval: 5000,
   })
-
-  const totalReadyForReview = videoStats.reduce((sum, stat) => sum + stat.readyForReview, 0)
 
   const getPriorityIndicator = (stat: VideoStats) => {
     if (!stat.oldestPending) return null
@@ -111,18 +109,7 @@ export function VideoReviewCards() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <h2 className="text-2xl font-semibold tracking-tight">Review Videos</h2>
-        {totalReadyForReview > 0 ? (
-          <div className="flex items-center justify-center w-6 h-6 text-sm font-medium text-white bg-red-500 rounded-full">
-            {totalReadyForReview}
-          </div>
-        ) : (
-          <div className="flex items-center justify-center w-6 h-6 text-sm font-medium text-gray-600 bg-gray-100 rounded-full">
-            0
-          </div>
-        )}
-      </div>
+      <h2 className="text-2xl font-semibold tracking-tight">Review Videos</h2>
       <div className="grid gap-3 md:grid-cols-3">
         {videoStats.map((stat) => (
           <Card 
@@ -144,27 +131,14 @@ export function VideoReviewCards() {
               {stat.oldestPending && getPriorityIndicator(stat)}
             </CardHeader>
             <CardContent className="p-3">
-              <dl className="space-y-1.5 text-sm">
-                <div className="flex justify-between items-center">
-                  <dt>Total Videos:</dt>
-                  <dd>{stat.videosReceived}</dd>
+              {stat.awaitingResponse > 0 ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Mail className="h-4 w-4" />
+                  <span>{stat.awaitingResponse} {stat.awaitingResponse === 1 ? 'invite' : 'invites'} awaiting response</span>
                 </div>
-                {stat.readyForReview > 0 ? (
-                  <div className="flex justify-between items-center px-2 py-1 -mx-2 bg-red-50 text-red-700 rounded-md font-medium">
-                    <dt>Ready for Review:</dt>
-                    <dd>{stat.readyForReview}</dd>
-                  </div>
-                ) : (
-                  <div className="flex justify-between items-center">
-                    <dt>Ready for Review:</dt>
-                    <dd>{stat.readyForReview}</dd>
-                  </div>
-                )}
-                <div className="flex justify-between items-center">
-                  <dt>Approved:</dt>
-                  <dd>{stat.approved}</dd>
-                </div>
-              </dl>
+              ) : (
+                <div className="text-sm text-muted-foreground">No pending invites</div>
+              )}
             </CardContent>
           </Card>
         ))}
