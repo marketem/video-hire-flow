@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { VideoReviewModal } from "./VideoReviewModal"
 import { useState } from "react"
 import { Clock, AlertCircle, ThumbsUp, ThumbsDown } from "lucide-react"
-import { formatDistanceToNow, differenceInDays } from "date-fns"
+import { formatDistanceToNow, differenceInDays, parseISO } from "date-fns"
 
 interface VideoStats {
   jobId: string
@@ -73,7 +73,7 @@ export function VideoReviewCards() {
           c.video_url && ['new', 'reviewing'].includes(c.status)
         )
         const oldestPending = pendingVideos.length > 0 
-          ? new Date(pendingVideos[0].created_at) 
+          ? parseISO(pendingVideos[0].created_at)
           : undefined
 
         if (videosReceived > 0 || awaitingResponse > 0) {
@@ -111,8 +111,11 @@ export function VideoReviewCards() {
   const getPriorityIndicator = (stat: VideoStats) => {
     if (!stat.oldestPending) return null
     
-    const daysWaiting = differenceInDays(new Date(), stat.oldestPending)
+    const now = new Date()
+    const daysWaiting = differenceInDays(now, stat.oldestPending)
     console.log('Days waiting:', daysWaiting, 'for job:', stat.jobTitle)
+    console.log('Now:', now.toISOString())
+    console.log('Oldest pending:', stat.oldestPending.toISOString())
     
     // Only show if more than 1 day has passed
     if (daysWaiting <= 1) return null
