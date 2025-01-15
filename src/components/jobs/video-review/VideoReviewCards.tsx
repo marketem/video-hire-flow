@@ -3,7 +3,7 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { VideoReviewModal } from "./VideoReviewModal"
 import { useState } from "react"
-import { Clock, AlertCircle, PlayCircle, ThumbsUp, ThumbsDown } from "lucide-react"
+import { Clock, AlertCircle, ThumbsUp, ThumbsDown } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
 interface VideoStats {
@@ -136,20 +136,17 @@ export function VideoReviewCards() {
             <CardHeader className="p-3 pb-0">
               <CardTitle className="text-base truncate flex items-start justify-between gap-2">
                 <span>{stat.jobTitle}</span>
-                {stat.readyForReview > 0 && (
-                  <span className="shrink-0 flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+                <div className="shrink-0 flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">ready to review</span>
+                  <span className="flex items-center justify-center min-w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full px-1.5">
                     {stat.readyForReview}
                   </span>
-                )}
+                </div>
               </CardTitle>
               {stat.oldestPending && getPriorityIndicator(stat)}
             </CardHeader>
             <CardContent className="p-3">
               <div className="flex items-center gap-4 justify-between">
-                <div className="flex items-center gap-1">
-                  <PlayCircle className="h-4 w-4 text-blue-500" />
-                  <span className="text-sm">{stat.readyForReview}</span>
-                </div>
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4 text-yellow-500" />
                   <span className="text-sm">{stat.awaitingResponse}</span>
