@@ -8,13 +8,20 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { CandidateActions } from "./CandidateActions"
 import { CandidateStatusBadge } from "./CandidateStatusBadge"
 import { EditCandidateSheet } from "./EditCandidateSheet"
 import { type Candidate } from "@/types/candidate"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { Pencil } from "lucide-react"
+import { FileText, MoreHorizontal } from "lucide-react"
 import { useState } from "react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard"
+import { useToast } from "@/hooks/use-toast"
 
 interface CandidatesTableProps {
   candidates: Candidate[]
@@ -34,10 +41,33 @@ export function CandidatesTable({
   const isMobile = useIsMobile()
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null)
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false)
+  const { copyToClipboard } = useCopyToClipboard()
+  const { toast } = useToast()
 
   const handleEditClick = (candidate: Candidate) => {
     setSelectedCandidate(candidate)
     setIsEditSheetOpen(true)
+  }
+
+  const handleCopyInviteUrl = async (candidate: Candidate) => {
+    if (!candidate.video_token) {
+      toast({
+        title: "Error",
+        description: "No invite URL available for this candidate",
+        variant: "destructive",
+      })
+      return
+    }
+    
+    const inviteUrl = `${window.location.origin}/video-submission?token=${candidate.video_token}`
+    const success = await copyToClipboard(inviteUrl)
+    
+    if (success) {
+      toast({
+        title: "Success",
+        description: "Invite URL copied to clipboard",
+      })
+    }
   }
 
   if (isMobile) {
@@ -66,15 +96,31 @@ export function CandidatesTable({
                   {new Date(candidate.created_at).toLocaleDateString()}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleEditClick(candidate)}
-                    title="Edit candidate"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <CandidateActions.Resume url={candidate.resume_url} />
+                  {candidate.resume_url && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => window.open(candidate.resume_url, '_blank')}
+                      title="View Resume"
+                    >
+                      <FileText className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleEditClick(candidate)}>
+                        Edit Candidate
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleCopyInviteUrl(candidate)}>
+                        Copy Invite URL
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </div>
@@ -105,8 +151,9 @@ export function CandidatesTable({
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Resume</TableHead>
             <TableHead>Applied</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -124,19 +171,37 @@ export function CandidatesTable({
               <TableCell>
                 <CandidateStatusBadge status={candidate.status} />
               </TableCell>
-              <TableCell>{new Date(candidate.created_at).toLocaleDateString()}</TableCell>
               <TableCell>
-                <div className="flex items-center gap-2">
+                {candidate.resume_url ? (
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleEditClick(candidate)}
-                    title="Edit candidate"
+                    onClick={() => window.open(candidate.resume_url, '_blank')}
+                    title="View Resume"
                   >
-                    <Pencil className="h-4 w-4" />
+                    <FileText className="h-4 w-4" />
                   </Button>
-                  <CandidateActions.Resume url={candidate.resume_url} />
-                </div>
+                ) : (
+                  <span className="text-muted-foreground text-sm">No resume</span>
+                )}
+              </TableCell>
+              <TableCell>{new Date(candidate.created_at).toLocaleDateString()}</TableCell>
+              <TableCell className="text-right">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleEditClick(candidate)}>
+                      Edit Candidate
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleCopyInviteUrl(candidate)}>
+                      Copy Invite URL
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}
