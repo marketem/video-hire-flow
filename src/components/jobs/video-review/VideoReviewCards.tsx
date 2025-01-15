@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { VideoReviewModal } from "./VideoReviewModal"
 import { useState } from "react"
 import { Clock, AlertCircle, Mail } from "lucide-react"
@@ -109,7 +110,14 @@ export function VideoReviewCards() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-semibold tracking-tight">Review Videos</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold tracking-tight">Review Videos</h2>
+        {videoStats.some(stat => stat.readyForReview > 0) && (
+          <div className="text-sm text-red-600 font-medium">
+            Candidate video ready for review
+          </div>
+        )}
+      </div>
       <div className="grid gap-3 md:grid-cols-3">
         {videoStats.map((stat) => (
           <Card 
@@ -130,7 +138,7 @@ export function VideoReviewCards() {
               </CardTitle>
               {stat.oldestPending && getPriorityIndicator(stat)}
             </CardHeader>
-            <CardContent className="p-3">
+            <CardContent className="p-3 space-y-3">
               {stat.awaitingResponse > 0 ? (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Mail className="h-4 w-4" />
@@ -139,6 +147,16 @@ export function VideoReviewCards() {
               ) : (
                 <div className="text-sm text-muted-foreground">No pending invites</div>
               )}
+              <Button 
+                variant="destructive" 
+                className="w-full"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSelectedJobId(stat.jobId)
+                }}
+              >
+                Review
+              </Button>
             </CardContent>
           </Card>
         ))}
