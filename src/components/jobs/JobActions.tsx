@@ -23,7 +23,6 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard"
 import { useToast } from "@/hooks/use-toast"
-import { useNavigate } from "react-router-dom"
 
 interface JobActionsProps {
   job: JobOpening
@@ -49,7 +48,6 @@ export function JobActions({
   const isMobile = useIsMobile()
   const { copyToClipboard } = useCopyToClipboard()
   const { toast } = useToast()
-  const navigate = useNavigate()
 
   const handleDelete = async () => {
     const { error } = await supabase
@@ -115,7 +113,10 @@ export function JobActions({
           <Button
             key={index}
             variant="ghost"
-            className={cn("w-full justify-start", action.className)}
+            className={cn(
+              "w-full justify-start border border-gray-200",
+              action.className
+            )}
             onClick={action.onClick}
           >
             <action.icon className="mr-2 h-4 w-4" />
