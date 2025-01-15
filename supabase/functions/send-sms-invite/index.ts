@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import axiod from "https://deno.land/x/axiod@0.26.2/mod.ts"
 
 const SENDGRID_API_KEY = Deno.env.get('SENDGRID_API_KEY')
+const TINYURL_API_KEY = Deno.env.get('TINYURL_API_KEY')
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,8 +17,26 @@ interface SMSRequest {
   submissionUrl: string
 }
 
+async function shortenUrl(longUrl: string): Promise<string> {
+  try {
+    const response = await axiod.post('https://api.tinyurl.com/create', {
+      url: longUrl,
+      domain: "tinyurl.com"
+    }, {
+      headers: {
+        'Authorization': `Bearer ${TINYURL_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    return response.data.data.tiny_url;
+  } catch (error) {
+    console.error('URL shortening failed:', error);
+    return longUrl; // Fallback to original URL if shortening fails
+  }
+}
+
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -31,18 +51,20 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Parsing request body...')
     const requestData = await req.json() as SMSRequest
     
-    // Validate request data
     if (!requestData.phone || !requestData.name || !requestData.submissionUrl) {
       const error = new Error('Missing required fields in request')
       console.error('Request validation failed:', error, 'Request data:', requestData)
       throw error
     }
 
-    // Format phone number (ensure it starts with +)
+    // Shorten the URL before sending
+    const shortUrl = await shortenUrl(requestData.submissionUrl)
+    console.log('Shortened URL:', shortUrl)
+
     const formattedPhone = requestData.phone.startsWith('+') ? requestData.phone : `+${requestData.phone}`
     console.log('Formatted phone number:', formattedPhone)
 
-    const message = `Hi ${requestData.name}, ${requestData.senderName} from ${requestData.companyName} has requested a video introduction. Please click this link to record and submit your video: ${requestData.submissionUrl}`
+    const message = `Hi ${requestData.name}, ${requestData.senderName} from ${requestData.companyName} has requested a video introduction. Record here: ${shortUrl}`
 
     const response = await fetch('https://api.sendgrid.com/v3/sms/send', {
       method: 'POST',
