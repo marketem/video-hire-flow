@@ -8,6 +8,7 @@ import { VideoPreview } from "@/components/video-submission/VideoPreview"
 import { RecordingTimer } from "@/components/video-submission/RecordingTimer"
 import { RecordingControls } from "@/components/video-submission/RecordingControls"
 import { useVideoRecording } from "@/hooks/useVideoRecording"
+import type { Candidate } from "@/types/candidate"
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
@@ -36,7 +37,7 @@ export default function VideoSubmission() {
     stopStream
   } = useVideoRecording()
 
-  const { data: candidate, isLoading: isLoadingCandidate } = useQuery({
+  const { data: candidate, isLoading: isLoadingCandidate, error: candidateError } = useQuery<Candidate>({
     queryKey: ['candidate', token],
     queryFn: async () => {
       if (!token) {
@@ -62,7 +63,7 @@ export default function VideoSubmission() {
       }
       
       console.log('Candidate data:', data)
-      return data
+      return data as Candidate
     },
     enabled: !!token,
     retry: false,
@@ -83,7 +84,6 @@ export default function VideoSubmission() {
     console.log('Starting upload with:', { recordedBlob, candidateId: candidate?.id })
     
     if (!recordedBlob) {
-      console.error('No recorded blob available')
       setUploadError('No video recording found')
       return
     }
@@ -98,26 +98,21 @@ export default function VideoSubmission() {
     setIsUploading(true)
 
     try {
-      console.log('Starting upload process...')
-      
       if (recordedBlob.size > MAX_FILE_SIZE) {
-        throw new Error(`Video size (${Math.round(recordedBlob.size / (1024 * 1024))}MB) exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit. Please record a shorter video.`)
+        throw new Error(`Video size (${Math.round(recordedBlob.size / (1024 * 1024))}MB) exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit`)
       }
 
       const fileName = `${candidate.id}-${Date.now()}.webm`
-      console.log('Creating file with name:', fileName, 'and type:', recordedBlob.type)
+      console.log('Creating file with name:', fileName)
       
       const file = new File([recordedBlob], fileName, {
         type: recordedBlob.type || 'video/webm'
       })
 
       console.log('Uploading file to storage...')
-      const { error: uploadError, data: uploadData } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('videos')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        })
+        .upload(fileName, file)
 
       if (uploadError) {
         console.error('Storage upload error:', uploadError)
@@ -179,6 +174,19 @@ export default function VideoSubmission() {
     return (
       <div className="min-h-screen bg-background p-4 flex items-center justify-center">
         <div className="text-center">Loading...</div>
+      </div>
+    )
+  }
+
+  if (candidateError || !candidate) {
+    return (
+      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Invalid or Expired Link</h1>
+          <p className="text-muted-foreground">
+            This video submission link is no longer valid.
+          </p>
+        </div>
       </div>
     )
   }
