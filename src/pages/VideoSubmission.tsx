@@ -39,21 +39,31 @@ export default function VideoSubmission() {
   const { data: candidate, isLoading: isLoadingCandidate } = useQuery({
     queryKey: ['candidate', token],
     queryFn: async () => {
-      if (!token) throw new Error('No token provided')
+      if (!token) {
+        console.error('No token provided')
+        throw new Error('No token provided')
+      }
       
+      console.log('Fetching candidate with token:', token)
       const { data, error } = await supabase
         .from('candidates')
         .select('*')
         .eq('video_token', token)
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Error fetching candidate:', error)
+        throw error
+      }
+      
+      console.log('Candidate data:', data)
       return data
     },
     enabled: !!token,
     retry: false,
     meta: {
-      onError: () => {
+      onError: (error: Error) => {
+        console.error('Query error:', error)
         toast({
           title: "Error",
           description: "Invalid or expired video submission link",
@@ -65,8 +75,17 @@ export default function VideoSubmission() {
   })
 
   const handleUpload = async () => {
-    if (!recordedBlob || !candidate?.id) {
-      console.error('Missing recordedBlob or candidate.id')
+    console.log('Starting upload with:', { recordedBlob, candidateId: candidate?.id })
+    
+    if (!recordedBlob) {
+      console.error('No recorded blob available')
+      setUploadError('No video recording found')
+      return
+    }
+
+    if (!candidate?.id) {
+      console.error('No candidate ID available')
+      setUploadError('Invalid candidate information')
       return
     }
     
@@ -81,6 +100,8 @@ export default function VideoSubmission() {
       }
 
       const fileName = `${candidate.id}-${Date.now()}.webm`
+      console.log('Creating file with name:', fileName, 'and type:', recordedBlob.type)
+      
       const file = new File([recordedBlob], fileName, {
         type: recordedBlob.type || 'video/webm'
       })
