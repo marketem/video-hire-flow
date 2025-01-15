@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { PlusCircle } from "lucide-react"
 import { CreateJobDialog } from "./CreateJobDialog"
 import { JobOpeningsList } from "./JobOpeningsList"
 import { useJobOpenings } from "./useJobOpenings"
@@ -31,7 +31,7 @@ export function JobOpenings() {
           size={buttonSize}
           variant="default"
         >
-          <Plus className={`${showCompactButton ? 'mr-1' : 'mr-2'} ${iconSize}`} />
+          <PlusCircle className={`${showCompactButton ? 'mr-1' : 'mr-2'} ${iconSize}`} />
           {buttonText}
         </Button>
       </div>
