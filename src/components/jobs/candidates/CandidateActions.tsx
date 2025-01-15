@@ -4,18 +4,21 @@ import { useCandidateActions } from "@/hooks/useCandidateActions"
 
 interface ResumeActionProps {
   url: string | null
+  jobId: string
 }
 
 interface VideoActionProps {
   url: string | null
+  jobId: string
 }
 
 interface CopyLinkActionProps {
   candidateId: string
+  jobId: string
 }
 
-function ResumeAction({ url }: ResumeActionProps) {
-  const { handleViewResume } = useCandidateActions()
+function ResumeAction({ url, jobId }: ResumeActionProps) {
+  const { handleViewResume } = useCandidateActions(jobId)
   
   if (!url) {
     return <span className="text-muted-foreground text-sm">No resume</span>
@@ -33,7 +36,7 @@ function ResumeAction({ url }: ResumeActionProps) {
   )
 }
 
-function VideoAction({ url }: VideoActionProps) {
+function VideoAction({ url, jobId }: VideoActionProps) {
   if (!url) {
     return <span className="text-muted-foreground text-sm">No video</span>
   }
@@ -50,8 +53,8 @@ function VideoAction({ url }: VideoActionProps) {
   )
 }
 
-function CopyLinkAction({ candidateId }: CopyLinkActionProps) {
-  const { copyVideoLink } = useCandidateActions()
+function CopyLinkAction({ candidateId, jobId }: CopyLinkActionProps) {
+  const { copyVideoLink } = useCandidateActions(jobId)
   
   return (
     <Button
