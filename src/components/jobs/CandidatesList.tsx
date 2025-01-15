@@ -44,10 +44,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
 
       console.log('Deletion successful')
       
-      // Clear selection before refetching
       setSelectedCandidates([])
-      
-      // Force a refetch of the candidates list
       await refetch()
       
       toast({
@@ -89,6 +86,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
         selectedCandidates={selectedCandidates}
         onToggleSelect={toggleCandidate}
         onToggleSelectAll={(checked) => toggleSelectAll(candidates, checked)}
+        jobId={jobId}
       />
     </div>
   )
