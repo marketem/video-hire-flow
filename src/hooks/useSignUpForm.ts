@@ -27,6 +27,8 @@ export function useSignUpForm() {
       const origin = window.location.origin;
       const redirectTo = `${origin}/login?verified=true`;
 
+      console.log('Redirect URL:', redirectTo); // Add this to debug
+
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
