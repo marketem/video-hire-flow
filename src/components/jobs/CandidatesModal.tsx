@@ -49,7 +49,7 @@ export function CandidatesModal({
   }
 
   const content = (
-    <div className="flex flex-col h-[80vh]">
+    <div className="flex flex-col h-full">
       <Tabs defaultValue="list" className="flex-1">
         <TabsList className="w-full grid grid-cols-3">
           <TabsTrigger value="list" className="flex-1">Candidates</TabsTrigger>
@@ -57,46 +57,44 @@ export function CandidatesModal({
           <TabsTrigger value="import" className="flex-1">Import</TabsTrigger>
         </TabsList>
 
-        <div className="flex-1 overflow-hidden">
-          <ScrollArea className="h-[calc(80vh-4rem)]">
-            <div className="p-4">
-              <TabsContent value="list" className="m-0">
-                {candidates?.length > 0 && (
-                  <BulkActions
-                    selectedCount={selectedCandidates.length}
-                    totalCount={candidates.length}
-                    onSendInvites={handleSendInvites}
-                    onDelete={() => handleDelete(selectedCandidates)}
-                    onToggleSelectAll={(checked) => toggleSelectAll(candidates, checked)}
-                    allSelected={selectedCandidates.length === candidates.length}
-                    isSending={isSending}
-                  />
-                )}
-                {isLoading ? (
-                  <CandidatesLoading />
-                ) : candidates?.length === 0 ? (
-                  <CandidatesEmpty jobTitle={jobTitle} />
-                ) : (
-                  <CandidatesTable
-                    candidates={candidates}
-                    selectedCandidates={selectedCandidates}
-                    onToggleSelect={toggleCandidate}
-                    onToggleSelectAll={(checked) => toggleSelectAll(candidates, checked)}
-                    jobId={jobId}
-                  />
-                )}
-              </TabsContent>
+        <ScrollArea className="flex-1">
+          <div className="p-4">
+            <TabsContent value="list" className="m-0 mt-0">
+              {candidates?.length > 0 && (
+                <BulkActions
+                  selectedCount={selectedCandidates.length}
+                  totalCount={candidates.length}
+                  onSendInvites={handleSendInvites}
+                  onDelete={() => handleDelete(selectedCandidates)}
+                  onToggleSelectAll={(checked) => toggleSelectAll(candidates, checked)}
+                  allSelected={selectedCandidates.length === candidates.length}
+                  isSending={isSending}
+                />
+              )}
+              {isLoading ? (
+                <CandidatesLoading />
+              ) : candidates?.length === 0 ? (
+                <CandidatesEmpty jobTitle={jobTitle} />
+              ) : (
+                <CandidatesTable
+                  candidates={candidates}
+                  selectedCandidates={selectedCandidates}
+                  onToggleSelect={toggleCandidate}
+                  onToggleSelectAll={(checked) => toggleSelectAll(candidates, checked)}
+                  jobId={jobId}
+                />
+              )}
+            </TabsContent>
 
-              <TabsContent value="add" className="m-0">
-                <AddCandidateForm jobId={jobId} onSuccess={fetchCandidates} />
-              </TabsContent>
+            <TabsContent value="add" className="m-0 mt-0">
+              <AddCandidateForm jobId={jobId} onSuccess={fetchCandidates} />
+            </TabsContent>
 
-              <TabsContent value="import" className="m-0">
-                <UploadCandidates jobId={jobId} onSuccess={fetchCandidates} />
-              </TabsContent>
-            </div>
-          </ScrollArea>
-        </div>
+            <TabsContent value="import" className="m-0 mt-0">
+              <UploadCandidates jobId={jobId} onSuccess={fetchCandidates} />
+            </TabsContent>
+          </div>
+        </ScrollArea>
       </Tabs>
     </div>
   )
@@ -116,7 +114,7 @@ export function CandidatesModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl p-0">
+      <DialogContent className="max-w-4xl p-0 h-[90vh]">
         <DialogHeader className="p-6 pb-0">
           <DialogTitle>Manage Candidates</DialogTitle>
         </DialogHeader>
