@@ -5,8 +5,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
+} from "../ui/dialog"
+import { Button } from "../ui/button"
 import { Info, BookOpen, Video, Play, Check, ArrowRight } from "lucide-react"
 
 const steps = [
@@ -76,7 +76,6 @@ export function UserGuideDialog({ open, onOpenChange }: UserGuideDialogProps) {
             <div className="flex items-start gap-4">
               {steps[currentStep].icon && (
                 <div className="mt-1">
-                  {/* Render the icon component properly */}
                   {(() => {
                     const IconComponent = steps[currentStep].icon
                     return <IconComponent className="h-5 w-5 text-primary" />
