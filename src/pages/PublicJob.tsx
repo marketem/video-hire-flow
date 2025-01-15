@@ -215,6 +215,12 @@ export default function PublicJob() {
                 required
                 placeholder="+1234567890"
               />
+              <div className="flex items-start gap-2 text-xs text-muted-foreground mt-1.5">
+                <MessageSquare className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                <p>
+                  By providing your phone number, you consent to receive SMS messages about your application status. Message and data rates may apply. Reply STOP to opt out.
+                </p>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="resume">Resume</Label>

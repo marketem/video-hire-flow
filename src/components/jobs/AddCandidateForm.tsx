@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Upload } from "lucide-react"
+import { Upload, MessageSquare, Info } from "lucide-react"
 import { formatPhoneNumber } from "@/utils/phoneUtils"
 
 interface AddCandidateFormProps {
@@ -131,6 +131,12 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
           required
           placeholder="+1 (234) 567-8900"
         />
+        <div className="flex items-start gap-2 text-xs text-muted-foreground mt-1.5">
+          <MessageSquare className="h-4 w-4 flex-shrink-0 mt-0.5" />
+          <p>
+            By providing a phone number, you confirm that you have obtained consent to send SMS messages to this contact. The candidate may receive updates about their application via SMS.
+          </p>
+        </div>
         <p className="text-xs text-muted-foreground">
           Enter phone number in any format - we'll format it automatically
         </p>
