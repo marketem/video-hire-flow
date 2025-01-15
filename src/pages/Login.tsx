@@ -8,13 +8,14 @@ export default function Login() {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
+    // Check both the verified parameter and the error description
     const verified = searchParams.get("verified") === "true";
     const error = searchParams.get("error_description");
 
     if (verified) {
       toast({
-        title: "Email verified",
-        description: "Your email has been verified. You can now log in.",
+        title: "Email Verified",
+        description: "Your email has been verified successfully. You can now log in.",
       });
     } else if (error) {
       toast({

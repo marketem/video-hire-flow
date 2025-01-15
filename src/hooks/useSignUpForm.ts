@@ -23,6 +23,10 @@ export function useSignUpForm() {
         throw new Error("Password must be at least 8 characters long");
       }
 
+      // Get the current origin for the redirect URL
+      const origin = window.location.origin;
+      const redirectTo = `${origin}/login?verified=true`;
+
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -33,7 +37,7 @@ export function useSignUpForm() {
             last_name: lastName,
             trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
           },
-          emailRedirectTo: `${window.location.origin}/login?verified=true`,
+          emailRedirectTo: redirectTo,
         },
       });
 
