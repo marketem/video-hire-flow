@@ -37,7 +37,7 @@ export default function VideoSubmission() {
     stopStream
   } = useVideoRecording()
 
-  const { data: candidate, isLoading: isLoadingCandidate, error: candidateError } = useQuery<Candidate>({
+  const { data: candidate, isLoading: isLoadingCandidate, error: candidateError } = useQuery({
     queryKey: ['candidate', token],
     queryFn: async () => {
       if (!token) {
@@ -79,6 +79,96 @@ export default function VideoSubmission() {
       }
     }
   })
+
+  const handleUpload = async () => {
+    console.log('Starting upload with:', { recordedBlob, candidateId: candidate?.id })
+    
+    if (!recordedBlob) {
+      setUploadError('No video recording found')
+      return
+    }
+
+    if (!candidate?.id) {
+      console.error('No candidate ID available')
+      setUploadError('Invalid candidate information')
+      return
+    }
+    
+    setUploadError(null)
+    setIsUploading(true)
+
+    try {
+      if (recordedBlob.size > MAX_FILE_SIZE) {
+        throw new Error(`Video size (${Math.round(recordedBlob.size / (1024 * 1024))}MB) exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit`)
+      }
+
+      const fileName = `${candidate.id}-${Date.now()}.webm`
+      console.log('Creating file with name:', fileName)
+      
+      const file = new File([recordedBlob], fileName, {
+        type: recordedBlob.type || 'video/webm'
+      })
+
+      console.log('Uploading file to storage...')
+      const { error: uploadError } = await supabase.storage
+        .from('videos')
+        .upload(fileName, file)
+
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError)
+        throw uploadError
+      }
+
+      console.log('File uploaded successfully, updating candidate record...')
+      const { error: updateError } = await supabase
+        .from('candidates')
+        .update({ 
+          video_url: fileName,
+          video_token: null
+        })
+        .eq('id', candidate.id)
+
+      if (updateError) {
+        console.error('Database update error:', updateError)
+        throw updateError
+      }
+
+      stopStream()
+      setCameraInitialized(false)
+
+      toast({
+        title: "Success",
+        description: "Your video has been uploaded successfully!",
+      })
+
+      navigate('/submission-success')
+    } catch (error) {
+      console.error('Upload process error:', error)
+      const errorMessage = error instanceof Error ? error.message : "Upload failed. Please try again."
+      setUploadError(errorMessage)
+      toast({
+        title: "Upload Failed",
+        description: errorMessage,
+        variant: "destructive",
+      })
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleStartCamera = async () => {
+    try {
+      await initializeCamera()
+      setCameraInitialized(true)
+    } catch (error) {
+      console.error('Camera initialization error:', error)
+      toast({
+        title: "Camera Error",
+        description: "Failed to access camera. Please check your camera permissions and try again.",
+        variant: "destructive",
+      })
+    }
+  }
 
   if (isLoadingCandidate) {
     return (
