@@ -9,7 +9,6 @@ import { RecordingTimer } from "@/components/video-submission/RecordingTimer"
 import { RecordingControls } from "@/components/video-submission/RecordingControls"
 import { useVideoRecording } from "@/hooks/useVideoRecording"
 
-// Maximum file size in bytes (10MB)
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 export default function VideoSubmission() {
@@ -18,6 +17,7 @@ export default function VideoSubmission() {
   const navigate = useNavigate()
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [cameraInitialized, setCameraInitialized] = useState(false)
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
@@ -31,28 +31,44 @@ export default function VideoSubmission() {
     stopRecording,
     togglePlayback,
     resetRecording,
-    resetVideoElement
+    resetVideoElement,
+    initializeCamera,
+    stopStream
   } = useVideoRecording()
 
-  // Fetch candidate data using the token
   const { data: candidate, isLoading: isLoadingCandidate } = useQuery({
     queryKey: ['candidate', token],
     queryFn: async () => {
-      if (!token) throw new Error('No token provided')
+      if (!token) {
+        console.error('No token provided')
+        throw new Error('No token provided')
+      }
       
+      console.log('Fetching candidate with token:', token)
       const { data, error } = await supabase
         .from('candidates')
         .select('*')
         .eq('video_token', token)
-        .single()
+        .maybeSingle()
 
-      if (error) throw error
+      if (error) {
+        console.error('Error fetching candidate:', error)
+        throw error
+      }
+
+      if (!data) {
+        console.error('No candidate found with token:', token)
+        throw new Error('Invalid or expired video submission link')
+      }
+      
+      console.log('Candidate data:', data)
       return data
     },
     enabled: !!token,
     retry: false,
     meta: {
-      onError: () => {
+      onError: (error: Error) => {
+        console.error('Query error:', error)
         toast({
           title: "Error",
           description: "Invalid or expired video submission link",
@@ -64,29 +80,51 @@ export default function VideoSubmission() {
   })
 
   const handleUpload = async () => {
-    if (!recordedBlob || !candidate?.id) return
+    console.log('Starting upload with:', { recordedBlob, candidateId: candidate?.id })
+    
+    if (!recordedBlob) {
+      console.error('No recorded blob available')
+      setUploadError('No video recording found')
+      return
+    }
+
+    if (!candidate?.id) {
+      console.error('No candidate ID available')
+      setUploadError('Invalid candidate information')
+      return
+    }
+    
     setUploadError(null)
     setIsUploading(true)
 
     try {
+      console.log('Starting upload process...')
+      
       if (recordedBlob.size > MAX_FILE_SIZE) {
         throw new Error(`Video size (${Math.round(recordedBlob.size / (1024 * 1024))}MB) exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit. Please record a shorter video.`)
       }
 
       const fileName = `${candidate.id}-${Date.now()}.webm`
+      console.log('Creating file with name:', fileName, 'and type:', recordedBlob.type)
+      
       const file = new File([recordedBlob], fileName, {
-        type: 'video/webm'
+        type: recordedBlob.type || 'video/webm'
       })
 
-      const { error: uploadError } = await supabase.storage
+      console.log('Uploading file to storage...')
+      const { error: uploadError, data: uploadData } = await supabase.storage
         .from('videos')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false
         })
 
-      if (uploadError) throw uploadError
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError)
+        throw uploadError
+      }
 
+      console.log('File uploaded successfully, updating candidate record...')
       const { error: updateError } = await supabase
         .from('candidates')
         .update({ 
@@ -95,7 +133,13 @@ export default function VideoSubmission() {
         })
         .eq('id', candidate.id)
 
-      if (updateError) throw updateError
+      if (updateError) {
+        console.error('Database update error:', updateError)
+        throw updateError
+      }
+
+      stopStream()
+      setCameraInitialized(false)
 
       toast({
         title: "Success",
@@ -114,6 +158,20 @@ export default function VideoSubmission() {
       })
     } finally {
       setIsUploading(false)
+    }
+  }
+
+  const handleStartCamera = async () => {
+    try {
+      await initializeCamera()
+      setCameraInitialized(true)
+    } catch (error) {
+      console.error('Camera initialization error:', error)
+      toast({
+        title: "Camera Error",
+        description: "Failed to access camera. Please check your camera permissions and try again.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -169,6 +227,8 @@ export default function VideoSubmission() {
             stopRecording={stopRecording}
             handleUpload={handleUpload}
             resetRecording={resetRecording}
+            cameraInitialized={cameraInitialized}
+            onStartCamera={handleStartCamera}
           />
         </div>
       </div>
