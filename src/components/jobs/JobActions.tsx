@@ -1,9 +1,26 @@
 import { Button } from "@/components/ui/button"
-import { Link as LinkIcon, Eye, Edit, XOctagon, RefreshCw, Users } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { MoreHorizontal, Eye, Pencil, Users, Trash } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { useState } from "react"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
-import { useIsMobile } from "@/hooks/use-mobile"
 import type { JobOpening } from "./types"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { cn } from "@/lib/utils"
 
 interface JobActionsProps {
   job: JobOpening
@@ -12,133 +29,132 @@ interface JobActionsProps {
   onManageCandidates: (job: JobOpening) => void
   onJobsUpdated: () => void
   hideMobileManage?: boolean
+  orientation?: "horizontal" | "vertical"
 }
 
 export function JobActions({ 
   job, 
   onView, 
   onEdit, 
-  onManageCandidates,
+  onManageCandidates, 
   onJobsUpdated,
-  hideMobileManage = false
+  hideMobileManage,
+  orientation = "horizontal"
 }: JobActionsProps) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const supabase = useSupabaseClient()
-  const { toast } = useToast()
   const isMobile = useIsMobile()
 
-  const copyPublicLink = (jobId: string) => {
-    const link = `${window.location.origin}/jobs/${jobId}`
-    navigator.clipboard.writeText(link)
-    toast({
-      title: "Link Copied",
-      description: "Public job link copied to clipboard",
-    })
-  }
+  const handleDelete = async () => {
+    const { error } = await supabase
+      .from('job_openings')
+      .delete()
+      .eq('id', job.id)
 
-  const handleCloseJob = async (jobId: string) => {
-    try {
-      const { error } = await supabase
-        .from('job_openings')
-        .update({ status: 'closed' })
-        .eq('id', jobId)
-
-      if (error) throw error
-
-      toast({
-        title: "Success",
-        description: "Job has been closed",
-      })
-      
+    if (!error) {
       onJobsUpdated()
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to close job",
-        variant: "destructive",
-      })
     }
   }
 
-  const handleReopenJob = async (jobId: string) => {
-    try {
-      const { error } = await supabase
-        .from('job_openings')
-        .update({ status: 'open' })
-        .eq('id', jobId)
-
-      if (error) throw error
-
-      toast({
-        title: "Success",
-        description: "Job has been reopened",
-      })
-      
-      onJobsUpdated()
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to reopen job",
-        variant: "destructive",
-      })
+  const actions = [
+    {
+      label: "View Details",
+      icon: Eye,
+      onClick: () => onView(job)
+    },
+    {
+      label: "Edit Job",
+      icon: Pencil,
+      onClick: () => onEdit(job)
+    },
+    !hideMobileManage && {
+      label: "Manage Candidates",
+      icon: Users,
+      onClick: () => onManageCandidates(job)
+    },
+    {
+      label: "Delete Job",
+      icon: Trash,
+      onClick: () => setShowDeleteConfirm(true),
+      destructive: true
     }
+  ].filter(Boolean)
+
+  if (isMobile && orientation === "vertical") {
+    return (
+      <div className="flex flex-col gap-2">
+        {actions.map((action, index) => (
+          <Button
+            key={index}
+            variant={action.destructive ? "destructive" : "outline"}
+            className={cn(
+              "w-full justify-start gap-2",
+              !action.destructive && "bg-white"
+            )}
+            onClick={action.onClick}
+          >
+            <action.icon className="h-4 w-4" />
+            {action.label}
+          </Button>
+        ))}
+        
+        <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the job opening
+                and remove all associated data.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    )
   }
 
   return (
-    <div className="space-x-1">
-      {(!isMobile || !hideMobileManage) && (
-        <Button
-          variant="secondary"
-          onClick={() => onManageCandidates(job)}
-          title="Manage candidates"
-        >
-          <Users className="mr-2 h-4 w-4" />
-          Manage
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <MoreHorizontal className="h-4 w-4" />
         </Button>
-      )}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => copyPublicLink(job.id)}
-        disabled={!job.public_page_enabled}
-        title={job.public_page_enabled ? "Copy public link" : "Public page disabled"}
-      >
-        <LinkIcon className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => onView(job)}
-        title="View details"
-      >
-        <Eye className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => onEdit(job)}
-        title="Edit job"
-      >
-        <Edit className="h-4 w-4" />
-      </Button>
-      {job.status === 'open' ? (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => handleCloseJob(job.id)}
-          title="Close job"
-        >
-          <XOctagon className="h-4 w-4" />
-        </Button>
-      ) : (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => handleReopenJob(job.id)}
-          title="Reopen job"
-        >
-          <RefreshCw className="h-4 w-4" />
-        </Button>
-      )}
-    </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {actions.map((action, index) => (
+          <DropdownMenuItem
+            key={index}
+            onClick={action.onClick}
+            className={cn(
+              "flex items-center gap-2",
+              action.destructive && "text-destructive"
+            )}
+          >
+            <action.icon className="h-4 w-4" />
+            <span>{action.label}</span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the job opening
+              and remove all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </DropdownMenu>
   )
 }

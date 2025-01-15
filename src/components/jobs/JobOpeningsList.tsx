@@ -15,6 +15,14 @@ import { useJobOpenings } from "./useJobOpenings"
 import type { JobOpening } from "./types"
 import { useState } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { Button } from "@/components/ui/button"
+import { MapPin, Users, Calendar, ChevronRight } from "lucide-react"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
 
 export function JobOpeningsList() {
   const { jobs, isLoading, fetchJobs } = useJobOpenings()
@@ -22,6 +30,8 @@ export function JobOpeningsList() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedJobForCandidates, setSelectedJobForCandidates] = useState<JobOpening | null>(null)
+  const [isActionsSheetOpen, setIsActionsSheetOpen] = useState(false)
+  const [selectedJobForActions, setSelectedJobForActions] = useState<JobOpening | null>(null)
   const isMobile = useIsMobile()
 
   useEffect(() => {
@@ -36,6 +46,11 @@ export function JobOpeningsList() {
   const handleEditJob = (job: JobOpening) => {
     setSelectedJob(job)
     setIsEditDialogOpen(true)
+  }
+
+  const handleOpenActions = (job: JobOpening) => {
+    setSelectedJobForActions(job)
+    setIsActionsSheetOpen(true)
   }
 
   if (isLoading) {
@@ -58,7 +73,6 @@ export function JobOpeningsList() {
             <div 
               key={job.id} 
               className="bg-card p-3 rounded-lg border"
-              onClick={() => setSelectedJobForCandidates(job)}
             >
               <div className="space-y-2">
                 <div className="flex justify-between items-start">
@@ -66,15 +80,15 @@ export function JobOpeningsList() {
                     <h3 className="font-medium truncate">{job.title}</h3>
                     <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
                       <p className="flex items-center gap-1 shrink-0">
-                        <span>📍</span>
+                        <MapPin className="h-4 w-4 stroke-[1.5]" />
                         <span className="truncate">{job.location}</span>
                       </p>
                       <p className="flex items-center gap-1 shrink-0">
-                        <span>👥</span>
+                        <Users className="h-4 w-4 stroke-[1.5]" />
                         <span>{job.candidates_count} candidates</span>
                       </p>
                       <p className="flex items-center gap-1 shrink-0">
-                        <span>📅</span>
+                        <Calendar className="h-4 w-4 stroke-[1.5]" />
                         <span>{new Date(job.created_at).toLocaleDateString()}</span>
                       </p>
                     </div>
@@ -89,15 +103,21 @@ export function JobOpeningsList() {
                     {job.status}
                   </span>
                 </div>
-                <div className="flex justify-end pt-2 border-t">
-                  <JobActions
-                    job={job}
-                    onView={handleViewJob}
-                    onEdit={handleEditJob}
-                    onManageCandidates={setSelectedJobForCandidates}
-                    onJobsUpdated={fetchJobs}
-                    hideMobileManage={true}
-                  />
+                <div className="flex gap-2 pt-2 border-t">
+                  <Button
+                    className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={() => setSelectedJobForCandidates(job)}
+                  >
+                    Invites
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1 bg-white"
+                    onClick={() => handleOpenActions(job)}
+                  >
+                    Manage
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
                 </div>
               </div>
             </div>
@@ -123,6 +143,26 @@ export function JobOpeningsList() {
           open={!!selectedJobForCandidates}
           onOpenChange={(open) => !open && setSelectedJobForCandidates(null)}
         />
+
+        <Sheet open={isActionsSheetOpen} onOpenChange={setIsActionsSheetOpen}>
+          <SheetContent side="right">
+            <SheetHeader>
+              <SheetTitle>Manage Job</SheetTitle>
+            </SheetHeader>
+            <div className="py-4">
+              {selectedJobForActions && (
+                <JobActions
+                  job={selectedJobForActions}
+                  onView={handleViewJob}
+                  onEdit={handleEditJob}
+                  onManageCandidates={setSelectedJobForCandidates}
+                  onJobsUpdated={fetchJobs}
+                  orientation="vertical"
+                />
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
       </>
     )
   }
