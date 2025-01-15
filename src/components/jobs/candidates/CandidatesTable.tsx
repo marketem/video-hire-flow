@@ -75,8 +75,6 @@ export function CandidatesTable({
                     <Pencil className="h-4 w-4" />
                   </Button>
                   <CandidateActions.Resume url={candidate.resume_url} />
-                  <CandidateActions.Video url={candidate.video_url} />
-                  <CandidateActions.CopyLink candidateId={candidate.id} />
                 </div>
               </div>
             </div>
@@ -138,8 +136,6 @@ export function CandidatesTable({
                     <Pencil className="h-4 w-4" />
                   </Button>
                   <CandidateActions.Resume url={candidate.resume_url} />
-                  <CandidateActions.Video url={candidate.video_url} />
-                  <CandidateActions.CopyLink candidateId={candidate.id} />
                 </div>
               </TableCell>
             </TableRow>
