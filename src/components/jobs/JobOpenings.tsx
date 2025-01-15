@@ -3,12 +3,15 @@ import { Button } from "@/components/ui/button"
 import { PlusCircle } from "lucide-react"
 import { CreateJobDialog } from "./CreateJobDialog"
 import { JobOpeningsList } from "./JobOpeningsList"
+import { useJobOpenings } from "./useJobOpenings"
 
 export function JobOpenings() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const { fetchJobs } = useJobOpenings()
 
   const handleJobCreated = () => {
     setIsCreateDialogOpen(false)
+    fetchJobs()
   }
 
   return (

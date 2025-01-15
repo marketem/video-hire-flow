@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import {
   Table,
   TableBody,
@@ -13,6 +13,7 @@ import { CandidatesModal } from "./CandidatesModal"
 import { JobActions } from "./JobActions"
 import { useJobOpenings } from "./useJobOpenings"
 import type { JobOpening } from "./types"
+import { useState } from "react"
 
 export function JobOpeningsList() {
   const { jobs, isLoading, fetchJobs } = useJobOpenings()
