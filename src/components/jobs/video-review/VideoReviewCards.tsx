@@ -137,7 +137,7 @@ export function VideoReviewCards() {
               <CardTitle className="text-base truncate flex items-start justify-between gap-2">
                 <span>{stat.jobTitle}</span>
                 <div className="shrink-0 flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">ready to review</span>
+                  <span className="text-muted-foreground">Ready for Review</span>
                   <span className="flex items-center justify-center min-w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full px-1.5">
                     {stat.readyForReview}
                   </span>
