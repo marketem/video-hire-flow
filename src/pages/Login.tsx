@@ -1,6 +1,21 @@
 import { LoginForm } from "@/components/auth/LoginForm";
+import { useToast } from "@/hooks/use-toast";
+import { useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function Login() {
+  const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("verified") === "true") {
+      toast({
+        title: "Email verified",
+        description: "Your email has been verified. You can now log in.",
+      });
+    }
+  }, [searchParams, toast]);
+
   return (
     <div className="container relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">

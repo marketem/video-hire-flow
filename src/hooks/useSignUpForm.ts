@@ -33,7 +33,7 @@ export function useSignUpForm() {
             last_name: lastName,
             trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
           },
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/login?verified=true`,
         },
       });
 
@@ -48,21 +48,7 @@ export function useSignUpForm() {
 
       if (signUpData?.user) {
         console.log('Signup successful:', signUpData);
-        
-        // Check if email confirmation is required
-        if (signUpData.session === null) {
-          toast({
-            title: "Verification email sent!",
-            description: "Please check your email to verify your account before logging in.",
-          });
-        } else {
-          toast({
-            title: "Account created!",
-            description: "Your account has been created successfully.",
-          });
-        }
-        
-        navigate('/login');
+        navigate('/email-verification-sent');
         return;
       }
     } catch (error) {
