@@ -63,7 +63,8 @@ export function JobActions({
   }
 
   const handleVisitPost = () => {
-    navigate(`/jobs/${job.id}`)
+    const postUrl = `${window.location.origin}/jobs/${job.id}`
+    window.open(postUrl, '_blank')
   }
 
   const handleCopyPost = async () => {
@@ -90,7 +91,7 @@ export function JobActions({
       onClick: () => onEdit(job)
     },
     !hideMobileManage && {
-      label: "Visit Post",
+      label: "Visit Job Post",
       icon: ExternalLink,
       onClick: handleVisitPost
     },
