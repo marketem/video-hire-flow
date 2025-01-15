@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { AuthError } from "@supabase/supabase-js";
 
 export function useSignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -40,9 +41,17 @@ export function useSignUpForm() {
       if (signUpError) {
         console.error('Signup error:', signUpError);
         
-        if (signUpError.message.includes('unique constraint')) {
-          throw new Error("This email is already registered. Please try logging in instead.");
+        // Handle specific error cases
+        if (signUpError.message.includes('User already registered')) {
+          toast({
+            title: "Account Already Exists",
+            description: "An account with this email already exists. Please try logging in instead.",
+            variant: "destructive",
+          });
+          navigate('/login');
+          return;
         }
+        
         throw signUpError;
       }
 
@@ -54,9 +63,15 @@ export function useSignUpForm() {
     } catch (error) {
       console.error('Signup process error:', error);
       
+      const errorMessage = error instanceof AuthError 
+        ? error.message
+        : error instanceof Error 
+          ? error.message 
+          : "An unexpected error occurred during signup";
+      
       toast({
         title: "Error",
-        description: error.message || "An error occurred during signup",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
