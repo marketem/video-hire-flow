@@ -44,13 +44,11 @@ export function useVideoStats() {
           c.video_url && ['new', 'reviewing'].includes(c.status)
         ).length
         const awaitingResponse = candidates.filter(c => 
-          c.status === 'requested' && !c.video_url
+          c.video_token && !c.video_url
         ).length
         const approvedCount = candidates.filter(c => c.status === 'approved').length
         const rejectedCount = candidates.filter(c => c.status === 'rejected').length
-        const totalInvitesSent = candidates.filter(c => 
-          c.status === 'requested' || c.video_url
-        ).length
+        const totalInvitesSent = candidates.filter(c => c.video_token).length
 
         const pendingVideos = candidates.filter(c => 
           c.video_url && ['new', 'reviewing'].includes(c.status)
