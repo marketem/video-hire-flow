@@ -58,6 +58,7 @@ export function JobOpeningsList() {
             <div 
               key={job.id} 
               className="bg-card p-3 rounded-lg border"
+              onClick={() => setSelectedJobForCandidates(job)}
             >
               <div className="space-y-2">
                 <div className="flex justify-between items-start">
@@ -88,13 +89,14 @@ export function JobOpeningsList() {
                     {job.status}
                   </span>
                 </div>
-                <div className="flex justify-end">
+                <div className="flex justify-end pt-2 border-t">
                   <JobActions
                     job={job}
                     onView={handleViewJob}
                     onEdit={handleEditJob}
                     onManageCandidates={setSelectedJobForCandidates}
                     onJobsUpdated={fetchJobs}
+                    hideMobileManage={true}
                   />
                 </div>
               </div>

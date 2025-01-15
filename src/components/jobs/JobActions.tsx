@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Link as LinkIcon, Eye, Edit, XOctagon, RefreshCw, Users } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
+import { useIsMobile } from "@/hooks/use-mobile"
 import type { JobOpening } from "./types"
 
 interface JobActionsProps {
@@ -10,6 +11,7 @@ interface JobActionsProps {
   onEdit: (job: JobOpening) => void
   onManageCandidates: (job: JobOpening) => void
   onJobsUpdated: () => void
+  hideMobileManage?: boolean
 }
 
 export function JobActions({ 
@@ -17,10 +19,12 @@ export function JobActions({
   onView, 
   onEdit, 
   onManageCandidates,
-  onJobsUpdated 
+  onJobsUpdated,
+  hideMobileManage = false
 }: JobActionsProps) {
   const supabase = useSupabaseClient()
   const { toast } = useToast()
+  const isMobile = useIsMobile()
 
   const copyPublicLink = (jobId: string) => {
     const link = `${window.location.origin}/jobs/${jobId}`
@@ -81,14 +85,16 @@ export function JobActions({
 
   return (
     <div className="space-x-1">
-      <Button
-        variant="secondary"
-        onClick={() => onManageCandidates(job)}
-        title="Manage candidates"
-      >
-        <Users className="mr-2 h-4 w-4" />
-        Manage
-      </Button>
+      {(!isMobile || !hideMobileManage) && (
+        <Button
+          variant="secondary"
+          onClick={() => onManageCandidates(job)}
+          title="Manage candidates"
+        >
+          <Users className="mr-2 h-4 w-4" />
+          Manage
+        </Button>
+      )}
       <Button
         variant="ghost"
         size="icon"
