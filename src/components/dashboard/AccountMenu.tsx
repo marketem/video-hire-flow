@@ -11,10 +11,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSupabaseClient, useSession } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
-import { Settings, User, LogOut, BookOpen } from "lucide-react";
+import { Settings, User, LogOut, BookOpen, HelpCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AccountSettingsDialog } from "./AccountSettingsDialog";
 import { UserGuideDialog } from "./UserGuideDialog";
+import { SupportDialog } from "./SupportDialog";
 
 export function AccountMenu() {
   const session = useSession();
@@ -23,6 +24,7 @@ export function AccountMenu() {
   const { toast } = useToast();
   const [showSettings, setShowSettings] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [showSupport, setShowSupport] = useState(false);
 
   useEffect(() => {
     const hasSeenGuide = localStorage.getItem("hasSeenGuide");
@@ -72,6 +74,10 @@ export function AccountMenu() {
               <BookOpen className="mr-2 h-4 w-4" />
               <span>User Guide</span>
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowSupport(true)}>
+              <HelpCircle className="mr-2 h-4 w-4" />
+              <span>Support</span>
+            </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleSignOut}>
@@ -87,6 +93,10 @@ export function AccountMenu() {
       <UserGuideDialog
         open={showGuide}
         onOpenChange={setShowGuide}
+      />
+      <SupportDialog
+        open={showSupport}
+        onOpenChange={setShowSupport}
       />
     </>
   );
