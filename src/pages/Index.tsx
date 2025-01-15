@@ -18,7 +18,7 @@ const steps = [
     icon: Upload
   },
   {
-    title: "Send Video Requests",
+    title: "Request Videos",
     description: "Streamlined process to request video introductions",
     features: [
       "Invite candidates with text and email",
