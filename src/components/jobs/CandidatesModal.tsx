@@ -27,7 +27,7 @@ export function CandidatesModal({
   const isMobile = useIsMobile()
   const [isSending, setIsSending] = useState(false)
   const { candidates, isLoading, fetchCandidates } = useJobCandidates(jobId)
-  const { selectedCandidates, toggleSelectAll, toggleCandidate } = useCandidateSelection()
+  const { selectedCandidates, toggleSelectAll, toggleCandidate, setSelectedCandidates } = useCandidateSelection()
   const { handleDelete } = useCandidateActions(jobId)
   const { sendVideoInvites } = useSendVideoInvites(jobId)
 
@@ -37,6 +37,7 @@ export function CandidatesModal({
       const success = await sendVideoInvites(selectedCandidates, candidates)
       if (success) {
         await fetchCandidates()
+        setSelectedCandidates([]) // Clear selection after successful send
       }
     } finally {
       setIsSending(false)
