@@ -20,16 +20,18 @@ export function WelcomeModal({ isOpen, onStartSetup }: WelcomeModalProps) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Welcome to Your Video Introduction</DialogTitle>
-          <DialogDescription className="space-y-4 pt-4">
-            <p>
-              We're excited to learn more about you! Here are some tips for a great video:
-            </p>
-            <ul className="list-disc pl-6 space-y-2">
-              <li>Find a quiet, well-lit space</li>
-              <li>Be yourself and speak naturally</li>
-              <li>Keep it brief - aim for 30 seconds</li>
-              <li>Share what makes you unique</li>
-            </ul>
+          <DialogDescription>
+            <div className="space-y-4 pt-4">
+              <div>
+                We're excited to learn more about you! Here are some tips for a great video:
+              </div>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Find a quiet, well-lit space</li>
+                <li>Be yourself and speak naturally</li>
+                <li>Keep it brief - aim for 30 seconds</li>
+                <li>Share what makes you unique</li>
+              </ul>
+            </div>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
