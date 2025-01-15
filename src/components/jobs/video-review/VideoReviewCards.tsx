@@ -1,8 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { VideoReviewModal } from "./VideoReviewModal"
-import { useState } from "react"
 import { Clock, AlertCircle, ThumbsUp, ThumbsDown } from "lucide-react"
 import { formatDistanceToNow, differenceInDays, parseISO } from "date-fns"
 
@@ -19,7 +16,6 @@ interface VideoStats {
 }
 
 export function VideoReviewCards() {
-  const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
   const supabase = useSupabaseClient()
 
   const { data: videoStats = [] } = useQuery({
@@ -118,18 +114,15 @@ export function VideoReviewCards() {
       <h2 className="text-2xl font-semibold tracking-tight">Review Videos</h2>
       <div className="grid gap-3 md:grid-cols-3">
         {videoStats.map((stat) => (
-          <Card 
+          <div 
             key={stat.jobId}
-            className={`cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98] border-primary/10 ${
-              stat.readyForReview > 0 ? 'bg-gradient-to-br from-white to-red-50/30' : ''
-            }`}
-            onClick={() => setSelectedJobId(stat.jobId)}
+            className="bg-muted/30 rounded-lg p-2 md:p-4"
           >
-            <CardHeader className="p-3 pb-0">
-              <CardTitle className="text-base truncate flex items-start justify-between gap-2">
-                <div className="flex flex-col items-start">
-                  <span>{stat.jobTitle}</span>
-                </div>
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-start justify-between">
+                <h3 className="text-sm font-medium text-muted-foreground truncate pr-2">
+                  {stat.jobTitle}
+                </h3>
                 <div className="shrink-0 flex flex-col items-end gap-1">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">Ready for Review</span>
@@ -139,10 +132,8 @@ export function VideoReviewCards() {
                   </div>
                   {getPriorityIndicator(stat)}
                 </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 pt-2">
-              <div className="flex flex-col gap-2">
+              </div>
+              <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span className="text-xs">{stat.awaitingResponse} Not Responded</span>
@@ -156,8 +147,8 @@ export function VideoReviewCards() {
                   <span className="text-xs">{stat.rejectedCount} Rejected</span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
         {videoStats.length === 0 && (
           <div className="col-span-3 text-center py-3 text-sm text-muted-foreground">
@@ -165,12 +156,6 @@ export function VideoReviewCards() {
           </div>
         )}
       </div>
-
-      <VideoReviewModal
-        jobId={selectedJobId}
-        open={!!selectedJobId}
-        onOpenChange={(open) => !open && setSelectedJobId(null)}
-      />
     </div>
   )
 }
