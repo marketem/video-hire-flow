@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { VideoReviewModal } from "./VideoReviewModal"
 import { useState } from "react"
 import { Clock, AlertCircle, ThumbsUp, ThumbsDown } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
+import { formatDistanceToNow, differenceInDays } from "date-fns"
 
 interface VideoStats {
   jobId: string
@@ -111,7 +111,10 @@ export function VideoReviewCards() {
   const getPriorityIndicator = (stat: VideoStats) => {
     if (!stat.oldestPending) return null
     const waitingTime = formatDistanceToNow(stat.oldestPending)
-    const isUrgent = new Date().getTime() - stat.oldestPending.getTime() > 24 * 60 * 60 * 1000 // 24 hours
+    const daysWaiting = differenceInDays(new Date(), stat.oldestPending)
+    const isUrgent = daysWaiting > 1
+
+    if (!isUrgent) return null
 
     return (
       <div className={`flex items-center gap-1 text-xs ${isUrgent ? 'text-red-600' : 'text-yellow-600'}`}>
@@ -136,28 +139,30 @@ export function VideoReviewCards() {
             <CardHeader className="p-3 pb-0">
               <CardTitle className="text-base truncate flex items-start justify-between gap-2">
                 <span>{stat.jobTitle}</span>
-                <div className="shrink-0 flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">Ready for Review</span>
-                  <span className="flex items-center justify-center min-w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full px-1.5">
-                    {stat.readyForReview}
-                  </span>
+                <div className="shrink-0 flex flex-col items-end gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Ready for Review</span>
+                    <span className="flex items-center justify-center min-w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full px-1.5">
+                      {stat.readyForReview}
+                    </span>
+                  </div>
+                  {getPriorityIndicator(stat)}
                 </div>
               </CardTitle>
-              {stat.oldestPending && getPriorityIndicator(stat)}
             </CardHeader>
             <CardContent className="p-3">
-              <div className="flex items-center gap-4 justify-between">
-                <div className="flex items-center gap-1">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-yellow-500" />
-                  <span className="text-sm">{stat.awaitingResponse}</span>
+                  <span className="text-xs">{stat.awaitingResponse} invites sent</span>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   <ThumbsUp className="h-4 w-4 text-green-500" />
-                  <span className="text-sm">{stat.approvedCount}</span>
+                  <span className="text-xs">{stat.approvedCount} approved</span>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   <ThumbsDown className="h-4 w-4 text-red-500" />
-                  <span className="text-sm">{stat.rejectedCount}</span>
+                  <span className="text-xs">{stat.rejectedCount} rejected</span>
                 </div>
               </div>
             </CardContent>
