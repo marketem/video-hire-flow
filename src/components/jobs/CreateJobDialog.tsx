@@ -5,9 +5,11 @@ import { useJobForm } from "@/hooks/useJobForm"
 
 interface CreateJobDialogProps {
   onJobCreated: () => void
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
-export function CreateJobDialog({ onJobCreated }: CreateJobDialogProps) {
+export function CreateJobDialog({ onJobCreated, open, onOpenChange }: CreateJobDialogProps) {
   const {
     title,
     setTitle,
@@ -22,7 +24,7 @@ export function CreateJobDialog({ onJobCreated }: CreateJobDialogProps) {
   } = useJobForm(onJobCreated)
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Create New Job Opening</DialogTitle>
@@ -40,7 +42,7 @@ export function CreateJobDialog({ onJobCreated }: CreateJobDialogProps) {
           />
           <FormActions
             isLoading={isLoading}
-            onCancel={() => {}}
+            onCancel={() => onOpenChange(false)}
             actionLabel="Create Job"
           />
         </form>

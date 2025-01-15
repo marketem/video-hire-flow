@@ -25,6 +25,8 @@ export function JobOpenings() {
       </div>
       <JobOpeningsList />
       <CreateJobDialog 
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
         onJobCreated={handleJobCreated}
       />
     </div>
