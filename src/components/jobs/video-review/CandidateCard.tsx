@@ -35,7 +35,7 @@ export function CandidateCard({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-muted rounded-lg gap-4">
+      <div className="flex flex-col p-4 bg-muted rounded-lg gap-4">
         <div className="space-y-1">
           <h4 className="font-medium">{candidate.name}</h4>
           <p className="text-sm text-muted-foreground">{candidate.email}</p>
@@ -45,26 +45,27 @@ export function CandidateCard({
             </p>
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
-          {candidate.video_url && (
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex gap-2 flex-1">
+            {candidate.video_url && (
+              <Button
+                variant="secondary"
+                className="flex-1 sm:flex-initial"
+                onClick={handleVideoClick}
+              >
+                {isVideoOpen ? 'Close Video' : 'Review Video'}
+              </Button>
+            )}
             <Button
-              variant="secondary"
-              className="w-full sm:w-auto"
-              onClick={handleVideoClick}
+              variant="outline"
+              size="icon"
+              onClick={() => window.open(`tel:${candidate.phone}`, '_blank')}
             >
-              {isVideoOpen ? 'Close Video' : 'Review Video'}
+              <Phone className="h-4 w-4" />
             </Button>
-          )}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => window.open(`tel:${candidate.phone}`, '_blank')}
-            className="flex-shrink-0"
-          >
-            <Phone className="h-4 w-4" />
-          </Button>
+          </div>
           {showActions && onStatusChange && (
-            <div className="flex gap-2 w-full sm:w-auto">
+            <div className="flex gap-2 flex-1 sm:flex-initial">
               <Button
                 variant="outline"
                 size="icon"
