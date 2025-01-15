@@ -18,10 +18,7 @@ export function useLoginForm() {
     if (error instanceof AuthApiError) {
       switch (error.status) {
         case 400:
-          if (error.message.includes("Invalid login credentials")) {
-            return "Invalid email or password. Please check your credentials and verify your email address.";
-          }
-          return "Invalid email or password.";
+          return "Invalid email or password. Please try again.";
         case 401:
           return "Invalid login credentials. Please check your email and password.";
         case 403:
@@ -29,10 +26,10 @@ export function useLoginForm() {
         case 422:
           return "Invalid login credentials. Please try again.";
         default:
-          return "An error occurred during login. Please try again.";
+          return "Invalid email or password. Please try again.";
       }
     }
-    return "An unexpected error occurred. Please try again.";
+    return "Invalid email or password. Please try again.";
   };
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -50,7 +47,6 @@ export function useLoginForm() {
         return;
       }
 
-      // Remove trim() from the credentials to avoid body manipulation
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -93,7 +89,7 @@ export function useLoginForm() {
       console.error("Unexpected error during login:", error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        description: "Invalid email or password. Please try again.",
         variant: "destructive",
       });
     } finally {
