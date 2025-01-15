@@ -1,11 +1,24 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 
 const Terms = () => {
   return (
-    <div className="container mx-auto py-12 px-4">
-      <h1 className="text-3xl font-bold mb-8">Terms and Conditions</h1>
-      
-      <div className="space-y-8">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4">
+        <div className="py-8">
+          <Link to="/" className="flex items-center space-x-2">
+            <img 
+              src="/lovable-uploads/658547e3-9dac-4df0-84d6-a891876840a9.png" 
+              alt="VibeCheck Logo" 
+              className="h-8 w-auto"
+            />
+            <span className="text-xl font-bold">VibeCheck</span>
+          </Link>
+        </div>
+        
+        <h1 className="text-3xl font-bold mb-8">Terms and Conditions</h1>
+        
+        <div className="space-y-8">
         <Card>
           <CardContent className="pt-6">
             <h2 className="text-xl font-semibold mb-4">1. Acceptance of Terms</h2>
@@ -72,6 +85,7 @@ const Terms = () => {
         <p className="text-sm text-gray-500 mt-8">
           Last updated: {new Date().toLocaleDateString()}
         </p>
+        </div>
       </div>
     </div>
   );

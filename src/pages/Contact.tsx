@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { Link } from "react-router-dom";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -68,7 +69,18 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4">
+        <div className="py-8">
+          <Link to="/" className="flex items-center space-x-2">
+            <img 
+              src="/lovable-uploads/658547e3-9dac-4df0-84d6-a891876840a9.png" 
+              alt="VibeCheck Logo" 
+              className="h-8 w-auto"
+            />
+            <span className="text-xl font-bold">VibeCheck</span>
+          </Link>
+        </div>
+        
         <div className="max-w-2xl mx-auto">
           <h1 className="text-4xl font-bold mb-8">Contact Us</h1>
           <p className="text-muted-foreground mb-8">

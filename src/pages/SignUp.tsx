@@ -1,4 +1,5 @@
 import { SignUpForm } from "@/components/auth/SignUpForm";
+import { Link } from "react-router-dom";
 
 export default function SignUp() {
   return (
@@ -6,19 +7,34 @@ export default function SignUp() {
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
         <div className="absolute inset-0 bg-blue-900" />
         <div className="relative z-20 flex items-center text-lg font-medium">
-          <img src="/placeholder.svg" alt="Logo" className="h-8 w-8 mr-2" />
-          InterviewPro
+          <img 
+            src="/lovable-uploads/658547e3-9dac-4df0-84d6-a891876840a9.png" 
+            alt="VibeCheck Logo" 
+            className="h-8 w-auto mr-2"
+          />
+          VibeCheck
         </div>
         <div className="relative z-20 mt-auto">
           <blockquote className="space-y-2">
             <p className="text-lg">
-              "InterviewPro has completely transformed our hiring process. We're able to screen candidates more efficiently than ever before."
+              "VibeCheck has completely transformed our hiring process. We're able to screen candidates more efficiently than ever before."
             </p>
             <footer className="text-sm">Sarah Chen, HR Director</footer>
           </blockquote>
         </div>
       </div>
       <div className="lg:p-8">
+        {/* Add logo for mobile view */}
+        <div className="flex items-center justify-center mb-8 lg:hidden">
+          <Link to="/" className="flex items-center space-x-2">
+            <img 
+              src="/lovable-uploads/658547e3-9dac-4df0-84d6-a891876840a9.png" 
+              alt="VibeCheck Logo" 
+              className="h-8 w-auto"
+            />
+            <span className="text-xl font-bold">VibeCheck</span>
+          </Link>
+        </div>
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
           <div className="flex flex-col space-y-2 text-center">
             <h1 className="text-2xl font-semibold tracking-tight">
@@ -31,13 +47,13 @@ export default function SignUp() {
           <SignUpForm />
           <p className="px-8 text-center text-sm text-muted-foreground">
             By clicking continue, you agree to our{" "}
-            <a href="/terms" className="underline underline-offset-4 hover:text-primary">
+            <Link to="/terms" className="underline underline-offset-4 hover:text-primary">
               Terms of Service
-            </a>{" "}
+            </Link>{" "}
             and{" "}
-            <a href="/privacy" className="underline underline-offset-4 hover:text-primary">
+            <Link to="/privacy" className="underline underline-offset-4 hover:text-primary">
               Privacy Policy
-            </a>
+            </Link>
             .
           </p>
         </div>

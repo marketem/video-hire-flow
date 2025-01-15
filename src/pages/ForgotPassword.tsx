@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link } from "react-router-dom";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -52,32 +53,33 @@ export default function ForgotPassword() {
         </div>
       </div>
       <div className="lg:p-8">
-        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-          <div className="flex flex-col space-y-2 text-center">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Reset your password
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Enter your email address and we'll send you a link to reset your password
-            </p>
-          </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@company.com"
-                required
-              />
-            </div>
-            <Button className="w-full" type="submit" disabled={isLoading}>
-              {isLoading ? "Sending..." : "Send Reset Link"}
-            </Button>
-          </form>
+        {/* Add logo for mobile view */}
+        <div className="flex items-center justify-center mb-8 lg:hidden">
+          <Link to="/" className="flex items-center space-x-2">
+            <img 
+              src="/lovable-uploads/658547e3-9dac-4df0-84d6-a891876840a9.png" 
+              alt="VibeCheck Logo" 
+              className="h-8 w-auto"
+            />
+            <span className="text-xl font-bold">VibeCheck</span>
+          </Link>
         </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@company.com"
+              required
+            />
+          </div>
+          <Button className="w-full" type="submit" disabled={isLoading}>
+            {isLoading ? "Sending..." : "Send Reset Link"}
+          </Button>
+        </form>
       </div>
     </div>
   );

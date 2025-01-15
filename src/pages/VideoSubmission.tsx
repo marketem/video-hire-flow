@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useSearchParams, useNavigate } from "react-router-dom"
+import { useSearchParams, useNavigate, Link } from "react-router-dom"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
 import { useQuery } from "@tanstack/react-query"
@@ -126,39 +126,51 @@ export default function VideoSubmission() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 flex flex-col items-center justify-center">
-      <div className="w-full max-w-md space-y-4">
-        <h1 className="text-2xl font-bold text-center">Record Your Introduction</h1>
-        <p className="text-muted-foreground text-center mb-8">
-          Please record a 30-second video introducing yourself
-        </p>
+    <div className="min-h-screen bg-background p-4 flex flex-col">
+      <div className="mb-8">
+        <Link to="/" className="flex items-center space-x-2">
+          <img 
+            src="/lovable-uploads/658547e3-9dac-4df0-84d6-a891876840a9.png" 
+            alt="VibeCheck Logo" 
+            className="h-8 w-auto"
+          />
+          <span className="text-xl font-bold">VibeCheck</span>
+        </Link>
+      </div>
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <div className="w-full max-w-md space-y-4">
+          <h1 className="text-2xl font-bold text-center">Record Your Introduction</h1>
+          <p className="text-muted-foreground text-center mb-8">
+            Please record a 30-second video introducing yourself
+          </p>
 
-        {uploadError && (
-          <Alert variant="destructive">
-            <AlertTitle>Upload Error</AlertTitle>
-            <AlertDescription>{uploadError}</AlertDescription>
-          </Alert>
-        )}
+          {uploadError && (
+            <Alert variant="destructive">
+              <AlertTitle>Upload Error</AlertTitle>
+              <AlertDescription>{uploadError}</AlertDescription>
+            </Alert>
+          )}
 
-        {isRecording && <RecordingTimer timeLeft={timeLeft} />}
+          {isRecording && <RecordingTimer timeLeft={timeLeft} />}
 
-        <VideoPreview
-          videoRef={videoRef}
-          recordedBlob={recordedBlob}
-          isPlaying={isPlaying}
-          isRecording={isRecording}
-          togglePlayback={togglePlayback}
-        />
+          <VideoPreview
+            videoRef={videoRef}
+            recordedBlob={recordedBlob}
+            isPlaying={isPlaying}
+            isRecording={isRecording}
+            togglePlayback={togglePlayback}
+          />
 
-        <RecordingControls
-          isRecording={isRecording}
-          recordedBlob={recordedBlob}
-          isUploading={isUploading}
-          startRecording={startRecording}
-          stopRecording={stopRecording}
-          handleUpload={handleUpload}
-          resetRecording={resetRecording}
-        />
+          <RecordingControls
+            isRecording={isRecording}
+            recordedBlob={recordedBlob}
+            isUploading={isUploading}
+            startRecording={startRecording}
+            stopRecording={stopRecording}
+            handleUpload={handleUpload}
+            resetRecording={resetRecording}
+          />
+        </div>
       </div>
     </div>
   )
