@@ -53,7 +53,7 @@ export function DashboardStats() {
 
   return (
     <div className="grid gap-3 md:gap-6 grid-cols-3 mb-4 md:mb-8">
-      <Card className="p-2 md:p-4">
+      <Card className="bg-card/50 border-muted p-2 md:p-4">
         <CardHeader className="flex flex-row items-center justify-between p-0 md:pb-2 space-y-0">
           <CardTitle className="text-xs md:text-sm font-medium">Total Candidates</CardTitle>
           <Users className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
@@ -67,7 +67,7 @@ export function DashboardStats() {
           </p>
         </CardContent>
       </Card>
-      <Card className="p-2 md:p-4">
+      <Card className="bg-card/50 border-muted p-2 md:p-4">
         <CardHeader className="flex flex-row items-center justify-between p-0 md:pb-2 space-y-0">
           <CardTitle className="text-xs md:text-sm font-medium">Response Rate</CardTitle>
           <Activity className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
@@ -79,7 +79,7 @@ export function DashboardStats() {
           </p>
         </CardContent>
       </Card>
-      <Card className="p-2 md:p-4">
+      <Card className="bg-card/50 border-muted p-2 md:p-4">
         <CardHeader className="flex flex-row items-center justify-between p-0 md:pb-2 space-y-0">
           <CardTitle className="text-xs md:text-sm font-medium">Videos</CardTitle>
           <VideoIcon className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />

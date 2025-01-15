@@ -80,7 +80,6 @@ export function VideoReviewCards() {
 
       return stats
     },
-    // Refresh every 5 seconds to catch new invites
     refetchInterval: 5000,
   })
 
@@ -104,7 +103,7 @@ export function VideoReviewCards() {
         {videoStats.map((stat) => (
           <Card 
             key={stat.jobId}
-            className="cursor-pointer hover:bg-accent/50 transition-colors"
+            className="cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98] border-primary/10"
             onClick={() => setSelectedJobId(stat.jobId)}
           >
             <CardHeader className="p-3 pb-0">
