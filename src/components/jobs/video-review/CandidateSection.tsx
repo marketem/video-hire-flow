@@ -5,7 +5,7 @@ interface CandidateSectionProps {
   title: string
   candidates: Candidate[]
   showActions?: boolean
-  onVideoReview: (videoPath: string, candidateName: string) => void
+  onVideoReview: (videoPath: string, candidateName: string) => Promise<string | null>
   onStatusChange?: (candidateId: string, status: 'reviewing' | 'rejected' | 'approved') => void
 }
 
