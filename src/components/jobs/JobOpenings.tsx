@@ -1,13 +1,13 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { PlusCircle } from "lucide-react"
+import { Plus } from "lucide-react"
 import { CreateJobDialog } from "./CreateJobDialog"
 import { JobOpeningsList } from "./JobOpeningsList"
 import { useJobOpenings } from "./useJobOpenings"
 
 export function JobOpenings() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const { fetchJobs } = useJobOpenings()
+  const { jobs, fetchJobs } = useJobOpenings()
 
   const handleJobCreated = () => {
     setIsCreateDialogOpen(false)
@@ -20,10 +20,20 @@ export function JobOpenings() {
         <h2 className="text-2xl font-semibold tracking-tight">Request Videos</h2>
         <Button 
           onClick={() => setIsCreateDialogOpen(true)}
-          className="w-full sm:w-auto"
+          className={`${jobs.length === 0 ? 'w-full' : 'w-auto'} sm:w-auto`}
+          size={jobs.length === 0 ? "default" : "sm"}
         >
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Create Job Opening
+          {jobs.length === 0 ? (
+            <>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Job Opening
+            </>
+          ) : (
+            <>
+              <Plus className="mr-1 h-3 w-3" />
+              Job
+            </>
+          )}
         </Button>
       </div>
       <JobOpeningsList />
