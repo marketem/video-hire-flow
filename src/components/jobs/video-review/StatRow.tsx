@@ -19,12 +19,12 @@ export function StatRow({ icon: Icon, count, label, isCircle, circleColor }: Sta
         <Icon className="h-4 w-4 text-muted-foreground" />
       )}
       <span className="text-xs flex items-center gap-1">
-        {label}
         {!isCircle && (
           <span className="text-xs font-medium text-muted-foreground">
             ({count})
           </span>
         )}
+        {label}
       </span>
     </div>
   )
