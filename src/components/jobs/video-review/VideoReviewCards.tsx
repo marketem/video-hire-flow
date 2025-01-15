@@ -117,8 +117,8 @@ export function VideoReviewCards() {
     console.log('Now:', now.toISOString())
     console.log('Oldest pending:', stat.oldestPending.toISOString())
     
-    // Only show if more than 1 day has passed
-    if (daysWaiting <= 1) return null
+    // Show if 1 or more days have passed
+    if (daysWaiting < 1) return null
 
     const waitingTime = formatDistanceToNow(stat.oldestPending, { addSuffix: true })
     
