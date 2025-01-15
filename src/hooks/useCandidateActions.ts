@@ -3,7 +3,7 @@ import { useQueryClient, useMutation } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard"
 
-export function useCandidateActions() {
+export function useCandidateActions(jobId: string) {
   const supabase = useSupabaseClient()
   const queryClient = useQueryClient()
   const { toast } = useToast()
@@ -93,9 +93,37 @@ export function useCandidateActions() {
     }
   }
 
+  const handleDelete = async (candidateIds: string[]) => {
+    try {
+      const { error } = await supabase
+        .from('candidates')
+        .delete()
+        .in('id', candidateIds)
+        .eq('job_id', jobId)
+
+      if (error) throw error
+
+      toast({
+        title: "Success",
+        description: `Successfully deleted ${candidateIds.length} candidate${candidateIds.length === 1 ? '' : 's'}`,
+      })
+
+      // Invalidate the candidates query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ['job-candidates', jobId] })
+    } catch (error) {
+      console.error('Error deleting candidates:', error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete candidates",
+        variant: "destructive",
+      })
+    }
+  }
+
   return {
     handleViewResume,
     copyVideoLink,
     generateTokenMutation,
+    handleDelete,
   }
 }
