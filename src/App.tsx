@@ -31,7 +31,7 @@ if (!import.meta.env.VITE_SUPABASE_ANON_KEY) {
 }
 
 const supabase = createClient(
-  "https://elirvptqddqsscylwczk.supabase.co",
+  import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY,
   {
     auth: {
