@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button"
+import { Slider } from "@/components/ui/slider"
 import { Phone, ThumbsDown, ThumbsUp } from "lucide-react"
 import { format } from "date-fns"
 import type { Candidate } from "@/types/candidate"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface CandidateCardProps {
   candidate: Candidate
@@ -19,6 +21,8 @@ export function CandidateCard({
 }: CandidateCardProps) {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [sliderValue, setSliderValue] = useState([50]);
+  const isMobile = useIsMobile();
 
   const handleVideoClick = async () => {
     if (isVideoOpen) {
@@ -32,6 +36,16 @@ export function CandidateCard({
       }
     }
   };
+
+  useEffect(() => {
+    if (sliderValue[0] !== 50 && onStatusChange) {
+      const timer = setTimeout(() => {
+        onStatusChange(candidate.id, sliderValue[0] > 50 ? 'approved' : 'rejected');
+        setSliderValue([50]); // Reset slider
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [sliderValue, candidate.id, onStatusChange]);
 
   return (
     <div className="space-y-4">
@@ -61,28 +75,46 @@ export function CandidateCard({
               className="flex-1 sm:flex-initial"
               onClick={() => window.open(`tel:${candidate.phone}`, '_blank')}
             >
-              <Phone className="h-4 w-4" />
+              <Phone className="h-4 w-4 mr-2" />
               <span>Call Candidate</span>
             </Button>
           </div>
           {showActions && onStatusChange && (
             <div className="flex gap-2 flex-1 sm:flex-initial">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => onStatusChange(candidate.id, 'approved')}
-                className="flex-1 sm:flex-initial bg-[#F2FCE2] hover:bg-[#F2FCE2]/80"
-              >
-                <ThumbsUp className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => onStatusChange(candidate.id, 'rejected')}
-                className="flex-1 sm:flex-initial bg-[#ea384c] hover:bg-[#ea384c]/80 text-white"
-              >
-                <ThumbsDown className="h-4 w-4" />
-              </Button>
+              {isMobile ? (
+                <div className="w-full px-2">
+                  <Slider
+                    value={sliderValue}
+                    onValueChange={setSliderValue}
+                    max={100}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                    <span>Not Now</span>
+                    <span>Approve</span>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => onStatusChange(candidate.id, 'approved')}
+                    className="flex-1 sm:flex-initial bg-[#E5F7D3] hover:bg-[#D8F0C0]"
+                  >
+                    <ThumbsUp className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => onStatusChange(candidate.id, 'rejected')}
+                    className="flex-1 sm:flex-initial bg-[#FFE5E5] hover:bg-[#FFD6D6] text-[#ea384c]"
+                  >
+                    <ThumbsDown className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
             </div>
           )}
         </div>
