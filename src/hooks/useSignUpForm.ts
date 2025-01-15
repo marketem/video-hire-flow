@@ -49,7 +49,6 @@ export function useSignUpForm() {
       if (signUpData?.user) {
         console.log('Signup successful:', signUpData);
         navigate('/email-verification-sent');
-        return;
       }
     } catch (error) {
       console.error('Signup process error:', error);
