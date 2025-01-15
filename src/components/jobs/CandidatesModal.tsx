@@ -31,37 +31,37 @@ export function CandidatesModal({ jobId, jobTitle, open, onOpenChange }: Candida
   const isMobile = useIsMobile()
 
   const content = (
-    <>
+    <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="list">Candidates List</TabsTrigger>
-          <TabsTrigger value="add">Add Candidate</TabsTrigger>
-          <TabsTrigger value="upload">Upload Candidates CSV</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 mb-4">
+          <TabsTrigger value="list" className="text-xs sm:text-sm">Candidates</TabsTrigger>
+          <TabsTrigger value="add" className="text-xs sm:text-sm">Add New</TabsTrigger>
+          <TabsTrigger value="upload" className="text-xs sm:text-sm">Upload CSV</TabsTrigger>
         </TabsList>
-        <TabsContent value="list">
+        <TabsContent value="list" className="mt-0">
           <CandidatesList jobId={jobId} />
         </TabsContent>
-        <TabsContent value="add">
+        <TabsContent value="add" className="mt-0">
           <AddCandidateForm jobId={jobId} onSuccess={() => setActiveTab("list")} />
         </TabsContent>
-        <TabsContent value="upload">
+        <TabsContent value="upload" className="mt-0">
           <UploadCandidates jobId={jobId} onSuccess={() => setActiveTab("list")} />
         </TabsContent>
       </Tabs>
-    </>
+    </div>
   )
 
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>Candidates for {jobTitle}</DrawerTitle>
-            <DrawerDescription>
-              View, add, or upload candidates for this position
+        <DrawerContent className="max-h-[90vh]">
+          <DrawerHeader className="pb-2">
+            <DrawerTitle className="text-lg">{jobTitle}</DrawerTitle>
+            <DrawerDescription className="text-sm">
+              Manage candidates for this position
             </DrawerDescription>
           </DrawerHeader>
-          <div className="px-4 pb-8">
+          <div className="px-4 pb-8 overflow-y-auto">
             {content}
           </div>
         </DrawerContent>
@@ -73,9 +73,9 @@ export function CandidatesModal({ jobId, jobTitle, open, onOpenChange }: Candida
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Candidates for {jobTitle}</DialogTitle>
+          <DialogTitle>{jobTitle}</DialogTitle>
           <DialogDescription>
-            View, add, or upload candidates for this position
+            Manage candidates for this position
           </DialogDescription>
         </DialogHeader>
         {content}
