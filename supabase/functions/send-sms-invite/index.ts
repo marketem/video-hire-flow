@@ -27,13 +27,19 @@ const handler = async (req: Request): Promise<Response> => {
     const TWILIO_AUTH_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN')
     const TWILIO_PHONE_NUMBER = Deno.env.get('TWILIO_PHONE_NUMBER')
 
+    console.log('Twilio credentials check:')
+    console.log('- Account SID exists:', !!TWILIO_ACCOUNT_SID)
+    console.log('- Auth Token exists:', !!TWILIO_AUTH_TOKEN)
+    console.log('- Phone Number exists:', !!TWILIO_PHONE_NUMBER)
+
     if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
       console.error('Missing Twilio credentials')
       throw new Error('Missing Twilio credentials')
     }
 
     const { name, phone, companyName, senderName, submissionUrl } = await req.json() as SMSRequest
-    console.log('Received request data:', { name, phone, companyName, senderName })
+    console.log('Request data:', { name, phone, companyName, senderName })
+    console.log('Submission URL:', submissionUrl)
 
     const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
     const message = `Hi ${name}, ${senderName} from ${companyName} has requested a video introduction. Please click this link to record and submit your video: ${submissionUrl}`
@@ -48,21 +54,34 @@ const handler = async (req: Request): Promise<Response> => {
       from: TWILIO_PHONE_NUMBER
     })
 
-    console.log('SMS sent successfully:', result.sid)
+    console.log('SMS sent successfully:', result)
+    console.log('Message SID:', result.sid)
+    console.log('Message Status:', result.status)
+    console.log('Error Code (if any):', result.errorCode)
+    console.log('Error Message (if any):', result.errorMessage)
 
     return new Response(
-      JSON.stringify({ success: true, messageId: result.sid }),
+      JSON.stringify({ 
+        success: true, 
+        messageId: result.sid,
+        status: result.status,
+        error: result.errorMessage
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
       }
     )
   } catch (error) {
-    console.error('Error in send-sms-invite function:', error)
+    console.error('Detailed error in send-sms-invite function:', error)
+    console.error('Error stack:', error.stack)
+    console.error('Error message:', error.message)
+    
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        details: error.stack
+        details: error.stack,
+        name: error.name
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
