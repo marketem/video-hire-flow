@@ -21,19 +21,26 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log('Starting SMS invite handler')
+    
     const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID')
     const TWILIO_AUTH_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN')
     const TWILIO_PHONE_NUMBER = Deno.env.get('TWILIO_PHONE_NUMBER')
 
     if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
+      console.error('Missing Twilio credentials')
       throw new Error('Missing Twilio credentials')
     }
 
     const { name, phone, companyName, senderName, submissionUrl } = await req.json() as SMSRequest
-    console.log('Sending SMS to:', { name, phone, companyName, senderName })
+    console.log('Received request data:', { name, phone, companyName, senderName })
 
     const client = new Twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
     const message = `Hi ${name}, ${senderName} from ${companyName} has requested a video introduction. Please click this link to record and submit your video: ${submissionUrl}`
+
+    console.log('Sending SMS with message:', message)
+    console.log('To phone number:', phone)
+    console.log('From phone number:', TWILIO_PHONE_NUMBER)
 
     const result = await client.messages.create({
       body: message,
@@ -51,9 +58,12 @@ const handler = async (req: Request): Promise<Response> => {
       }
     )
   } catch (error) {
-    console.error('Error sending SMS:', error)
+    console.error('Error in send-sms-invite function:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 
