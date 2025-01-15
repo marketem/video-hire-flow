@@ -198,13 +198,21 @@ export function JobOpeningsList() {
                   {job.status}
                 </span>
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-right space-x-2">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => setSelectedJobForCandidates(job)}
+                >
+                  Invites
+                </Button>
                 <JobActions
                   job={job}
                   onView={handleViewJob}
                   onEdit={handleEditJob}
                   onManageCandidates={setSelectedJobForCandidates}
                   onJobsUpdated={fetchJobs}
+                  hideMobileManage
                 />
               </TableCell>
             </TableRow>

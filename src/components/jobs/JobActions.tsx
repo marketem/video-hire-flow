@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import type { JobOpening } from "./types"
@@ -30,18 +30,18 @@ interface JobActionsProps {
   onEdit: (job: JobOpening) => void
   onManageCandidates: (job: JobOpening) => void
   onJobsUpdated: () => void
-  hideMobileManage?: boolean
   orientation?: "horizontal" | "vertical"
+  hideMobileManage?: boolean
 }
 
-export function JobActions({ 
-  job, 
-  onView, 
-  onEdit, 
-  onManageCandidates, 
+export function JobActions({
+  job,
+  onView,
+  onEdit,
+  onManageCandidates,
   onJobsUpdated,
-  hideMobileManage,
-  orientation = "horizontal"
+  orientation = "horizontal",
+  hideMobileManage = false,
 }: JobActionsProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const supabase = useSupabaseClient()
@@ -51,9 +51,9 @@ export function JobActions({
 
   const handleDelete = async () => {
     const { error } = await supabase
-      .from('job_openings')
+      .from("job_openings")
       .delete()
-      .eq('id', job.id)
+      .eq("id", job.id)
 
     if (!error) {
       onJobsUpdated()
@@ -74,7 +74,7 @@ export function JobActions({
 
   const actions = [
     {
-      label: "View Details",
+      label: "View Job",
       icon: Eye,
       onClick: () => onView(job)
     },
@@ -97,35 +97,30 @@ export function JobActions({
       label: "Delete Job",
       icon: Trash,
       onClick: () => setShowDeleteConfirm(true),
-      destructive: true
+      className: "text-destructive"
     }
   ].filter(Boolean)
 
   if (isMobile && orientation === "vertical") {
     return (
-      <div className="flex flex-col gap-2">
+      <div className="space-y-2">
         {actions.map((action, index) => (
           <Button
             key={index}
-            variant={action.destructive ? "destructive" : "outline"}
-            className={cn(
-              "w-full justify-start gap-2",
-              !action.destructive && "bg-white"
-            )}
+            variant="ghost"
+            className={cn("w-full justify-start", action.className)}
             onClick={action.onClick}
           >
-            <action.icon className="h-4 w-4" />
+            <action.icon className="mr-2 h-4 w-4" />
             {action.label}
           </Button>
         ))}
-        
         <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the job opening
-                and remove all associated data.
+                This will permanently delete this job opening and all associated data.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -139,35 +134,34 @@ export function JobActions({
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {actions.map((action, index) => (
-          <DropdownMenuItem
-            key={index}
-            onClick={action.onClick}
-            className={cn(
-              "flex items-center gap-2",
-              action.destructive && "text-destructive"
-            )}
-          >
-            <action.icon className="h-4 w-4" />
-            <span>{action.label}</span>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {actions.map((action, index) => (
+            <DropdownMenuItem
+              key={index}
+              onClick={action.onClick}
+              className={action.className}
+            >
+              <action.icon className="mr-2 h-4 w-4" />
+              {action.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the job opening
-              and remove all associated data.
+              This will permanently delete this job opening and all associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -176,6 +170,6 @@ export function JobActions({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </DropdownMenu>
+    </>
   )
 }
