@@ -35,10 +35,7 @@ export function useJobOpenings() {
 
           if (countError) {
             console.error('Error fetching candidates count:', countError)
-            return {
-              ...job,
-              candidates_count: 0
-            }
+            throw countError
           }
 
           return {
@@ -53,7 +50,7 @@ export function useJobOpenings() {
       console.error('Error fetching jobs:', error)
       toast({
         title: "Error",
-        description: "Failed to fetch job openings. Please try again.",
+        description: "Failed to fetch job openings",
         variant: "destructive",
       })
       // Set empty array on error to ensure consistent state

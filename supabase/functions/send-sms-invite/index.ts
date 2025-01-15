@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-
-const SENDGRID_API_KEY = Deno.env.get('SENDGRID_API_KEY')
+import twilio from 'npm:twilio'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,53 +23,49 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     console.log('Starting SMS invite handler')
     
-    if (!SENDGRID_API_KEY) {
-      throw new Error('SendGrid API key not found')
+    const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID')
+    const TWILIO_AUTH_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN')
+    const TWILIO_PHONE_NUMBER = Deno.env.get('TWILIO_PHONE_NUMBER')
+
+    console.log('Twilio credentials check:')
+    console.log('- Account SID exists:', !!TWILIO_ACCOUNT_SID)
+    console.log('- Auth Token exists:', !!TWILIO_AUTH_TOKEN)
+    console.log('- Phone Number exists:', !!TWILIO_PHONE_NUMBER)
+
+    if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
+      console.error('Missing Twilio credentials')
+      throw new Error('Missing Twilio credentials')
     }
 
-    console.log('Parsing request body...')
-    const requestData = await req.json() as SMSRequest
-    
-    // Validate request data
-    if (!requestData.phone || !requestData.name || !requestData.submissionUrl) {
-      const error = new Error('Missing required fields in request')
-      console.error('Request validation failed:', error, 'Request data:', requestData)
-      throw error
-    }
+    const { name, phone, companyName, senderName, submissionUrl } = await req.json() as SMSRequest
+    console.log('Request data:', { name, phone, companyName, senderName })
+    console.log('Submission URL:', submissionUrl)
 
-    // Format phone number (ensure it starts with +)
-    const formattedPhone = requestData.phone.startsWith('+') ? requestData.phone : `+${requestData.phone}`
-    console.log('Formatted phone number:', formattedPhone)
+    const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    const message = `Hi ${name}, ${senderName} from ${companyName} has requested a video introduction. Please click this link to record and submit your video: ${submissionUrl}`
 
-    const message = `Hi ${requestData.name}, ${requestData.senderName} from ${requestData.companyName} has requested a video introduction. Please click this link to record and submit your video: ${requestData.submissionUrl}`
+    console.log('Sending SMS with message:', message)
+    console.log('To phone number:', phone)
+    console.log('From phone number:', TWILIO_PHONE_NUMBER)
 
-    const response = await fetch('https://api.sendgrid.com/v3/sms/send', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${SENDGRID_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        to: formattedPhone,
-        content: message,
-      }),
+    const result = await client.messages.create({
+      body: message,
+      to: phone,
+      from: TWILIO_PHONE_NUMBER
     })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('SendGrid API error:', errorText)
-      throw new Error(`SendGrid API error: ${errorText}`)
-    }
-
-    const result = await response.json()
-    console.log('SendGrid API Response:', result)
+    console.log('SMS sent successfully:', result)
+    console.log('Message SID:', result.sid)
+    console.log('Message Status:', result.status)
+    console.log('Error Code (if any):', result.errorCode)
+    console.log('Error Message (if any):', result.errorMessage)
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        messageId: result.id,
-        status: 'sent',
-        error: null
+        messageId: result.sid,
+        status: result.status,
+        error: result.errorMessage
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -78,19 +73,15 @@ const handler = async (req: Request): Promise<Response> => {
       }
     )
   } catch (error) {
-    console.error('Full error details:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
-    })
+    console.error('Detailed error in send-sms-invite function:', error)
+    console.error('Error stack:', error.stack)
+    console.error('Error message:', error.message)
     
     return new Response(
       JSON.stringify({ 
-        success: false,
         error: error.message,
-        details: {
-          name: error.name
-        }
+        details: error.stack,
+        name: error.name
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -38,7 +38,7 @@ export function DesktopJobActions({
 
   const actions = [
     {
-      label: "Job Details",
+      label: "View Job",
       icon: Eye,
       onClick: () => onView(job)
     },
