@@ -49,10 +49,10 @@ export function CandidatesModal({
 
   const content = (
     <Tabs defaultValue="list" className="space-y-4">
-      <TabsList>
-        <TabsTrigger value="list">Candidates</TabsTrigger>
-        <TabsTrigger value="add">Add Candidate</TabsTrigger>
-        <TabsTrigger value="import">Import</TabsTrigger>
+      <TabsList className="w-full grid grid-cols-3">
+        <TabsTrigger value="list" className="flex-1">Candidates</TabsTrigger>
+        <TabsTrigger value="add" className="flex-1">Add Candidate</TabsTrigger>
+        <TabsTrigger value="import" className="flex-1">Import</TabsTrigger>
       </TabsList>
 
       <TabsContent value="list" className="space-y-4">
