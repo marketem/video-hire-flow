@@ -26,6 +26,11 @@ export function SignUpForm() {
     try {
       console.log('Starting signup process...');
       
+      // Validate password strength
+      if (password.length < 8) {
+        throw new Error("Password must be at least 8 characters long");
+      }
+
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -36,24 +41,31 @@ export function SignUpForm() {
             last_name: lastName,
             trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
           },
+          emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
 
       if (signUpError) {
         console.error('Signup error:', signUpError);
+        
+        // Handle specific Supabase error codes
+        if (signUpError.message.includes('unique constraint')) {
+          throw new Error("This email is already registered. Please try logging in instead.");
+        }
         throw signUpError;
       }
 
       if (signUpData?.user) {
         console.log('Signup successful:', signUpData);
         
-        // Immediately navigate to dashboard after successful signup
         toast({
           title: "Account created!",
-          description: "Welcome to InterviewPro.",
+          description: "Please check your email to confirm your account.",
         });
         
-        navigate('/dashboard');
+        // Redirect to a confirmation page instead of dashboard
+        // This ensures users confirm their email before accessing protected routes
+        navigate('/login');
         return;
       }
     } catch (error) {
@@ -78,6 +90,8 @@ export function SignUpForm() {
           name="firstName"
           placeholder="John"
           required
+          minLength={2}
+          maxLength={50}
         />
       </div>
       <div className="space-y-2">
@@ -87,6 +101,8 @@ export function SignUpForm() {
           name="lastName"
           placeholder="Doe"
           required
+          minLength={2}
+          maxLength={50}
         />
       </div>
       <div className="space-y-2">
@@ -96,6 +112,8 @@ export function SignUpForm() {
           name="companyName"
           placeholder="Acme Inc."
           required
+          minLength={2}
+          maxLength={100}
         />
       </div>
       <div className="space-y-2">
@@ -106,6 +124,7 @@ export function SignUpForm() {
           type="email"
           placeholder="name@company.com"
           required
+          pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
         />
       </div>
       <div className="space-y-2">
@@ -115,6 +134,8 @@ export function SignUpForm() {
           name="password"
           type="password"
           required
+          minLength={8}
+          placeholder="Min. 8 characters"
         />
       </div>
       <Button className="w-full" type="submit" disabled={isLoading}>
