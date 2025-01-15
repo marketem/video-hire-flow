@@ -3,7 +3,7 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { VideoReviewModal } from "./VideoReviewModal"
 import { useState } from "react"
-import { Clock, AlertCircle, PlayCircle, Mail, ThumbsUp, ThumbsDown } from "lucide-react"
+import { Clock, AlertCircle, PlayCircle, ThumbsUp, ThumbsDown } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
 interface VideoStats {
@@ -151,7 +151,7 @@ export function VideoReviewCards() {
                   <span className="text-sm">{stat.readyForReview}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Mail className="h-4 w-4 text-yellow-500" />
+                  <Clock className="h-4 w-4 text-yellow-500" />
                   <span className="text-sm">{stat.awaitingResponse}</span>
                 </div>
                 <div className="flex items-center gap-1">
