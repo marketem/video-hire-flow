@@ -13,7 +13,6 @@ import PublicJob from "./pages/PublicJob";
 import VideoSubmission from "./pages/VideoSubmission";
 import SubmissionSuccess from "./pages/SubmissionSuccess";
 import Terms from "./pages/Terms";
-import Privacy from "./pages/Privacy";
 import Features from "./pages/Features";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -41,7 +40,6 @@ const App = () => (
             <Route path="/video-submission" element={<VideoSubmission />} />
             <Route path="/submission-success" element={<SubmissionSuccess />} />
             <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
             <Route path="/features" element={<Features />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />

@@ -55,6 +55,7 @@ export function UploadCandidates({ jobId, onSuccess }: { jobId: string; onSucces
           candidate[header] = row[index]?.trim() || ''
         })
         
+        // Format the phone number before saving
         const phone = candidate.phone || candidate.phonenumber || ''
         const formattedPhone = formatPhoneNumber(phone)
         
@@ -63,8 +64,7 @@ export function UploadCandidates({ jobId, onSuccess }: { jobId: string; onSucces
           name: candidate.name || candidate.fullname || '',
           email: candidate.email || '',
           phone: formattedPhone,
-          status: 'new',
-          video_token: crypto.randomUUID() // Generate token for each imported candidate
+          status: 'new'
         }
       }).filter(candidate => candidate.name && candidate.email && candidate.phone)
 
