@@ -49,11 +49,16 @@ export default function VideoSubmission() {
         .from('candidates')
         .select('*')
         .eq('video_token', token)
-        .single()
+        .maybeSingle()
 
       if (error) {
         console.error('Error fetching candidate:', error)
         throw error
+      }
+
+      if (!data) {
+        console.error('No candidate found with token:', token)
+        throw new Error('Invalid or expired video submission link')
       }
       
       console.log('Candidate data:', data)
@@ -133,7 +138,6 @@ export default function VideoSubmission() {
         throw updateError
       }
 
-      // Stop the stream and reset camera state before navigating
       stopStream()
       setCameraInitialized(false)
 
