@@ -12,11 +12,15 @@ if (!import.meta.env.VITE_SUPABASE_ANON_KEY) {
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// Create a single instance of the Supabase client
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
-    detectSessionInUrl: true,
+    detectSessionInUrl: false,
     autoRefreshToken: true,
-    flowType: 'pkce'
+    storage: window.localStorage // Explicitly set storage to ensure consistency
   }
 });
+
+// Prevent multiple instances warning by adding a flag
+(window as any).__SUPABASE_CLIENT_INITIALIZED = true;

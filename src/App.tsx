@@ -3,8 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { createClient } from "@supabase/supabase-js";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
+import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
@@ -22,26 +22,6 @@ import ResetPassword from "./pages/ResetPassword";
 import Pricing from "./pages/Pricing";
 
 const queryClient = new QueryClient();
-
-if (!import.meta.env.VITE_SUPABASE_URL) {
-  throw new Error('VITE_SUPABASE_URL is not defined');
-}
-
-if (!import.meta.env.VITE_SUPABASE_ANON_KEY) {
-  throw new Error('VITE_SUPABASE_ANON_KEY is not defined');
-}
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
-  {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: false
-    }
-  }
-);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
