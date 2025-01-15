@@ -58,6 +58,7 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
       }
 
       const formattedPhone = formatPhoneNumber(phone)
+      const videoToken = crypto.randomUUID()
 
       const { error } = await supabase
         .from('candidates')
@@ -68,7 +69,8 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
             email,
             phone: formattedPhone,
             resume_url: resumeUrl,
-            status: 'new'
+            status: 'new',
+            video_token: videoToken
           }
         ])
 

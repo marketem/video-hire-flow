@@ -39,17 +39,14 @@ export function JobApplicationForm({ jobId }: JobApplicationFormProps) {
     try {
       console.log('Starting application submission for job:', jobId)
       
-      // Validate file size (max 10MB)
       if (resume && resume.size > 10 * 1024 * 1024) {
         throw new Error("File size must be less than 10MB")
       }
 
-      // Validate file type
       if (resume && !['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(resume.type)) {
         throw new Error("File must be PDF, DOC, or DOCX format")
       }
 
-      // Upload resume if provided
       let resumeUrl = null
       if (resume) {
         console.log('Uploading resume file')
@@ -70,13 +67,15 @@ export function JobApplicationForm({ jobId }: JobApplicationFormProps) {
         console.log('Resume uploaded successfully:', resumeUrl)
       }
 
-      // Add candidate to database
+      const videoToken = crypto.randomUUID()
+      
       console.log('Inserting candidate data:', {
         job_id: jobId,
         name,
         email,
         phone,
-        resume_url: resumeUrl
+        resume_url: resumeUrl,
+        video_token: videoToken
       })
       
       const { error: dbError } = await supabase
@@ -88,7 +87,8 @@ export function JobApplicationForm({ jobId }: JobApplicationFormProps) {
             email,
             phone,
             resume_url: resumeUrl,
-            status: 'new'
+            status: 'new',
+            video_token: videoToken
           }
         ])
 
