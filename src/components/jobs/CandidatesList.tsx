@@ -72,12 +72,17 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
     return <CandidatesEmpty />
   }
 
+  const allSelected = selectedCandidates.length === candidates.length
+
   return (
     <div className="space-y-4">
       <BulkActions
         selectedCount={selectedCandidates.length}
+        totalCount={candidates.length}
         onSendInvites={handleSendInvites}
         onDelete={handleDelete}
+        onToggleSelectAll={(checked) => toggleSelectAll(candidates, checked)}
+        allSelected={allSelected}
       />
       <CandidatesTable
         candidates={candidates}

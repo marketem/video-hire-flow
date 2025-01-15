@@ -54,14 +54,14 @@ export function CandidatesModal({ jobId, jobTitle, open, onOpenChange }: Candida
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-full sm:max-w-md">
-          <SheetHeader className="pb-2">
-            <SheetTitle className="text-lg">{jobTitle}</SheetTitle>
-            <SheetDescription className="text-sm">
+        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{jobTitle}</SheetTitle>
+            <SheetDescription>
               Manage candidates for this position
             </SheetDescription>
           </SheetHeader>
-          <div className="mt-4 overflow-y-auto">
+          <div className="mt-4">
             {content}
           </div>
         </SheetContent>

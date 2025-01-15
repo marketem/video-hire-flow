@@ -10,6 +10,13 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import {
   Form,
   FormControl,
   FormField,
@@ -21,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const accountFormSchema = z.object({
   first_name: z.string().min(2, "First name must be at least 2 characters"),
@@ -41,6 +49,7 @@ export function AccountSettingsDialog({ open, onOpenChange }: AccountSettingsDia
   const supabase = useSupabaseClient();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const isMobile = useIsMobile();
 
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountFormSchema),
@@ -55,7 +64,6 @@ export function AccountSettingsDialog({ open, onOpenChange }: AccountSettingsDia
   const onSubmit = async (data: AccountFormValues) => {
     setIsLoading(true);
     try {
-      // Update user metadata (first name, last name, company name)
       const { error: metadataError } = await supabase.auth.updateUser({
         data: {
           first_name: data.first_name,
@@ -66,7 +74,6 @@ export function AccountSettingsDialog({ open, onOpenChange }: AccountSettingsDia
 
       if (metadataError) throw metadataError;
 
-      // Update email if it has changed
       if (data.email !== session?.user.email) {
         const { error: emailError } = await supabase.auth.updateUser({
           email: data.email,
@@ -96,6 +103,98 @@ export function AccountSettingsDialog({ open, onOpenChange }: AccountSettingsDia
     }
   };
 
+  const content = (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="first_name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>First Name</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="last_name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Last Name</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="company_name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Company Name</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input {...field} type="email" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div className="pt-4 space-y-2">
+          <h4 className="text-sm font-medium">Subscription Information</h4>
+          <p className="text-sm text-muted-foreground">
+            {session?.user.user_metadata.trial_ends_at
+              ? `Your trial ends on ${new Date(
+                  session.user.user_metadata.trial_ends_at
+                ).toLocaleDateString()}`
+              : "No active subscription"}
+          </p>
+        </div>
+        <div className="flex justify-end">
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Account Settings</SheetTitle>
+            <SheetDescription>
+              Update your account information and manage your subscription.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-6">
+            {content}
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
@@ -105,77 +204,7 @@ export function AccountSettingsDialog({ open, onOpenChange }: AccountSettingsDia
             Update your account information and manage your subscription.
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="first_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>First Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="last_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Last Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="company_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Company Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="email" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="pt-4 space-y-2">
-              <h4 className="text-sm font-medium">Subscription Information</h4>
-              <p className="text-sm text-muted-foreground">
-                {session?.user.user_metadata.trial_ends_at
-                  ? `Your trial ends on ${new Date(
-                      session.user.user_metadata.trial_ends_at
-                    ).toLocaleDateString()}`
-                  : "No active subscription"}
-              </p>
-            </div>
-            <div className="flex justify-end">
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Saving..." : "Save Changes"}
-              </Button>
-            </div>
-          </form>
-        </Form>
+        {content}
       </DialogContent>
     </Dialog>
   );

@@ -1,23 +1,44 @@
 import { Button } from "@/components/ui/button"
 import { Send, Trash2 } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface BulkActionsProps {
   selectedCount: number
+  totalCount: number
   onSendInvites: () => void
   onDelete: () => void
+  onToggleSelectAll: (checked: boolean) => void
+  allSelected: boolean
 }
 
-export function BulkActions({ selectedCount, onSendInvites, onDelete }: BulkActionsProps) {
+export function BulkActions({ 
+  selectedCount, 
+  totalCount,
+  onSendInvites, 
+  onDelete,
+  onToggleSelectAll,
+  allSelected
+}: BulkActionsProps) {
   const isMobile = useIsMobile()
 
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-muted rounded-lg">
-      {selectedCount > 0 && (
-        <span className="text-sm text-muted-foreground">
-          {selectedCount} candidates selected
-        </span>
-      )}
+      <div className="flex items-center gap-2">
+        <Checkbox 
+          checked={allSelected}
+          onCheckedChange={onToggleSelectAll}
+          id="select-all"
+        />
+        <label 
+          htmlFor="select-all" 
+          className="text-sm text-muted-foreground cursor-pointer"
+        >
+          {selectedCount > 0 
+            ? `${selectedCount} of ${totalCount} selected`
+            : "Select all"}
+        </label>
+      </div>
       <div className="flex gap-2 w-full sm:w-auto sm:ml-auto">
         <Button
           size={isMobile ? "default" : "sm"}
