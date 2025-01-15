@@ -76,8 +76,11 @@ export function UserGuideDialog({ open, onOpenChange }: UserGuideDialogProps) {
             <div className="flex items-start gap-4">
               {steps[currentStep].icon && (
                 <div className="mt-1">
-                  {/* Use the Icon component directly */}
-                  <steps[currentStep].icon className="h-5 w-5 text-primary" />
+                  {/* Render the icon component properly */}
+                  {(() => {
+                    const IconComponent = steps[currentStep].icon
+                    return <IconComponent className="h-5 w-5 text-primary" />
+                  })()}
                 </div>
               )}
               <div className="flex-1 space-y-2">
