@@ -93,7 +93,7 @@ export function CandidatesTable({
               
               <div className="flex items-center justify-between pt-2">
                 <div className="text-xs text-muted-foreground">
-                  {new Date(candidate.created_at).toLocaleDateString()}
+                  {candidate.video_token ? new Date(candidate.created_at).toLocaleDateString() : 'No'}
                 </div>
                 <div className="flex items-center gap-2">
                   {candidate.resume_url && (
@@ -152,7 +152,7 @@ export function CandidatesTable({
             <TableHead>Phone</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Resume</TableHead>
-            <TableHead>Applied</TableHead>
+            <TableHead>Invited</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -185,7 +185,9 @@ export function CandidatesTable({
                   <span className="text-muted-foreground text-sm">No resume</span>
                 )}
               </TableCell>
-              <TableCell>{new Date(candidate.created_at).toLocaleDateString()}</TableCell>
+              <TableCell>
+                {candidate.video_token ? new Date(candidate.created_at).toLocaleDateString() : 'No'}
+              </TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
