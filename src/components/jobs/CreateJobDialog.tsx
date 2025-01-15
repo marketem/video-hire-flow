@@ -1,18 +1,10 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { JobFormFields } from "./job-form/JobFormFields";
-import { FormActions } from "./job-form/FormActions";
-import { useJobForm } from "@/hooks/useJobForm";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { JobFormFields } from "./job-form/JobFormFields"
+import { FormActions } from "./job-form/FormActions"
+import { useJobForm } from "@/hooks/useJobForm"
 
 interface CreateJobDialogProps {
-  onJobCreated: () => void;
+  onJobCreated: () => void
 }
 
 export function CreateJobDialog({ onJobCreated }: CreateJobDialogProps) {
@@ -27,16 +19,10 @@ export function CreateJobDialog({ onJobCreated }: CreateJobDialogProps) {
     setDescription,
     isLoading,
     handleSubmit,
-  } = useJobForm(onJobCreated);
+  } = useJobForm(onJobCreated)
 
   return (
     <Dialog>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2" />
-          Create Job
-        </Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Create New Job Opening</DialogTitle>
@@ -60,5 +46,5 @@ export function CreateJobDialog({ onJobCreated }: CreateJobDialogProps) {
         </form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

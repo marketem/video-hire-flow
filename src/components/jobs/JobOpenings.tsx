@@ -7,6 +7,10 @@ import { JobOpeningsList } from "./JobOpeningsList"
 export function JobOpenings() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
 
+  const handleJobCreated = () => {
+    setIsCreateDialogOpen(false)
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -18,8 +22,7 @@ export function JobOpenings() {
       </div>
       <JobOpeningsList />
       <CreateJobDialog 
-        open={isCreateDialogOpen} 
-        onOpenChange={setIsCreateDialogOpen}
+        onJobCreated={handleJobCreated}
       />
     </div>
   )

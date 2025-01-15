@@ -6,22 +6,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Form } from "@/components/ui/form"
 import { useToast } from "@/hooks/use-toast"
 import { useEffect } from "react"
+import { JobFormFields } from "./job-form/JobFormFields"
+import { FormActions } from "./job-form/FormActions"
 
 interface EditJobDialogProps {
   job: {
@@ -114,78 +104,21 @@ export function EditJobDialog({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+            <JobFormFields
+              title={form.watch("title")}
+              setTitle={(value) => form.setValue("title", value)}
+              department={form.watch("department")}
+              setDepartment={(value) => form.setValue("department", value)}
+              location={form.watch("location")}
+              setLocation={(value) => form.setValue("location", value)}
+              description={form.watch("description")}
+              setDescription={(value) => form.setValue("description", value)}
             />
-            <FormField
-              control={form.control}
-              name="department"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Department</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+            <FormActions
+              isLoading={form.formState.isSubmitting}
+              onCancel={() => onOpenChange(false)}
+              actionLabel="Save Changes"
             />
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Location</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} rows={5} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="public_page_enabled"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Enable public application page</FormLabel>
-                  </div>
-                </FormItem>
-              )}
-            />
-            <DialogFooter>
-              <Button type="submit">Save Changes</Button>
-            </DialogFooter>
           </form>
         </Form>
       </DialogContent>
