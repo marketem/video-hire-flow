@@ -14,12 +14,15 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 export default function VideoSubmission() {
   const [searchParams] = useSearchParams()
-  // Clean the token by removing any non-alphanumeric or non-hyphen characters
+  // Get raw token and clean it more thoroughly
   const rawToken = searchParams.get('token')
-  const token = rawToken?.replace(/[^a-zA-Z0-9-]/g, '') || ''
+  // Remove en-dash, em-dash, and any other non-standard hyphens along with other special characters
+  const token = rawToken?.replace(/[^a-zA-Z0-9\-]/g, '').replace(/^[-]+|[-]+$/g, '') || ''
   
   console.log('Raw token from URL:', rawToken)
   console.log('Cleaned token:', token)
+  console.log('Token length:', token.length)
+  console.log('Token characters:', Array.from(token).map(c => `${c} (${c.charCodeAt(0)})`))
   
   const navigate = useNavigate()
   const [isUploading, setIsUploading] = useState(false)
@@ -65,10 +68,10 @@ export default function VideoSubmission() {
 
       if (!data) {
         console.error('No candidate found with token:', token)
-        throw new Error('Video has already been submitted. Please contact your hiring manager.')
+        throw new Error('Video has already been submitted or the link is invalid. Please contact your hiring manager.')
       }
       
-      console.log('Candidate data:', data)
+      console.log('Found candidate:', data)
       return data as Candidate
     },
     enabled: !!token,
@@ -188,9 +191,9 @@ export default function VideoSubmission() {
     return (
       <div className="min-h-screen bg-background p-4 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Video Already Submitted</h1>
+          <h1 className="text-2xl font-bold mb-4">Invalid Video Link</h1>
           <p className="text-muted-foreground">
-            Video has already been submitted. Please contact your hiring manager.
+            This video submission link is invalid or has expired. Please contact your hiring manager for a new link.
           </p>
         </div>
       </div>
