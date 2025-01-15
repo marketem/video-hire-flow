@@ -108,6 +108,7 @@ export function JobOpeningsList() {
                     className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={() => setSelectedJobForCandidates(job)}
                   >
+                    <Users className="h-4 w-4 mr-2" />
                     Invites
                   </Button>
                   <Button
@@ -204,6 +205,7 @@ export function JobOpeningsList() {
                   size="sm"
                   onClick={() => setSelectedJobForCandidates(job)}
                 >
+                  <Users className="h-4 w-4 mr-2" />
                   Invites
                 </Button>
                 <JobActions
