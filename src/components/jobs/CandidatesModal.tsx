@@ -49,60 +49,66 @@ export function CandidatesModal({
   }
 
   const content = (
-    <Tabs defaultValue="list" className="space-y-4">
-      <TabsList className="w-full grid grid-cols-3">
-        <TabsTrigger value="list" className="flex-1">Candidates</TabsTrigger>
-        <TabsTrigger value="add" className="flex-1">Add Candidate</TabsTrigger>
-        <TabsTrigger value="import" className="flex-1">Import</TabsTrigger>
-      </TabsList>
+    <div className="flex flex-col h-[80vh]">
+      <Tabs defaultValue="list" className="flex-1">
+        <TabsList className="w-full grid grid-cols-3">
+          <TabsTrigger value="list" className="flex-1">Candidates</TabsTrigger>
+          <TabsTrigger value="add" className="flex-1">Add Candidate</TabsTrigger>
+          <TabsTrigger value="import" className="flex-1">Import</TabsTrigger>
+        </TabsList>
 
-      <ScrollArea className="h-[60vh]">
-        <TabsContent value="list" className="space-y-4">
-          {candidates?.length > 0 && (
-            <BulkActions
-              selectedCount={selectedCandidates.length}
-              totalCount={candidates.length}
-              onSendInvites={handleSendInvites}
-              onDelete={() => handleDelete(selectedCandidates)}
-              onToggleSelectAll={(checked) => toggleSelectAll(candidates, checked)}
-              allSelected={selectedCandidates.length === candidates.length}
-              isSending={isSending}
-            />
-          )}
-          {isLoading ? (
-            <CandidatesLoading />
-          ) : candidates?.length === 0 ? (
-            <CandidatesEmpty jobTitle={jobTitle} />
-          ) : (
-            <CandidatesTable
-              candidates={candidates}
-              selectedCandidates={selectedCandidates}
-              onToggleSelect={toggleCandidate}
-              onToggleSelectAll={(checked) => toggleSelectAll(candidates, checked)}
-              jobId={jobId}
-            />
-          )}
-        </TabsContent>
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-[calc(80vh-4rem)]">
+            <div className="p-4">
+              <TabsContent value="list" className="m-0">
+                {candidates?.length > 0 && (
+                  <BulkActions
+                    selectedCount={selectedCandidates.length}
+                    totalCount={candidates.length}
+                    onSendInvites={handleSendInvites}
+                    onDelete={() => handleDelete(selectedCandidates)}
+                    onToggleSelectAll={(checked) => toggleSelectAll(candidates, checked)}
+                    allSelected={selectedCandidates.length === candidates.length}
+                    isSending={isSending}
+                  />
+                )}
+                {isLoading ? (
+                  <CandidatesLoading />
+                ) : candidates?.length === 0 ? (
+                  <CandidatesEmpty jobTitle={jobTitle} />
+                ) : (
+                  <CandidatesTable
+                    candidates={candidates}
+                    selectedCandidates={selectedCandidates}
+                    onToggleSelect={toggleCandidate}
+                    onToggleSelectAll={(checked) => toggleSelectAll(candidates, checked)}
+                    jobId={jobId}
+                  />
+                )}
+              </TabsContent>
 
-        <TabsContent value="add">
-          <AddCandidateForm jobId={jobId} onSuccess={fetchCandidates} />
-        </TabsContent>
+              <TabsContent value="add" className="m-0">
+                <AddCandidateForm jobId={jobId} onSuccess={fetchCandidates} />
+              </TabsContent>
 
-        <TabsContent value="import">
-          <UploadCandidates jobId={jobId} onSuccess={fetchCandidates} />
-        </TabsContent>
-      </ScrollArea>
-    </Tabs>
+              <TabsContent value="import" className="m-0">
+                <UploadCandidates jobId={jobId} onSuccess={fetchCandidates} />
+              </TabsContent>
+            </div>
+          </ScrollArea>
+        </div>
+      </Tabs>
+    </div>
   )
 
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-full sm:max-w-xl">
-          <SheetHeader>
+        <SheetContent side="right" className="w-full sm:max-w-xl p-0">
+          <SheetHeader className="p-6 pb-0">
             <SheetTitle>Manage Candidates</SheetTitle>
           </SheetHeader>
-          <div className="mt-4">{content}</div>
+          {content}
         </SheetContent>
       </Sheet>
     )
@@ -110,8 +116,8 @@ export function CandidatesModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl p-0">
+        <DialogHeader className="p-6 pb-0">
           <DialogTitle>Manage Candidates</DialogTitle>
         </DialogHeader>
         {content}
