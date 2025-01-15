@@ -110,14 +110,7 @@ export function VideoReviewCards() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold tracking-tight">Review Videos</h2>
-        {videoStats.some(stat => stat.readyForReview > 0) && (
-          <div className="text-sm text-red-600 font-medium">
-            Candidate video ready for review
-          </div>
-        )}
-      </div>
+      <h2 className="text-2xl font-semibold tracking-tight">Review Videos</h2>
       <div className="grid gap-3 md:grid-cols-3">
         {videoStats.map((stat) => (
           <Card 
@@ -139,6 +132,11 @@ export function VideoReviewCards() {
               {stat.oldestPending && getPriorityIndicator(stat)}
             </CardHeader>
             <CardContent className="p-3 space-y-3">
+              {stat.readyForReview > 0 && (
+                <div className="text-sm text-red-600 font-medium">
+                  Candidate video ready for review
+                </div>
+              )}
               {stat.awaitingResponse > 0 ? (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Mail className="h-4 w-4" />
