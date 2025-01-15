@@ -14,6 +14,7 @@ interface VideoStats {
   readyForReview: number
   awaitingResponse: number
   oldestPending?: Date
+  totalInvitesSent: number
 }
 
 export function VideoReviewCards() {
@@ -60,6 +61,9 @@ export function VideoReviewCards() {
         const awaitingResponse = candidates.filter(c => 
           c.status === 'requested' && !c.video_url
         ).length
+        const totalInvitesSent = candidates.filter(c => 
+          c.status === 'requested' || c.video_url
+        ).length
 
         // Find oldest pending review
         const pendingVideos = candidates.filter(c => 
@@ -76,7 +80,8 @@ export function VideoReviewCards() {
             videosReceived,
             readyForReview,
             awaitingResponse,
-            oldestPending
+            oldestPending,
+            totalInvitesSent
           })
 
           stats.push({
@@ -85,7 +90,8 @@ export function VideoReviewCards() {
             videosReceived,
             readyForReview,
             awaitingResponse,
-            oldestPending
+            oldestPending,
+            totalInvitesSent
           })
         }
       }
@@ -132,18 +138,14 @@ export function VideoReviewCards() {
               {stat.oldestPending && getPriorityIndicator(stat)}
             </CardHeader>
             <CardContent className="p-3 space-y-3">
-              {stat.readyForReview > 0 && (
-                <div className="text-sm text-red-600 font-medium">
-                  Candidate video ready for review
-                </div>
-              )}
-              {stat.awaitingResponse > 0 ? (
+              <div className="text-sm text-muted-foreground">
+                {stat.videosReceived}/{stat.totalInvitesSent} videos received
+              </div>
+              {stat.awaitingResponse > 0 && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Mail className="h-4 w-4" />
                   <span>{stat.awaitingResponse} {stat.awaitingResponse === 1 ? 'invite' : 'invites'} awaiting response</span>
                 </div>
-              ) : (
-                <div className="text-sm text-muted-foreground">No pending invites</div>
               )}
               <Button 
                 variant="destructive" 
