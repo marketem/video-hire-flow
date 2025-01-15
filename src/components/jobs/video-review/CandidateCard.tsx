@@ -35,8 +35,8 @@ export function CandidateCard({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-muted rounded-lg gap-4">
+        <div className="space-y-1">
           <h4 className="font-medium">{candidate.name}</h4>
           <p className="text-sm text-muted-foreground">{candidate.email}</p>
           {candidate.video_url && (
@@ -45,10 +45,11 @@ export function CandidateCard({
             </p>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {candidate.video_url && (
             <Button
               variant="secondary"
+              className="w-full sm:w-auto"
               onClick={handleVideoClick}
             >
               {isVideoOpen ? 'Close Video' : 'Review Video'}
@@ -58,15 +59,17 @@ export function CandidateCard({
             variant="outline"
             size="icon"
             onClick={() => window.open(`tel:${candidate.phone}`, '_blank')}
+            className="flex-shrink-0"
           >
             <Phone className="h-4 w-4" />
           </Button>
           {showActions && onStatusChange && (
-            <>
+            <div className="flex gap-2 w-full sm:w-auto">
               <Button
                 variant="outline"
                 size="icon"
                 onClick={() => onStatusChange(candidate.id, 'approved')}
+                className="flex-1 sm:flex-initial"
               >
                 <ThumbsUp className="h-4 w-4" />
               </Button>
@@ -74,10 +77,11 @@ export function CandidateCard({
                 variant="outline"
                 size="icon"
                 onClick={() => onStatusChange(candidate.id, 'rejected')}
+                className="flex-1 sm:flex-initial"
               >
                 <ThumbsDown className="h-4 w-4" />
               </Button>
-            </>
+            </div>
           )}
         </div>
       </div>
