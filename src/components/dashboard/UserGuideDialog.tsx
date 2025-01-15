@@ -16,7 +16,7 @@ const steps = [
     icon: BookOpen,
     items: [
       "Create a job opening with title, department, and location",
-      "Enable public applications or import candidates via CSV",
+      "Import candidates via CSV (ie. from Indeed)",
       "Add candidates manually with basic information"
     ]
   },
@@ -76,6 +76,7 @@ export function UserGuideDialog({ open, onOpenChange }: UserGuideDialogProps) {
             <div className="flex items-start gap-4">
               {steps[currentStep].icon && (
                 <div className="mt-1">
+                  {/* Use the Icon component directly */}
                   <steps[currentStep].icon className="h-5 w-5 text-primary" />
                 </div>
               )}
