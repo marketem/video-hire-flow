@@ -65,29 +65,40 @@ export default function VideoSubmission() {
   })
 
   const handleUpload = async () => {
-    if (!recordedBlob || !candidate?.id) return
+    if (!recordedBlob || !candidate?.id) {
+      console.error('Missing recordedBlob or candidate.id')
+      return
+    }
+    
     setUploadError(null)
     setIsUploading(true)
 
     try {
+      console.log('Starting upload process...')
+      
       if (recordedBlob.size > MAX_FILE_SIZE) {
         throw new Error(`Video size (${Math.round(recordedBlob.size / (1024 * 1024))}MB) exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit. Please record a shorter video.`)
       }
 
       const fileName = `${candidate.id}-${Date.now()}.webm`
       const file = new File([recordedBlob], fileName, {
-        type: 'video/webm'
+        type: recordedBlob.type || 'video/webm'
       })
 
-      const { error: uploadError } = await supabase.storage
+      console.log('Uploading file to storage...')
+      const { error: uploadError, data: uploadData } = await supabase.storage
         .from('videos')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false
         })
 
-      if (uploadError) throw uploadError
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError)
+        throw uploadError
+      }
 
+      console.log('File uploaded successfully, updating candidate record...')
       const { error: updateError } = await supabase
         .from('candidates')
         .update({ 
@@ -96,7 +107,10 @@ export default function VideoSubmission() {
         })
         .eq('id', candidate.id)
 
-      if (updateError) throw updateError
+      if (updateError) {
+        console.error('Database update error:', updateError)
+        throw updateError
+      }
 
       // Stop the stream and reset camera state before navigating
       stopStream()
