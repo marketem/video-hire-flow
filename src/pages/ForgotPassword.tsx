@@ -65,8 +65,8 @@ export default function ForgotPassword() {
           </Link>
         </div>
         
-        {/* New header and description */}
-        <div className="mb-8">
+        {/* Centered header and description */}
+        <div className="mb-8 text-center">
           <h1 className="text-2xl font-semibold tracking-tight mb-2">
             Forgot Password
           </h1>
