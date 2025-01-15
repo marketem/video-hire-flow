@@ -33,7 +33,7 @@ export default function VideoSubmission() {
     setupVideoPreview,
   } = useVideoRecording()
 
-  // Fetch candidate data using the token
+  // Changed from .single() to .maybeSingle()
   const { data: candidate, isLoading: isLoadingCandidate } = useQuery({
     queryKey: ['candidate', token],
     queryFn: async () => {
@@ -43,13 +43,13 @@ export default function VideoSubmission() {
         .from('candidates')
         .select('*')
         .eq('video_token', token)
-        .single()
+        .maybeSingle()
 
       if (error) throw error
+      if (!data) throw new Error('Invalid or expired video submission link')
       return data
     },
     enabled: !!token,
-    retry: false,
     meta: {
       onError: () => {
         toast({
