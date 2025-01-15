@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
@@ -22,16 +22,16 @@ interface EditCandidateSheetProps {
 }
 
 export function EditCandidateSheet({ candidate, open, onOpenChange, jobId }: EditCandidateSheetProps) {
-  const [name, setName] = useState(candidate?.name || "")
-  const [email, setEmail] = useState(candidate?.email || "")
-  const [phone, setPhone] = useState(candidate?.phone || "")
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const supabase = useSupabaseClient()
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
-  // Reset form when candidate changes
-  useState(() => {
+  // Update form when candidate changes
+  useEffect(() => {
     if (candidate) {
       setName(candidate.name)
       setEmail(candidate.email)
