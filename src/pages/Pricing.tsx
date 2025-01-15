@@ -6,15 +6,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import type { Database } from "@/integrations/supabase/types";
 
-interface PricingPlan {
-  id: string;
-  name: string;
-  price_monthly: number;
-  price_yearly: number;
-  features: string[];
-  is_popular: boolean;
-}
+type PricingPlan = Database['public']['Tables']['pricing_plans']['Row'];
 
 const Pricing = () => {
   const navigate = useNavigate();
@@ -25,8 +19,12 @@ const Pricing = () => {
         .from('pricing_plans')
         .select('*');
 
-      if (error) throw error;
-      return data as PricingPlan[];
+      if (error) {
+        console.error('Error fetching pricing plans:', error);
+        return [];
+      }
+      
+      return data || [];
     }
   });
 

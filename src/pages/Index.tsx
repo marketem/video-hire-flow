@@ -47,8 +47,12 @@ const Index = () => {
         .from('pricing_plans')
         .select('*');
 
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error('Error fetching pricing plans:', error);
+        return [];
+      }
+      
+      return data || [];
     }
   });
 

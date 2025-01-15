@@ -18,19 +18,6 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true
-  },
-  global: {
-    headers: {
-      'apikey': supabaseAnonKey,
-      'Content-Type': 'application/json'
-    }
-  },
-  db: {
-    schema: 'public'
-  },
-  storage: {
-    retryAttempts: 3,
-    multipartUploadThreshold: 10 * 1024 * 1024 // 10MB
   }
 });
 
