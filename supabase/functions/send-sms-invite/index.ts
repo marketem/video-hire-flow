@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { Twilio } from 'twilio'
+import twilio from 'twilio'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -34,7 +34,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Sending SMS to:', { name, phone, companyName, senderName })
 
     try {
-      const client = new Twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+      const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
       const message = `Hi ${name}, ${senderName} from ${companyName} has requested a video introduction. Please click this link to record and submit your video: ${submissionUrl}`
 
       const result = await client.messages.create({
