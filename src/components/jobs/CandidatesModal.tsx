@@ -7,12 +7,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer"
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CandidatesList } from "./CandidatesList"
 import { AddCandidateForm } from "./AddCandidateForm"
@@ -53,19 +53,19 @@ export function CandidatesModal({ jobId, jobTitle, open, onOpenChange }: Candida
 
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="max-h-[90vh]">
-          <DrawerHeader className="pb-2">
-            <DrawerTitle className="text-lg">{jobTitle}</DrawerTitle>
-            <DrawerDescription className="text-sm">
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="right" className="w-full sm:max-w-md">
+          <SheetHeader className="pb-2">
+            <SheetTitle className="text-lg">{jobTitle}</SheetTitle>
+            <SheetDescription className="text-sm">
               Manage candidates for this position
-            </DrawerDescription>
-          </DrawerHeader>
-          <div className="px-4 pb-8 overflow-y-auto">
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-4 overflow-y-auto">
             {content}
           </div>
-        </DrawerContent>
-      </Drawer>
+        </SheetContent>
+      </Sheet>
     )
   }
 

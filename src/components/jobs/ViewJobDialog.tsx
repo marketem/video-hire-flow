@@ -6,11 +6,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer"
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
 
 interface ViewJobDialogProps {
   job: {
@@ -68,16 +68,16 @@ export function ViewJobDialog({ job, open, onOpenChange }: ViewJobDialogProps) {
 
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>{job.title}</DrawerTitle>
-          </DrawerHeader>
-          <div className="px-4 pb-8">
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="right" className="w-full sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>{job.title}</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4">
             {content}
           </div>
-        </DrawerContent>
-      </Drawer>
+        </SheetContent>
+      </Sheet>
     )
   }
 

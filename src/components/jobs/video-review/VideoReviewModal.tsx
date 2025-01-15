@@ -7,12 +7,12 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-} from "@/components/ui/drawer"
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet"
 import { CandidateSection } from "./CandidateSection"
 import { useVideoReview } from "./useVideoReview"
 import {
@@ -107,19 +107,19 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
 
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>Review Candidates</DrawerTitle>
-            <DrawerDescription>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Review Candidates</SheetTitle>
+            <SheetDescription>
               Review and manage candidate video submissions
-            </DrawerDescription>
-          </DrawerHeader>
-          <div className="px-4 pb-8 overflow-y-auto">
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-4">
             {content}
           </div>
-        </DrawerContent>
-      </Drawer>
+        </SheetContent>
+      </Sheet>
     )
   }
 

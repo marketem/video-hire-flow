@@ -7,12 +7,12 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-} from "@/components/ui/drawer"
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet"
 import { Form } from "@/components/ui/form"
 import { useEffect } from "react"
 import { JobFormFields } from "./job-form/JobFormFields"
@@ -73,19 +73,19 @@ export function EditJobDialog({
 
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>Edit Job Opening</DrawerTitle>
-            <DrawerDescription>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="right" className="w-full sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>Edit Job Opening</SheetTitle>
+            <SheetDescription>
               Make changes to the job opening details below.
-            </DrawerDescription>
-          </DrawerHeader>
-          <div className="px-4 pb-8">
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-4">
             {content}
           </div>
-        </DrawerContent>
-      </Drawer>
+        </SheetContent>
+      </Sheet>
     )
   }
 

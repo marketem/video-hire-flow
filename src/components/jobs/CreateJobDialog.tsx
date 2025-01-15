@@ -1,6 +1,6 @@
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { JobFormFields } from "./job-form/JobFormFields"
 import { FormActions } from "./job-form/FormActions"
 import { useJobForm } from "@/hooks/useJobForm"
@@ -48,16 +48,16 @@ export function CreateJobDialog({ onJobCreated, open, onOpenChange }: CreateJobD
 
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>Create New Job Opening</DrawerTitle>
-          </DrawerHeader>
-          <div className="px-4 pb-8">
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="right" className="w-full sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>Create New Job Opening</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4">
             {content}
           </div>
-        </DrawerContent>
-      </Drawer>
+        </SheetContent>
+      </Sheet>
     )
   }
 
