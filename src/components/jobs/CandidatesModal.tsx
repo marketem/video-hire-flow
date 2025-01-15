@@ -57,8 +57,8 @@ export function CandidatesModal({
           <TabsTrigger value="import" className="flex-1">Import</TabsTrigger>
         </TabsList>
 
-        <ScrollArea className="flex-1 h-[calc(90vh-8rem)]">
-          <div className="p-4">
+        <ScrollArea className="flex-1 h-[calc(90vh-8rem)] px-4">
+          <div className="py-4 min-h-full">
             <TabsContent value="list" className="m-0 mt-0">
               {candidates?.length > 0 && (
                 <BulkActions
