@@ -16,18 +16,19 @@ export function useLoginForm() {
     console.error("Auth error details:", error);
     
     if (error instanceof AuthApiError) {
+      // Log the specific error code for debugging
+      console.log("Auth API Error code:", error.status);
+      console.log("Auth API Error message:", error.message);
+      
       switch (error.status) {
         case 400:
-          if (error.message.includes("Invalid login credentials")) {
-            return "Invalid email or password. Please try again.";
-          }
-          return "Please check your credentials and try again.";
+          return "Invalid email or password. Please try again.";
         case 401:
           return "Invalid login credentials. Please try again.";
         case 403:
           return "Email not confirmed. Please check your email for verification link.";
         case 422:
-          return "Please check your credentials and try again.";
+          return "Invalid login credentials. Please try again.";
         default:
           return "An error occurred during login. Please try again.";
       }
