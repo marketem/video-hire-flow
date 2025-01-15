@@ -81,17 +81,18 @@ export default function ResetPassword() {
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
         <div className="absolute inset-0 bg-blue-900" />
         <div className="relative z-20 flex items-center text-lg font-medium">
-          <img 
-            src="/lovable-uploads/658547e3-9dac-4df0-84d6-a891876840a9.png" 
-            alt="VibeCheck Logo" 
-            className="h-8 w-auto mr-2"
-          />
-          VibeCheck
+          <Link to="/" className="flex items-center space-x-2">
+            <img 
+              src="/lovable-uploads/658547e3-9dac-4df0-84d6-a891876840a9.png" 
+              alt="VibeCheck Logo" 
+              className="h-8 w-auto mr-2"
+            />
+            <span className="text-white">VibeCheck</span>
+          </Link>
         </div>
       </div>
       <div className="lg:p-8">
-        {/* Add logo for mobile view */}
-        <div className="flex items-center justify-center mb-8 lg:hidden">
+        <div className="flex items-center justify-start mb-8 lg:hidden">
           <Link to="/" className="flex items-center space-x-2">
             <img 
               src="/lovable-uploads/658547e3-9dac-4df0-84d6-a891876840a9.png" 
