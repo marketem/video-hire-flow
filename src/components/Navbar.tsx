@@ -1,7 +1,23 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Menu } from "lucide-react";
+import { useState } from "react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const NavLinks = () => (
+    <>
+      <Link to="/login">
+        <Button variant="ghost">Log in</Button>
+      </Link>
+      <Link to="/signup">
+        <Button>Start Free Trial</Button>
+      </Link>
+    </>
+  );
+
   return (
     <nav className="border-b">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -12,15 +28,28 @@ export const Navbar = () => {
               alt="VibeCheck Logo" 
               className="h-8 w-auto"
             />
-            <span className="text-2xl font-bold text-black">VibeCheck</span>
+            <span className="text-xl sm:text-2xl font-bold text-black">VibeCheck</span>
           </Link>
-          <div className="flex items-center gap-4">
-            <Link to="/login">
-              <Button variant="ghost">Log in</Button>
-            </Link>
-            <Link to="/signup">
-              <Button>Start Free Trial</Button>
-            </Link>
+          
+          {/* Desktop Navigation */}
+          <div className="hidden sm:flex items-center gap-4">
+            <NavLinks />
+          </div>
+
+          {/* Mobile Navigation */}
+          <div className="sm:hidden">
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[240px] sm:w-[540px]">
+                <div className="flex flex-col gap-4 mt-8">
+                  <NavLinks />
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>

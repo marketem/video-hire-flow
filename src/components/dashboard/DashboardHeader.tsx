@@ -5,12 +5,12 @@ export function DashboardHeader() {
   const session = useSession();
 
   return (
-    <div className="flex justify-between items-center mb-8">
-      <h1 className="text-3xl font-bold">
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-8">
+      <h1 className="text-2xl sm:text-3xl font-bold break-words max-w-full">
         Welcome, {session?.user.user_metadata.first_name || 'User'}!
       </h1>
-      <div className="flex items-center gap-4">
-        <p className="text-muted-foreground">
+      <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+        <p className="text-sm sm:text-base text-muted-foreground">
           {session?.user.user_metadata.trial_ends_at ? (
             `Trial ends in ${Math.ceil(
               (new Date(session.user.user_metadata.trial_ends_at).getTime() -
