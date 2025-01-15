@@ -20,6 +20,24 @@ export function UploadCandidates({ jobId, onSuccess }: UploadCandidatesProps) {
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
+  const formatPhoneNumber = (phone: string) => {
+    // Remove all non-numeric characters except +
+    const cleaned = phone.replace(/[^\d+]/g, '')
+    
+    // If it already starts with +, return as is
+    if (cleaned.startsWith('+')) {
+      return cleaned
+    }
+    
+    // If it starts with 1, add +
+    if (cleaned.startsWith('1')) {
+      return `+${cleaned}`
+    }
+    
+    // Otherwise, add +1
+    return `+1${cleaned}`
+  }
+
   const handleFileUpload = async (file: File) => {
     if (!file) return
     if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
@@ -42,11 +60,16 @@ export function UploadCandidates({ jobId, onSuccess }: UploadCandidatesProps) {
         headers.forEach((header, index) => {
           candidate[header] = row[index]?.trim() || ''
         })
+        
+        // Format the phone number before saving
+        const phone = candidate.phone || candidate.phonenumber || ''
+        const formattedPhone = formatPhoneNumber(phone)
+        
         return {
           job_id: jobId,
           name: candidate.name || candidate.fullname || '',
           email: candidate.email || '',
-          phone: candidate.phone || candidate.phonenumber || '',
+          phone: formattedPhone,
           status: 'new'
         }
       }).filter(candidate => candidate.name && candidate.email && candidate.phone)
@@ -121,7 +144,7 @@ export function UploadCandidates({ jobId, onSuccess }: UploadCandidatesProps) {
                 <li><code className="bg-muted px-1 rounded">email</code> - The candidate's email address</li>
                 <li><code className="bg-muted px-1 rounded">phone</code> or <code className="bg-muted px-1 rounded">phonenumber</code> - The candidate's phone number</li>
               </ul>
-              <p className="text-xs">Example: name,email,phone<br />John Doe,john@example.com,+1234567890</p>
+              <p className="text-xs">Example: name,email,phone<br />John Doe,john@example.com,1234567890</p>
             </div>
           </div>
         </CardContent>
