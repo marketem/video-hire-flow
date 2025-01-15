@@ -58,10 +58,11 @@ export function CandidateCard({
             )}
             <Button
               variant="outline"
-              size="icon"
+              className="flex-1 sm:flex-initial"
               onClick={() => window.open(`tel:${candidate.phone}`, '_blank')}
             >
               <Phone className="h-4 w-4" />
+              <span>Call Candidate</span>
             </Button>
           </div>
           {showActions && onStatusChange && (
