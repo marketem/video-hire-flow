@@ -42,7 +42,7 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
   const content = (
     <Accordion type="single" defaultValue="ready-for-review" className="space-y-4">
       <AccordionItem value="ready-for-review" className="border-none">
-        <AccordionTrigger className="hover:no-underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+        <AccordionTrigger className="hover:no-underline focus:outline-none focus-visible:outline-none focus-visible:ring-0">
           <span className="text-lg font-semibold">
             Ready for Review ({readyForReview.length})
           </span>
@@ -59,7 +59,7 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
       </AccordionItem>
 
       <AccordionItem value="approved" className="border-none">
-        <AccordionTrigger className="hover:no-underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+        <AccordionTrigger className="hover:no-underline focus:outline-none focus-visible:outline-none focus-visible:ring-0">
           <span className="text-lg font-semibold">
             Approved Candidates ({approvedCandidates.length})
           </span>
@@ -74,7 +74,7 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
       </AccordionItem>
 
       <AccordionItem value="awaiting" className="border-none">
-        <AccordionTrigger className="hover:no-underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+        <AccordionTrigger className="hover:no-underline focus:outline-none focus-visible:outline-none focus-visible:ring-0">
           <span className="text-lg font-semibold">
             Awaiting Response ({awaitingResponse.length})
           </span>
@@ -89,7 +89,7 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
       </AccordionItem>
 
       <AccordionItem value="rejected" className="border-none">
-        <AccordionTrigger className="hover:no-underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+        <AccordionTrigger className="hover:no-underline focus:outline-none focus-visible:outline-none focus-visible:ring-0">
           <span className="text-lg font-semibold">
             Rejected Candidates ({rejectedCandidates.length})
           </span>
