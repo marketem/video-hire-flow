@@ -1,6 +1,6 @@
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import type { JobOpening } from "./types"
 
 export function useJobOpenings() {
@@ -10,6 +10,7 @@ export function useJobOpenings() {
   const { toast } = useToast()
 
   const fetchJobs = useCallback(async () => {
+    setIsLoading(true)
     try {
       console.log('Fetching jobs...')
       const { data: jobsData, error: jobsError } = await supabase
@@ -52,10 +53,17 @@ export function useJobOpenings() {
         description: "Failed to fetch job openings",
         variant: "destructive",
       })
+      // Set empty array on error to ensure consistent state
+      setJobs([])
     } finally {
       setIsLoading(false)
     }
   }, [supabase, toast])
+
+  // Fetch jobs on mount
+  useEffect(() => {
+    fetchJobs()
+  }, [fetchJobs])
 
   return {
     jobs,

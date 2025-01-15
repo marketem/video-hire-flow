@@ -7,12 +7,19 @@ import { useJobOpenings } from "./useJobOpenings"
 
 export function JobOpenings() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const { jobs, fetchJobs } = useJobOpenings()
+  const { jobs, isLoading, fetchJobs } = useJobOpenings()
 
   const handleJobCreated = () => {
     setIsCreateDialogOpen(false)
     fetchJobs()
   }
+
+  // Determine button appearance based on jobs existence and loading state
+  const showCompactButton = !isLoading && jobs.length > 0
+  const buttonText = showCompactButton ? "Job" : "Create Job Opening"
+  const buttonSize = showCompactButton ? "sm" : "default"
+  const iconSize = showCompactButton ? "h-3 w-3" : "h-4 w-4"
+  const buttonClassName = `${showCompactButton ? '' : 'w-full sm:w-auto'}`
 
   return (
     <div className="space-y-4">
@@ -20,12 +27,12 @@ export function JobOpenings() {
         <h2 className="text-2xl font-semibold tracking-tight">Request Videos</h2>
         <Button 
           onClick={() => setIsCreateDialogOpen(true)}
-          className={jobs.length === 0 ? 'w-full sm:w-auto' : 'w-auto'}
-          size={jobs.length === 0 ? "default" : "sm"}
+          className={buttonClassName}
+          size={buttonSize}
           variant="default"
         >
-          <Plus className={jobs.length === 0 ? "mr-2 h-4 w-4" : "mr-1 h-3 w-3"} />
-          {jobs.length === 0 ? "Create Job Opening" : "Job"}
+          <Plus className={`${showCompactButton ? 'mr-1' : 'mr-2'} ${iconSize}`} />
+          {buttonText}
         </Button>
       </div>
       <JobOpeningsList />
