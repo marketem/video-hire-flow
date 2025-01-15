@@ -50,14 +50,14 @@ export function CandidatesModal({
 
   const content = (
     <div className="flex flex-col h-full">
-      <Tabs defaultValue="list" className="flex-1">
+      <Tabs defaultValue="list" className="flex-1 flex flex-col">
         <TabsList className="w-full grid grid-cols-3">
           <TabsTrigger value="list" className="flex-1">Candidates</TabsTrigger>
           <TabsTrigger value="add" className="flex-1">Add Candidate</TabsTrigger>
           <TabsTrigger value="import" className="flex-1">Import</TabsTrigger>
         </TabsList>
 
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 h-[calc(90vh-8rem)]">
           <div className="p-4">
             <TabsContent value="list" className="m-0 mt-0">
               {candidates?.length > 0 && (
