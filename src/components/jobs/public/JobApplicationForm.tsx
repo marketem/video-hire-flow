@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { Upload, MessageSquare } from "lucide-react"
+import { Upload } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface JobApplicationFormProps {
   jobId: string
@@ -16,11 +17,23 @@ export function JobApplicationForm({ jobId }: JobApplicationFormProps) {
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
   const [resume, setResume] = useState<File | null>(null)
+  const [smsConsent, setSmsConsent] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!smsConsent || !termsAccepted) {
+      toast({
+        title: "Required Consent",
+        description: "Please accept both the terms and conditions and SMS consent to proceed.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -95,6 +108,8 @@ export function JobApplicationForm({ jobId }: JobApplicationFormProps) {
       setEmail("")
       setPhone("")
       setResume(null)
+      setSmsConsent(false)
+      setTermsAccepted(false)
     } catch (error) {
       console.error('Application submission error:', error)
       toast({
@@ -138,12 +153,9 @@ export function JobApplicationForm({ jobId }: JobApplicationFormProps) {
           required
           placeholder="+1234567890"
         />
-        <div className="flex items-start gap-2 text-xs text-muted-foreground mt-1.5">
-          <MessageSquare className="h-4 w-4 flex-shrink-0 mt-0.5" />
-          <p>
-            By providing your phone number, you consent to receive SMS messages about your application status. Message and data rates may apply. Reply STOP to opt out.
-          </p>
-        </div>
+        <p className="text-xs text-muted-foreground">
+          Enter phone number in any format - we'll format it automatically
+        </p>
       </div>
       <div className="space-y-2">
         <Label htmlFor="resume">Resume</Label>
@@ -171,6 +183,49 @@ export function JobApplicationForm({ jobId }: JobApplicationFormProps) {
           </p>
         )}
       </div>
+
+      <div className="space-y-4 border rounded-lg p-4 bg-muted/5">
+        <div className="flex items-start space-x-2">
+          <Checkbox 
+            id="terms" 
+            checked={termsAccepted}
+            onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+            className="mt-1"
+          />
+          <div className="grid gap-1.5 leading-none">
+            <label
+              htmlFor="terms"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Accept Terms and Conditions
+            </label>
+            <p className="text-sm text-muted-foreground">
+              By checking this box, you agree to our Terms of Service and Privacy Policy.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start space-x-2">
+          <Checkbox 
+            id="sms" 
+            checked={smsConsent}
+            onCheckedChange={(checked) => setSmsConsent(checked as boolean)}
+            className="mt-1"
+          />
+          <div className="grid gap-1.5 leading-none">
+            <label
+              htmlFor="sms"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              SMS Communication Consent
+            </label>
+            <p className="text-sm text-muted-foreground">
+              I consent to receive SMS messages about my application status. Message and data rates may apply. Reply STOP to opt out.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? "Submitting..." : "Submit Application"}
       </Button>

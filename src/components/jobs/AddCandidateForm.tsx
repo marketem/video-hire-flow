@@ -5,8 +5,9 @@ import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Upload, MessageSquare, Info } from "lucide-react"
+import { Upload, MessageSquare } from "lucide-react"
 import { formatPhoneNumber } from "@/utils/phoneUtils"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface AddCandidateFormProps {
   jobId: string
@@ -19,12 +20,24 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
   const [phone, setPhone] = useState("")
   const [resume, setResume] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [smsConsent, setSmsConsent] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const supabase = useSupabaseClient()
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!smsConsent || !termsAccepted) {
+      toast({
+        title: "Required Consent",
+        description: "Please accept both the terms and conditions and SMS consent to proceed.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -131,12 +144,6 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
           required
           placeholder="+1 (234) 567-8900"
         />
-        <div className="flex items-start gap-2 text-xs text-muted-foreground mt-1.5">
-          <MessageSquare className="h-4 w-4 flex-shrink-0 mt-0.5" />
-          <p>
-            By providing a phone number, you confirm that you have obtained consent to send SMS messages to this contact. The candidate may receive updates about their application via SMS.
-          </p>
-        </div>
         <p className="text-xs text-muted-foreground">
           Enter phone number in any format - we'll format it automatically
         </p>
@@ -167,6 +174,49 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
           </p>
         )}
       </div>
+
+      <div className="space-y-4 border rounded-lg p-4 bg-muted/5">
+        <div className="flex items-start space-x-2">
+          <Checkbox 
+            id="terms" 
+            checked={termsAccepted}
+            onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+            className="mt-1"
+          />
+          <div className="grid gap-1.5 leading-none">
+            <label
+              htmlFor="terms"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Accept Terms and Conditions
+            </label>
+            <p className="text-sm text-muted-foreground">
+              By checking this box, you agree to our Terms of Service and Privacy Policy.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start space-x-2">
+          <Checkbox 
+            id="sms" 
+            checked={smsConsent}
+            onCheckedChange={(checked) => setSmsConsent(checked as boolean)}
+            className="mt-1"
+          />
+          <div className="grid gap-1.5 leading-none">
+            <label
+              htmlFor="sms"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              SMS Communication Consent
+            </label>
+            <p className="text-sm text-muted-foreground">
+              I consent to receive SMS messages about my application status. Message and data rates may apply. Reply STOP to opt out.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <Button type="submit" disabled={isSubmitting}>
         {isSubmitting ? "Adding..." : "Add Candidate"}
       </Button>
