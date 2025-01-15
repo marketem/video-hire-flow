@@ -15,13 +15,21 @@ interface UploadCandidatesProps {
 
 export function UploadCandidates({ jobId, onSuccess }: UploadCandidatesProps) {
   const [isUploading, setIsUploading] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
   const supabase = useSupabaseClient()
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+  const handleFileUpload = async (file: File) => {
     if (!file) return
+    if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+      toast({
+        title: "Error",
+        description: "Please upload a CSV file",
+        variant: "destructive",
+      })
+      return
+    }
 
     setIsUploading(true)
 
@@ -57,6 +65,7 @@ export function UploadCandidates({ jobId, onSuccess }: UploadCandidatesProps) {
       queryClient.invalidateQueries({ queryKey: ['candidates', jobId] })
       onSuccess()
     } catch (error) {
+      console.error('Upload error:', error)
       toast({
         title: "Error",
         description: "Failed to upload candidates",
@@ -64,6 +73,29 @@ export function UploadCandidates({ jobId, onSuccess }: UploadCandidatesProps) {
       })
     } finally {
       setIsUploading(false)
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+
+    const file = e.dataTransfer.files[0]
+    if (file) {
+      handleFileUpload(file)
     }
   }
 
@@ -89,9 +121,19 @@ export function UploadCandidates({ jobId, onSuccess }: UploadCandidatesProps) {
       <div className="space-y-4">
         <Label htmlFor="csv" className="text-base">Upload Candidates CSV</Label>
         <div className="flex items-center justify-center w-full">
-          <label htmlFor="csv" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/5 hover:bg-muted/10 border-muted-foreground/20">
+          <label 
+            htmlFor="csv" 
+            className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+              isDragging 
+                ? "border-primary bg-primary/5" 
+                : "bg-muted/5 hover:bg-muted/10 border-muted-foreground/20"
+            }`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
             <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+              <Upload className={`w-8 h-8 mb-2 ${isDragging ? 'text-primary' : 'text-muted-foreground'}`} />
               <p className="mb-2 text-sm text-muted-foreground">
                 <span className="font-semibold">Click to upload</span> or drag and drop
               </p>
@@ -101,7 +143,10 @@ export function UploadCandidates({ jobId, onSuccess }: UploadCandidatesProps) {
               id="csv"
               type="file"
               accept=".csv"
-              onChange={handleFileUpload}
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) handleFileUpload(file)
+              }}
               disabled={isUploading}
               className="hidden"
             />
