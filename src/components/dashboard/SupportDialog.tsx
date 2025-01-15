@@ -7,7 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { useMediaQuery } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SupportDialogProps {
   open: boolean;
@@ -22,7 +22,7 @@ export function SupportDialog({ open, onOpenChange }: SupportDialogProps) {
   const session = useSession();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
 
   const form = useForm<SupportFormValues>({
     defaultValues: {
