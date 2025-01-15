@@ -52,42 +52,42 @@ export function DashboardStats() {
     : 0;
 
   return (
-    <div className="grid gap-6 md:grid-cols-3 mb-8">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium">Total Open Candidates</CardTitle>
-          <Users className="h-4 w-4 text-muted-foreground" />
+    <div className="grid gap-3 md:gap-6 grid-cols-3 mb-4 md:mb-8">
+      <Card className="p-2 md:p-4">
+        <CardHeader className="flex flex-row items-center justify-between p-0 md:pb-2 space-y-0">
+          <CardTitle className="text-xs md:text-sm font-medium">Total Candidates</CardTitle>
+          <Users className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
+        <CardContent className="p-0 md:pt-2">
+          <div className="text-lg md:text-2xl font-bold">
             {isLoadingCandidates ? "..." : candidatesCount}
           </div>
-          <p className="text-xs text-muted-foreground">
-            Across all open jobs
+          <p className="text-[10px] md:text-xs text-muted-foreground">
+            Open jobs
           </p>
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium">Video Response Rate</CardTitle>
-          <Activity className="h-4 w-4 text-muted-foreground" />
+      <Card className="p-2 md:p-4">
+        <CardHeader className="flex flex-row items-center justify-between p-0 md:pb-2 space-y-0">
+          <CardTitle className="text-xs md:text-sm font-medium">Response Rate</CardTitle>
+          <Activity className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{responseRate}%</div>
-          <p className="text-xs text-muted-foreground">
-            Of invited candidates
+        <CardContent className="p-0 md:pt-2">
+          <div className="text-lg md:text-2xl font-bold">{responseRate}%</div>
+          <p className="text-[10px] md:text-xs text-muted-foreground">
+            Of invited
           </p>
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium">Video Responses</CardTitle>
-          <VideoIcon className="h-4 w-4 text-muted-foreground" />
+      <Card className="p-2 md:p-4">
+        <CardHeader className="flex flex-row items-center justify-between p-0 md:pb-2 space-y-0">
+          <CardTitle className="text-xs md:text-sm font-medium">Videos</CardTitle>
+          <VideoIcon className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{videoResponsesCount}</div>
-          <p className="text-xs text-muted-foreground">
-            Total responses received
+        <CardContent className="p-0 md:pt-2">
+          <div className="text-lg md:text-2xl font-bold">{videoResponsesCount}</div>
+          <p className="text-[10px] md:text-xs text-muted-foreground">
+            Responses
           </p>
         </CardContent>
       </Card>
