@@ -59,7 +59,7 @@ export default function VideoSubmission() {
 
       if (!data) {
         console.error('No candidate found with token:', token)
-        throw new Error('Invalid or expired video submission link')
+        throw new Error('Video has already been submitted')
       }
       
       console.log('Candidate data:', data)
@@ -80,96 +80,6 @@ export default function VideoSubmission() {
     }
   })
 
-  const handleUpload = async () => {
-    console.log('Starting upload with:', { recordedBlob, candidateId: candidate?.id })
-    
-    if (!recordedBlob) {
-      setUploadError('No video recording found')
-      return
-    }
-
-    if (!candidate?.id) {
-      console.error('No candidate ID available')
-      setUploadError('Invalid candidate information')
-      return
-    }
-    
-    setUploadError(null)
-    setIsUploading(true)
-
-    try {
-      if (recordedBlob.size > MAX_FILE_SIZE) {
-        throw new Error(`Video size (${Math.round(recordedBlob.size / (1024 * 1024))}MB) exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit`)
-      }
-
-      const fileName = `${candidate.id}-${Date.now()}.webm`
-      console.log('Creating file with name:', fileName)
-      
-      const file = new File([recordedBlob], fileName, {
-        type: recordedBlob.type || 'video/webm'
-      })
-
-      console.log('Uploading file to storage...')
-      const { error: uploadError } = await supabase.storage
-        .from('videos')
-        .upload(fileName, file)
-
-      if (uploadError) {
-        console.error('Storage upload error:', uploadError)
-        throw uploadError
-      }
-
-      console.log('File uploaded successfully, updating candidate record...')
-      const { error: updateError } = await supabase
-        .from('candidates')
-        .update({ 
-          video_url: fileName,
-          video_token: null
-        })
-        .eq('id', candidate.id)
-
-      if (updateError) {
-        console.error('Database update error:', updateError)
-        throw updateError
-      }
-
-      stopStream()
-      setCameraInitialized(false)
-
-      toast({
-        title: "Success",
-        description: "Your video has been uploaded successfully!",
-      })
-
-      navigate('/submission-success')
-    } catch (error) {
-      console.error('Upload process error:', error)
-      const errorMessage = error instanceof Error ? error.message : "Upload failed. Please try again."
-      setUploadError(errorMessage)
-      toast({
-        title: "Upload Failed",
-        description: errorMessage,
-        variant: "destructive",
-      })
-    } finally {
-      setIsUploading(false)
-    }
-  }
-
-  const handleStartCamera = async () => {
-    try {
-      await initializeCamera()
-      setCameraInitialized(true)
-    } catch (error) {
-      console.error('Camera initialization error:', error)
-      toast({
-        title: "Camera Error",
-        description: "Failed to access camera. Please check your camera permissions and try again.",
-        variant: "destructive",
-      })
-    }
-  }
-
   if (isLoadingCandidate) {
     return (
       <div className="min-h-screen bg-background p-4 flex items-center justify-center">
@@ -182,9 +92,9 @@ export default function VideoSubmission() {
     return (
       <div className="min-h-screen bg-background p-4 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Invalid or Expired Link</h1>
+          <h1 className="text-2xl font-bold mb-4">Video Already Submitted</h1>
           <p className="text-muted-foreground">
-            This video submission link is no longer valid.
+            Video has already been submitted. Please contact your hiring manager.
           </p>
         </div>
       </div>
