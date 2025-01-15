@@ -61,6 +61,8 @@ export function EditJobDialog({
           setLocation={(value) => form.setValue("location", value)}
           description={form.watch("description")}
           setDescription={(value) => form.setValue("description", value)}
+          publicPageEnabled={form.watch("public_page_enabled")}
+          setPublicPageEnabled={(value) => form.setValue("public_page_enabled", value)}
         />
         <FormActions
           isLoading={isSubmitting}
