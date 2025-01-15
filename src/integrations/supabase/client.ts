@@ -16,9 +16,13 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
-    detectSessionInUrl: true, // Enable session detection in URL
+    detectSessionInUrl: true,
     autoRefreshToken: true,
-    storage: window.localStorage
+  },
+  global: {
+    headers: {
+      'apikey': supabaseAnonKey
+    }
   }
 });
 
