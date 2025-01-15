@@ -3,7 +3,7 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { VideoReviewModal } from "./VideoReviewModal"
 import { useState } from "react"
-import { Clock, AlertCircle, Mail, ThumbsUp, ThumbsDown, PlayCircle } from "lucide-react"
+import { Clock, AlertCircle, PlayCircle, ThumbsUp, Mail, ThumbsDown } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
 interface VideoStats {
@@ -144,23 +144,23 @@ export function VideoReviewCards() {
               </CardTitle>
               {stat.oldestPending && getPriorityIndicator(stat)}
             </CardHeader>
-            <CardContent className="p-3 space-y-3">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-4 justify-between">
+                <div className="flex items-center gap-1">
                   <PlayCircle className="h-4 w-4 text-blue-500" />
-                  <span>{stat.readyForReview} ready for review</span>
+                  <span className="text-sm">{stat.readyForReview}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-1">
                   <ThumbsUp className="h-4 w-4 text-green-500" />
-                  <span>{stat.approvedCount} approved</span>
+                  <span className="text-sm">{stat.approvedCount}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-1">
                   <Mail className="h-4 w-4 text-yellow-500" />
-                  <span>{stat.awaitingResponse} awaiting response</span>
+                  <span className="text-sm">{stat.awaitingResponse}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-1">
                   <ThumbsDown className="h-4 w-4 text-red-500" />
-                  <span>{stat.rejectedCount} rejected</span>
+                  <span className="text-sm">{stat.rejectedCount}</span>
                 </div>
               </div>
             </CardContent>
