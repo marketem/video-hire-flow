@@ -3,6 +3,8 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { CheckCircle2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const features = [
   "Asynchronous video interviews",
@@ -14,6 +16,20 @@ const features = [
 ];
 
 const Index = () => {
+  const { data: plans, isLoading } = useQuery({
+    queryKey: ['pricing-plans'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('pricing_plans')
+        .select('*');
+
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const plan = plans?.[0];
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -69,35 +85,41 @@ const Index = () => {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="text-3xl font-bold mb-12">Simple, Transparent Pricing</h2>
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <div className="px-6 py-8">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Annual Plan</h3>
-                  <div className="mt-4">
-                    <span className="text-4xl font-bold">$199</span>
-                    <span className="text-gray-600">/year</span>
+              {isLoading ? (
+                <div className="animate-pulse bg-white rounded-lg shadow-lg p-8">
+                  <div className="h-6 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div>
+                  <div className="h-8 bg-gray-200 rounded w-1/4 mx-auto mb-6"></div>
+                  <div className="space-y-3">
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
+                    <div className="h-4 bg-gray-200 rounded w-2/3 mx-auto"></div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
                   </div>
-                  <ul className="mt-6 space-y-4">
-                    <li className="flex items-center space-x-3">
-                      <CheckCircle2 className="h-5 w-5 text-success" />
-                      <span>Unlimited job postings</span>
-                    </li>
-                    <li className="flex items-center space-x-3">
-                      <CheckCircle2 className="h-5 w-5 text-success" />
-                      <span>Unlimited candidate video submissions</span>
-                    </li>
-                    <li className="flex items-center space-x-3">
-                      <CheckCircle2 className="h-5 w-5 text-success" />
-                      <span>Unlimited video requests</span>
-                    </li>
-                  </ul>
-                  <Link to="/signup" className="mt-8 block">
-                    <Button className="w-full">Start 14-Day Free Trial</Button>
-                  </Link>
-                  <p className="mt-4 text-sm text-gray-600">
-                    No credit card required for trial
-                  </p>
                 </div>
-              </div>
+              ) : plan ? (
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                  <div className="px-6 py-8">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
+                    <div className="mt-4">
+                      <span className="text-4xl font-bold">${plan.price_monthly}</span>
+                      <span className="text-gray-600">/month</span>
+                    </div>
+                    <ul className="mt-6 space-y-4">
+                      {plan.features.map((feature, index) => (
+                        <li key={index} className="flex items-center space-x-3">
+                          <CheckCircle2 className="h-5 w-5 text-success" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Link to="/signup" className="mt-8 block">
+                      <Button className="w-full">Start 14-Day Free Trial</Button>
+                    </Link>
+                    <p className="mt-4 text-sm text-gray-600">
+                      No credit card required for trial
+                    </p>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </section>
