@@ -37,41 +37,53 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Missing Twilio credentials')
     }
 
-    const { name, phone, companyName, senderName, submissionUrl } = await req.json() as SMSRequest
-    console.log('Request data:', { name, phone, companyName, senderName })
-    console.log('Submission URL:', submissionUrl)
+    const requestData = await req.json() as SMSRequest
+    console.log('Request data:', { 
+      name: requestData.name, 
+      phone: requestData.phone, 
+      companyName: requestData.companyName, 
+      senderName: requestData.senderName 
+    })
+    console.log('Submission URL:', requestData.submissionUrl)
 
     const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-    const message = `Hi ${name}, ${senderName} from ${companyName} has requested a video introduction. Please click this link to record and submit your video: ${submissionUrl}`
+    const message = `Hi ${requestData.name}, ${requestData.senderName} from ${requestData.companyName} has requested a video introduction. Please click this link to record and submit your video: ${requestData.submissionUrl}`
 
     console.log('Sending SMS with message:', message)
-    console.log('To phone number:', phone)
+    console.log('To phone number:', requestData.phone)
     console.log('From phone number:', TWILIO_PHONE_NUMBER)
 
-    const result = await client.messages.create({
-      body: message,
-      to: phone,
-      from: TWILIO_PHONE_NUMBER
-    })
+    try {
+      const result = await client.messages.create({
+        body: message,
+        to: requestData.phone,
+        from: TWILIO_PHONE_NUMBER
+      })
 
-    console.log('SMS sent successfully:', result)
-    console.log('Message SID:', result.sid)
-    console.log('Message Status:', result.status)
-    console.log('Error Code (if any):', result.errorCode)
-    console.log('Error Message (if any):', result.errorMessage)
+      console.log('SMS sent successfully:', result)
+      console.log('Message SID:', result.sid)
+      console.log('Message Status:', result.status)
+      console.log('Error Code (if any):', result.errorCode)
+      console.log('Error Message (if any):', result.errorMessage)
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        messageId: result.sid,
-        status: result.status,
-        error: result.errorMessage
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
-    )
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          messageId: result.sid,
+          status: result.status,
+          error: result.errorMessage
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      )
+    } catch (twilioError) {
+      console.error('Twilio API Error:', twilioError)
+      console.error('Twilio Error Code:', twilioError.code)
+      console.error('Twilio Error Message:', twilioError.message)
+      throw twilioError
+    }
   } catch (error) {
     console.error('Detailed error in send-sms-invite function:', error)
     console.error('Error stack:', error.stack)
