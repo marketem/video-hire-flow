@@ -12,7 +12,7 @@ export function useVideoRecording() {
     videoRef, 
     isPlaying, 
     resetVideoElement, 
-    setupVideoPreview,
+    setupVideoPreview: setupVideoPreviewFromPlayback,
     setupVideoPlayback,
     togglePlayback 
   } = useVideoPlayback()
@@ -37,7 +37,7 @@ export function useVideoRecording() {
     try {
       resetVideoElement()
       const stream = await getStream()
-      await setupVideoPreview(stream)
+      await setupVideoPreviewFromPlayback(stream)
       startRecording(stream)
       setTimeLeft(30)
     } catch (error) {
@@ -57,6 +57,16 @@ export function useVideoRecording() {
     setRecordedBlob(null)
   }
 
+  const setupVideoPreview = async () => {
+    try {
+      const stream = await getStream()
+      await setupVideoPreviewFromPlayback(stream)
+    } catch (error) {
+      console.error('Failed to setup video preview:', error)
+      throw error
+    }
+  }
+
   return {
     isRecording,
     recordedBlob,
@@ -67,6 +77,7 @@ export function useVideoRecording() {
     stopRecording: handleStopRecording,
     togglePlayback,
     resetRecording,
-    resetVideoElement
+    resetVideoElement,
+    setupVideoPreview
   }
 }
