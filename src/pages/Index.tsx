@@ -12,7 +12,7 @@ const steps = [
     description: "Multiple ways to add candidates to your hiring pipeline",
     features: [
       "Create an open job with public application",
-      "Import from platforms (ie. Indeed) via .CSV",
+      "Import candidates via .CSV (ie. from Indeed)",
       "Manually add candidates"
     ],
     icon: Upload
