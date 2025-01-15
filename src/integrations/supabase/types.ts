@@ -84,6 +84,36 @@ export type Database = {
         }
         Relationships: []
       }
+      pricing_plans: {
+        Row: {
+          created_at: string
+          features: string[]
+          id: string
+          is_popular: boolean | null
+          name: string
+          price_monthly: number
+          price_yearly: number
+        }
+        Insert: {
+          created_at?: string
+          features: string[]
+          id?: string
+          is_popular?: boolean | null
+          name: string
+          price_monthly: number
+          price_yearly: number
+        }
+        Update: {
+          created_at?: string
+          features?: string[]
+          id?: string
+          is_popular?: boolean | null
+          name?: string
+          price_monthly?: number
+          price_yearly?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

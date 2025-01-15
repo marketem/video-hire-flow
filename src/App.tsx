@@ -19,6 +19,7 @@ import Contact from "./pages/Contact";
 import ContactSuccess from "./pages/ContactSuccess";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import Pricing from "./pages/Pricing";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const App = () => (
             <Route path="/contact-success" element={<ContactSuccess />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/pricing" element={<Pricing />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
