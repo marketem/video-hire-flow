@@ -3,7 +3,7 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { VideoReviewModal } from "./VideoReviewModal"
 import { useState } from "react"
-import { Clock, AlertCircle, Mail } from "lucide-react"
+import { Clock, AlertCircle, Mail, ThumbsUp, ThumbsDown, PlayCircle } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
 interface VideoStats {
@@ -12,6 +12,8 @@ interface VideoStats {
   videosReceived: number
   readyForReview: number
   awaitingResponse: number
+  approvedCount: number
+  rejectedCount: number
   oldestPending?: Date
   totalInvitesSent: number
 }
@@ -60,6 +62,8 @@ export function VideoReviewCards() {
         const awaitingResponse = candidates.filter(c => 
           c.status === 'requested' && !c.video_url
         ).length
+        const approvedCount = candidates.filter(c => c.status === 'approved').length
+        const rejectedCount = candidates.filter(c => c.status === 'rejected').length
         const totalInvitesSent = candidates.filter(c => 
           c.status === 'requested' || c.video_url
         ).length
@@ -79,6 +83,8 @@ export function VideoReviewCards() {
             videosReceived,
             readyForReview,
             awaitingResponse,
+            approvedCount,
+            rejectedCount,
             oldestPending,
             totalInvitesSent
           })
@@ -89,6 +95,8 @@ export function VideoReviewCards() {
             videosReceived,
             readyForReview,
             awaitingResponse,
+            approvedCount,
+            rejectedCount,
             oldestPending,
             totalInvitesSent
           })
@@ -137,15 +145,24 @@ export function VideoReviewCards() {
               {stat.oldestPending && getPriorityIndicator(stat)}
             </CardHeader>
             <CardContent className="p-3 space-y-3">
-              <div className="text-sm text-muted-foreground">
-                {stat.videosReceived}/{stat.totalInvitesSent} videos received
-              </div>
-              {stat.awaitingResponse > 0 && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Mail className="h-4 w-4" />
-                  <span>{stat.awaitingResponse} {stat.awaitingResponse === 1 ? 'invite' : 'invites'} awaiting response</span>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <PlayCircle className="h-4 w-4 text-blue-500" />
+                  <span>{stat.readyForReview} ready for review</span>
                 </div>
-              )}
+                <div className="flex items-center gap-2 text-sm">
+                  <ThumbsUp className="h-4 w-4 text-green-500" />
+                  <span>{stat.approvedCount} approved</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Mail className="h-4 w-4 text-yellow-500" />
+                  <span>{stat.awaitingResponse} awaiting response</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <ThumbsDown className="h-4 w-4 text-red-500" />
+                  <span>{stat.rejectedCount} rejected</span>
+                </div>
+              </div>
             </CardContent>
           </Card>
         ))}
