@@ -111,16 +111,17 @@ export function VideoReviewCards() {
   const getPriorityIndicator = (stat: VideoStats) => {
     if (!stat.oldestPending) return null
     
-    // Use formatDistanceToNow with addSuffix option for consistent formatting
-    const waitingTime = formatDistanceToNow(stat.oldestPending, { addSuffix: true })
     const daysWaiting = differenceInDays(new Date(), stat.oldestPending)
-    const isUrgent = daysWaiting > 1
+    console.log('Days waiting:', daysWaiting, 'for job:', stat.jobTitle)
+    
+    // Only show if more than 1 day has passed
+    if (daysWaiting <= 1) return null
 
-    if (!isUrgent) return null
-
+    const waitingTime = formatDistanceToNow(stat.oldestPending, { addSuffix: true })
+    
     return (
-      <div className={`flex items-center gap-1 text-xs ${isUrgent ? 'text-red-600' : 'text-yellow-600'}`}>
-        {isUrgent ? <AlertCircle className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
+      <div className="flex items-center gap-1 text-xs text-red-600">
+        <AlertCircle className="h-4 w-4" />
         <span>Waiting {waitingTime}</span>
       </div>
     )
