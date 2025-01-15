@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 export default function SignUp() {
   return (
     <>
-      <div className="fixed top-4 left-4">
+      <div className="lg:hidden absolute top-4 left-4 z-10">
         <Link to="/" className="flex items-center space-x-2">
           <img 
             src="/lovable-uploads/658547e3-9dac-4df0-84d6-a891876840a9.png" 
@@ -37,7 +37,7 @@ export default function SignUp() {
           </div>
         </div>
         <div className="lg:p-8">
-          <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px] pt-16 pb-8">
+          <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px] pt-24 lg:pt-16 pb-8">
             <div className="flex flex-col space-y-2 text-center">
               <h1 className="text-2xl font-semibold tracking-tight">
                 Start Your Free Trial
