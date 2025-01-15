@@ -68,7 +68,6 @@ export function VideoReviewCards() {
           c.status === 'requested' || c.video_url
         ).length
 
-        // Find oldest pending review
         const pendingVideos = candidates.filter(c => 
           c.video_url && ['new', 'reviewing'].includes(c.status)
         )
@@ -144,15 +143,15 @@ export function VideoReviewCards() {
             <CardContent className="p-3">
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-yellow-500" />
+                  <Clock className="h-4 w-4 text-muted-foreground" />
                   <span className="text-xs">{stat.awaitingResponse} no response</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <ThumbsUp className="h-4 w-4 text-green-500" />
+                  <ThumbsUp className="h-4 w-4 text-muted-foreground" />
                   <span className="text-xs">{stat.approvedCount} approved</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <ThumbsDown className="h-4 w-4 text-red-500" />
+                  <ThumbsDown className="h-4 w-4 text-muted-foreground" />
                   <span className="text-xs">{stat.rejectedCount} rejected</span>
                 </div>
               </div>
