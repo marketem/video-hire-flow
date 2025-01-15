@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
 export function useSignUpForm() {
