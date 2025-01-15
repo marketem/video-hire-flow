@@ -6,14 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Upload } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
 
-interface UploadCandidatesProps {
-  jobId: string
-  onSuccess: () => void
-}
-
-export function UploadCandidates({ jobId, onSuccess }: UploadCandidatesProps) {
+export function UploadCandidates({ jobId, onSuccess }: { jobId: string; onSuccess: () => void }) {
   const [isUploading, setIsUploading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const supabase = useSupabaseClient()
@@ -133,22 +127,20 @@ export function UploadCandidates({ jobId, onSuccess }: UploadCandidatesProps) {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <Card>
-        <CardContent className="pt-6">
-          <div className="text-sm text-muted-foreground space-y-4">
-            <h3 className="font-medium text-foreground">CSV File Requirements:</h3>
-            <div className="space-y-2">
-              <p>Your CSV file should include these columns:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li><code className="bg-muted px-1 rounded">name</code> or <code className="bg-muted px-1 rounded">fullname</code> - The candidate's full name</li>
-                <li><code className="bg-muted px-1 rounded">email</code> - The candidate's email address</li>
-                <li><code className="bg-muted px-1 rounded">phone</code> or <code className="bg-muted px-1 rounded">phonenumber</code> - The candidate's phone number</li>
-              </ul>
-              <p className="text-xs">Example: name,email,phone<br />John Doe,john@example.com,1234567890</p>
-            </div>
+      <div className="bg-muted/30 rounded-lg p-6">
+        <div className="text-sm text-muted-foreground space-y-4">
+          <h3 className="font-medium text-foreground">CSV File Requirements:</h3>
+          <div className="space-y-2">
+            <p>Your CSV file should include these columns:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li><code className="bg-muted px-1 rounded">name</code> or <code className="bg-muted px-1 rounded">fullname</code> - The candidate's full name</li>
+              <li><code className="bg-muted px-1 rounded">email</code> - The candidate's email address</li>
+              <li><code className="bg-muted px-1 rounded">phone</code> or <code className="bg-muted px-1 rounded">phonenumber</code> - The candidate's phone number</li>
+            </ul>
+            <p className="text-xs">Example: name,email,phone<br />John Doe,john@example.com,1234567890</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <div className="space-y-4">
         <Label htmlFor="csv" className="text-base">Upload Candidates CSV</Label>
