@@ -23,6 +23,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard"
 import { useToast } from "@/hooks/use-toast"
+import { useNavigate } from "react-router-dom"
 
 interface JobActionsProps {
   job: JobOpening
@@ -48,6 +49,7 @@ export function JobActions({
   const isMobile = useIsMobile()
   const { copyToClipboard } = useCopyToClipboard()
   const { toast } = useToast()
+  const navigate = useNavigate()
 
   const handleDelete = async () => {
     const { error } = await supabase
@@ -58,6 +60,10 @@ export function JobActions({
     if (!error) {
       onJobsUpdated()
     }
+  }
+
+  const handleVisitPost = () => {
+    navigate(`/jobs/${job.id}`)
   }
 
   const handleCopyPost = async () => {
@@ -86,10 +92,10 @@ export function JobActions({
     !hideMobileManage && {
       label: "Visit Post",
       icon: ExternalLink,
-      onClick: () => onManageCandidates(job)
+      onClick: handleVisitPost
     },
     {
-      label: "Copy Post",
+      label: "Copy Post URL",
       icon: Copy,
       onClick: handleCopyPost
     },
