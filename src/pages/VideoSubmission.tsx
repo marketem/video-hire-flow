@@ -14,7 +14,13 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 export default function VideoSubmission() {
   const [searchParams] = useSearchParams()
-  const token = searchParams.get('token')?.trim() // Add trim() to remove any whitespace
+  // Clean the token by removing any non-alphanumeric or non-hyphen characters
+  const rawToken = searchParams.get('token')
+  const token = rawToken?.replace(/[^a-zA-Z0-9-]/g, '') || ''
+  
+  console.log('Raw token from URL:', rawToken)
+  console.log('Cleaned token:', token)
+  
   const navigate = useNavigate()
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -53,7 +59,7 @@ export default function VideoSubmission() {
         .maybeSingle()
 
       if (error) {
-        console.error('Error fetching candidate:', error)
+        console.error('Supabase error:', error)
         throw error
       }
 
