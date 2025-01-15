@@ -7,17 +7,16 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { VideoPreview } from "@/components/video-submission/VideoPreview"
 import { RecordingTimer } from "@/components/video-submission/RecordingTimer"
 import { RecordingControls } from "@/components/video-submission/RecordingControls"
+import { WelcomeModal } from "@/components/video-submission/WelcomeModal"
 import { useVideoRecording } from "@/hooks/useVideoRecording"
-
-// Maximum file size in bytes (10MB)
-const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 export default function VideoSubmission() {
   const [searchParams] = useSearchParams()
-  const token = searchParams.get('token')
+  const token = searchParams.get('token')?.trim() ?? ''
   const navigate = useNavigate()
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [showWelcome, setShowWelcome] = useState(true)
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
@@ -31,7 +30,7 @@ export default function VideoSubmission() {
     stopRecording,
     togglePlayback,
     resetRecording,
-    resetVideoElement
+    setupVideoPreview,
   } = useVideoRecording()
 
   // Fetch candidate data using the token
@@ -69,10 +68,6 @@ export default function VideoSubmission() {
     setIsUploading(true)
 
     try {
-      if (recordedBlob.size > MAX_FILE_SIZE) {
-        throw new Error(`Video size (${Math.round(recordedBlob.size / (1024 * 1024))}MB) exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit. Please record a shorter video.`)
-      }
-
       const fileName = `${candidate.id}-${Date.now()}.webm`
       const file = new File([recordedBlob], fileName, {
         type: 'video/webm'
@@ -117,6 +112,20 @@ export default function VideoSubmission() {
     }
   }
 
+  const handleStartSetup = async () => {
+    try {
+      await setupVideoPreview()
+      setShowWelcome(false)
+    } catch (error) {
+      console.error('Error setting up video preview:', error)
+      toast({
+        title: "Camera Setup Failed",
+        description: "Please ensure you've granted camera and microphone permissions.",
+        variant: "destructive",
+      })
+    }
+  }
+
   if (isLoadingCandidate) {
     return (
       <div className="min-h-screen bg-background p-4 flex items-center justify-center">
@@ -127,6 +136,11 @@ export default function VideoSubmission() {
 
   return (
     <div className="min-h-screen bg-background p-4 flex flex-col">
+      <WelcomeModal 
+        isOpen={showWelcome} 
+        onStartSetup={handleStartSetup}
+      />
+      
       <div className="mb-8">
         <Link to="/" className="flex items-center space-x-2">
           <img 
