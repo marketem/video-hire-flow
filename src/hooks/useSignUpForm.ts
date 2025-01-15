@@ -46,10 +46,12 @@ export function useSignUpForm() {
         throw signUpError;
       }
 
-      if (signUpData?.user) {
-        console.log('Signup successful:', signUpData);
-        navigate('/email-verification-sent');
+      if (!signUpData?.user) {
+        throw new Error("Failed to create account");
       }
+
+      console.log('Signup successful:', signUpData);
+      navigate('/email-verification-sent');
     } catch (error) {
       console.error('Signup process error:', error);
       
