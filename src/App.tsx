@@ -1,84 +1,57 @@
-import { Toaster } from "@/components/ui/toaster"
-import { Toaster as Sonner } from "@/components/ui/sonner"
-import { TooltipProvider } from "@/components/ui/tooltip"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { BrowserRouter, Routes, Route } from "react-router-dom"
-import { createClient } from "@supabase/supabase-js"
-import { SessionContextProvider } from "@supabase/auth-helpers-react"
-import { ErrorBoundary } from "@/components/ErrorBoundary"
-import Index from "./pages/Index"
-import SignUp from "./pages/SignUp"
-import Login from "./pages/Login"
-import Dashboard from "./pages/Dashboard"
-import PublicJob from "./pages/PublicJob"
-import VideoSubmission from "./pages/VideoSubmission"
-import SubmissionSuccess from "./pages/SubmissionSuccess"
-import Terms from "./pages/Terms"
-import Features from "./pages/Features"
-import About from "./pages/About"
-import Contact from "./pages/Contact"
-import ContactSuccess from "./pages/ContactSuccess"
-import ForgotPassword from "./pages/ForgotPassword"
-import ResetPassword from "./pages/ResetPassword"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { queryConfig } from "./hooks/useQueryConfig";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useToast } from "@/hooks/use-toast";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { DashboardStats } from "@/components/dashboard/DashboardStats";
+import { JobOpenings } from "@/components/jobs/JobOpenings";
+import { VideoReviewCards } from "@/components/jobs/video-review/VideoReviewCards";
 
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-})
+  defaultOptions: queryConfig,
+});
 
-if (!import.meta.env.VITE_SUPABASE_URL) {
-  throw new Error('VITE_SUPABASE_URL is not defined')
-}
+function App() {
+  const session = useSession();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const supabase = useSupabaseClient();
 
-if (!import.meta.env.VITE_SUPABASE_ANON_KEY) {
-  throw new Error('VITE_SUPABASE_ANON_KEY is not defined')
-}
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      
+      if (!currentSession) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to access the dashboard",
+          variant: "destructive",
+        });
+        navigate("/login");
+      }
+    };
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
-  {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: false
-    }
+    checkSession();
+  }, [navigate, supabase.auth, toast]);
+
+  if (!session) {
+    return null;
   }
-)
 
-const App = () => (
-  <ErrorBoundary>
+  return (
     <QueryClientProvider client={queryClient}>
-      <SessionContextProvider supabaseClient={supabase}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/signup" element={<SignUp />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/jobs/:id" element={<PublicJob />} />
-              <Route path="/video-submission" element={<VideoSubmission />} />
-              <Route path="/submission-success" element={<SubmissionSuccess />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/features" element={<Features />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/contact-success" element={<ContactSuccess />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </SessionContextProvider>
+      <div className="container mx-auto px-4 py-8">
+        <DashboardHeader />
+        <DashboardStats />
+        <div className="space-y-8">
+          <VideoReviewCards />
+          <JobOpenings />
+        </div>
+      </div>
     </QueryClientProvider>
-  </ErrorBoundary>
-)
+  );
+}
 
-export default App
+export default App;
