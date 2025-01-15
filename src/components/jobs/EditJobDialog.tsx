@@ -1,5 +1,3 @@
-import { useForm } from "react-hook-form"
-import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import {
   Dialog,
   DialogContent,
@@ -8,20 +6,14 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { Form } from "@/components/ui/form"
-import { useToast } from "@/hooks/use-toast"
 import { useEffect } from "react"
 import { JobFormFields } from "./job-form/JobFormFields"
 import { FormActions } from "./job-form/FormActions"
+import { useEditJobForm } from "@/hooks/useEditJobForm"
+import type { JobOpening } from "./types"
 
 interface EditJobDialogProps {
-  job: {
-    id: string
-    title: string
-    department: string
-    location: string
-    description: string
-    public_page_enabled: boolean
-  } | null
+  job: JobOpening | null
   open: boolean
   onOpenChange: (open: boolean) => void
   onJobUpdated: () => void
@@ -33,63 +25,18 @@ export function EditJobDialog({
   onOpenChange,
   onJobUpdated 
 }: EditJobDialogProps) {
-  const { toast } = useToast()
-  const supabase = useSupabaseClient()
-  
-  const form = useForm({
-    defaultValues: {
-      title: "",
-      department: "",
-      location: "",
-      description: "",
-      public_page_enabled: true,
-    },
-  })
+  const {
+    form,
+    resetForm,
+    onSubmit,
+    isSubmitting
+  } = useEditJobForm(job, onJobUpdated, () => onOpenChange(false))
 
   useEffect(() => {
     if (job && open) {
-      form.reset({
-        title: job.title,
-        department: job.department,
-        location: job.location,
-        description: job.description,
-        public_page_enabled: job.public_page_enabled,
-      })
+      resetForm()
     }
-  }, [job, open, form])
-
-  const onSubmit = async (values: {
-    title: string
-    department: string
-    location: string
-    description: string
-    public_page_enabled: boolean
-  }) => {
-    if (!job) return
-
-    try {
-      const { error } = await supabase
-        .from('job_openings')
-        .update(values)
-        .eq('id', job.id)
-
-      if (error) throw error
-
-      toast({
-        title: "Success",
-        description: "Job opening updated successfully",
-      })
-      
-      onJobUpdated()
-      onOpenChange(false)
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update job opening",
-        variant: "destructive",
-      })
-    }
-  }
+  }, [job, open, resetForm])
 
   if (!job) return null
 
@@ -103,7 +50,7 @@ export function EditJobDialog({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={onSubmit} className="space-y-4">
             <JobFormFields
               title={form.watch("title")}
               setTitle={(value) => form.setValue("title", value)}
@@ -115,7 +62,7 @@ export function EditJobDialog({
               setDescription={(value) => form.setValue("description", value)}
             />
             <FormActions
-              isLoading={form.formState.isSubmitting}
+              isLoading={isSubmitting}
               onCancel={() => onOpenChange(false)}
               actionLabel="Save Changes"
             />
