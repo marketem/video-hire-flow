@@ -71,7 +71,7 @@ export function CandidateCard({
                 variant="outline"
                 size="icon"
                 onClick={() => onStatusChange(candidate.id, 'approved')}
-                className="flex-1 sm:flex-initial"
+                className="flex-1 sm:flex-initial bg-[#F2FCE2] hover:bg-[#F2FCE2]/80"
               >
                 <ThumbsUp className="h-4 w-4" />
               </Button>
@@ -79,7 +79,7 @@ export function CandidateCard({
                 variant="outline"
                 size="icon"
                 onClick={() => onStatusChange(candidate.id, 'rejected')}
-                className="flex-1 sm:flex-initial"
+                className="flex-1 sm:flex-initial bg-[#ea384c] hover:bg-[#ea384c]/80 text-white"
               >
                 <ThumbsDown className="h-4 w-4" />
               </Button>
