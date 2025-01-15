@@ -134,7 +134,9 @@ export function VideoReviewCards() {
             <CardContent className="p-3 pt-2">
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center justify-center min-w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full px-1.5">
+                  <div className={`flex items-center justify-center min-w-5 h-5 text-xs font-medium text-white ${
+                    stat.readyForReview > 0 ? 'bg-red-500' : 'bg-gray-400'
+                  } rounded-full px-1.5`}>
                     {stat.readyForReview}
                   </div>
                   <span className="text-xs">Ready for Review</span>
