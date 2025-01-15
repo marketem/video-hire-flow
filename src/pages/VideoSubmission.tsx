@@ -14,7 +14,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 export default function VideoSubmission() {
   const [searchParams] = useSearchParams()
-  const token = searchParams.get('token')
+  const token = searchParams.get('token')?.trim() // Add trim() to remove any whitespace
   const navigate = useNavigate()
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -59,7 +59,7 @@ export default function VideoSubmission() {
 
       if (!data) {
         console.error('No candidate found with token:', token)
-        throw new Error('Video has already been submitted')
+        throw new Error('Video has already been submitted. Please contact your hiring manager.')
       }
       
       console.log('Candidate data:', data)
@@ -72,7 +72,7 @@ export default function VideoSubmission() {
         console.error('Query error:', error)
         toast({
           title: "Error",
-          description: "Invalid or expired video submission link",
+          description: error.message || "Invalid or expired video submission link",
           variant: "destructive",
         })
         navigate('/')
