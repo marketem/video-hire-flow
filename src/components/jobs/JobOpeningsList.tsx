@@ -59,38 +59,44 @@ export function JobOpeningsList() {
               key={job.id} 
               className="bg-card p-3 rounded-lg border"
             >
-              <div className="flex justify-between items-start gap-2">
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium truncate">{job.title}</h3>
-                  <div className="mt-1 text-xs text-muted-foreground space-y-0.5">
-                    <p className="flex items-center gap-1">
-                      <span>📍</span>
-                      <span className="truncate">{job.location}</span>
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <p className="flex items-center gap-1">
+              <div className="space-y-2">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium truncate">{job.title}</h3>
+                    <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                      <p className="flex items-center gap-1 shrink-0">
+                        <span>📍</span>
+                        <span className="truncate">{job.location}</span>
+                      </p>
+                      <p className="flex items-center gap-1 shrink-0">
                         <span>👥</span>
                         <span>{job.candidates_count} candidates</span>
                       </p>
-                      <JobActions
-                        job={job}
-                        onView={handleViewJob}
-                        onEdit={handleEditJob}
-                        onManageCandidates={setSelectedJobForCandidates}
-                        onJobsUpdated={fetchJobs}
-                      />
+                      <p className="flex items-center gap-1 shrink-0">
+                        <span>📅</span>
+                        <span>{new Date(job.created_at).toLocaleDateString()}</span>
+                      </p>
                     </div>
                   </div>
+                  <span 
+                    className={`shrink-0 inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
+                      job.status === 'open' 
+                        ? 'ring-green-600/20 bg-green-50 text-green-700'
+                        : 'ring-red-600/20 bg-red-50 text-red-700'
+                    }`}
+                  >
+                    {job.status}
+                  </span>
                 </div>
-                <span 
-                  className={`shrink-0 inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
-                    job.status === 'open' 
-                      ? 'ring-green-600/20 bg-green-50 text-green-700'
-                      : 'ring-red-600/20 bg-red-50 text-red-700'
-                  }`}
-                >
-                  {job.status}
-                </span>
+                <div className="flex justify-end">
+                  <JobActions
+                    job={job}
+                    onView={handleViewJob}
+                    onEdit={handleEditJob}
+                    onManageCandidates={setSelectedJobForCandidates}
+                    onJobsUpdated={fetchJobs}
+                  />
+                </div>
               </div>
             </div>
           ))}
