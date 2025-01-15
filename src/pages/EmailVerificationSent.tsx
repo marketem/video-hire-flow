@@ -24,10 +24,7 @@ export default function EmailVerificationSent() {
                 Check your email inbox
               </p>
               <p className="text-sm text-muted-foreground">
-                We've sent a verification link to activate your account and start discovering amazing opportunities with VibeCheck.
-              </p>
-              <p className="text-sm font-medium text-primary">
-                Can't find the email? Be sure to check your spam folder
+                We've sent a verification link via Supabase Auth to activate your account and start discovering amazing opportunities with VibeCheck.
               </p>
             </div>
           </div>
