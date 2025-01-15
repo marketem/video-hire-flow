@@ -10,6 +10,7 @@ interface BulkActionsProps {
   onDelete: () => void
   onToggleSelectAll: (checked: boolean) => void
   allSelected: boolean
+  isSending?: boolean
 }
 
 export function BulkActions({ 
@@ -18,7 +19,8 @@ export function BulkActions({
   onSendInvites, 
   onDelete,
   onToggleSelectAll,
-  allSelected
+  allSelected,
+  isSending = false
 }: BulkActionsProps) {
   const isMobile = useIsMobile()
 
@@ -43,17 +45,17 @@ export function BulkActions({
         <Button
           size={isMobile ? "default" : "sm"}
           onClick={onSendInvites}
-          disabled={selectedCount === 0}
+          disabled={selectedCount === 0 || isSending}
           className="flex-1 sm:flex-initial"
         >
           <Send className="mr-2 h-4 w-4" />
-          {isMobile ? "Request Video" : "Request Video (via Text & Email)"}
+          {isSending ? "Sending..." : (isMobile ? "Request Video" : "Request Video (via Text & Email)")}
         </Button>
         <Button
           size={isMobile ? "default" : "sm"}
           variant="destructive"
           onClick={onDelete}
-          disabled={selectedCount === 0}
+          disabled={selectedCount === 0 || isSending}
           className="flex-1 sm:flex-initial"
         >
           <Trash2 className="mr-2 h-4 w-4" />
