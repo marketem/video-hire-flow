@@ -14,6 +14,7 @@ import { JobActions } from "./JobActions"
 import { useJobOpenings } from "./useJobOpenings"
 import type { JobOpening } from "./types"
 import { useState } from "react"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 export function JobOpeningsList() {
   const { jobs, isLoading, fetchJobs } = useJobOpenings()
@@ -21,6 +22,7 @@ export function JobOpeningsList() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedJobForCandidates, setSelectedJobForCandidates] = useState<JobOpening | null>(null)
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     fetchJobs()
@@ -45,6 +47,70 @@ export function JobOpeningsList() {
       <div className="text-center py-8 text-muted-foreground">
         No job openings yet. Create your first job opening to get started.
       </div>
+    )
+  }
+
+  if (isMobile) {
+    return (
+      <>
+        <div className="space-y-4">
+          {jobs.map((job) => (
+            <div 
+              key={job.id} 
+              className="bg-card p-4 rounded-lg border space-y-3"
+            >
+              <div className="flex justify-between items-start">
+                <h3 className="font-medium">{job.title}</h3>
+                <span 
+                  className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
+                    job.status === 'open' 
+                      ? 'ring-green-600/20 bg-green-50 text-green-700'
+                      : 'ring-red-600/20 bg-red-50 text-red-700'
+                  }`}
+                >
+                  {job.status}
+                </span>
+              </div>
+              
+              <div className="space-y-1 text-sm text-muted-foreground">
+                <p>📍 {job.location}</p>
+                <p>📅 {new Date(job.created_at).toLocaleDateString()}</p>
+                <p>👥 {job.candidates_count} candidates</p>
+              </div>
+
+              <div className="flex justify-end">
+                <JobActions
+                  job={job}
+                  onView={handleViewJob}
+                  onEdit={handleEditJob}
+                  onManageCandidates={setSelectedJobForCandidates}
+                  onJobsUpdated={fetchJobs}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <ViewJobDialog
+          job={selectedJob}
+          open={isViewDialogOpen}
+          onOpenChange={setIsViewDialogOpen}
+        />
+
+        <EditJobDialog
+          job={selectedJob}
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          onJobUpdated={fetchJobs}
+        />
+
+        <CandidatesModal
+          jobId={selectedJobForCandidates?.id || ""}
+          jobTitle={selectedJobForCandidates?.title || ""}
+          open={!!selectedJobForCandidates}
+          onOpenChange={(open) => !open && setSelectedJobForCandidates(null)}
+        />
+      </>
     )
   }
 
