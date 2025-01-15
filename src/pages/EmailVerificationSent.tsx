@@ -15,13 +15,21 @@ export default function EmailVerificationSent() {
       </div>
       <div className="flex-1 flex items-center justify-center">
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-          <div className="flex flex-col space-y-2 text-center">
+          <div className="flex flex-col space-y-4 text-center">
             <h1 className="text-2xl font-semibold tracking-tight">
               You're almost there! 🎉
             </h1>
-            <p className="text-sm text-muted-foreground">
-              Great! We've sent a verification link to your email inbox. Click the link to activate your account and start discovering amazing opportunities with VibeCheck. Can't find the email? Don't forget to check your spam folder!
-            </p>
+            <div className="space-y-2">
+              <p className="text-base font-medium">
+                📧 Check your email inbox now!
+              </p>
+              <p className="text-sm text-muted-foreground">
+                We've sent a verification link to activate your account and start discovering amazing opportunities with VibeCheck.
+              </p>
+              <p className="text-sm font-medium text-primary">
+                Can't find the email? Be sure to check your spam folder!
+              </p>
+            </div>
           </div>
         </div>
       </div>
