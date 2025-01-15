@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { useToast } from "@/hooks/use-toast"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Upload } from "lucide-react"
+import { Upload, MessageSquare } from "lucide-react"
 
 interface JobOpening {
   id: string
