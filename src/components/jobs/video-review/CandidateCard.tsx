@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
-import { Phone, ThumbsDown, ThumbsUp } from "lucide-react"
-import { format } from "date-fns"
+import { Phone, ThumbsDown, ThumbsUp, Clock } from "lucide-react"
+import { format, formatDistanceToNow } from "date-fns"
 import type { Candidate } from "@/types/candidate"
 import { useState, useEffect } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useToast } from "@/hooks/use-toast"
 
 interface CandidateCardProps {
   candidate: Candidate
@@ -22,7 +23,9 @@ export function CandidateCard({
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [sliderValue, setSliderValue] = useState([50]);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
   const isMobile = useIsMobile();
+  const { toast } = useToast();
 
   const handleVideoClick = async () => {
     if (isVideoOpen) {
@@ -37,6 +40,34 @@ export function CandidateCard({
     }
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStart || !onStatusChange) return;
+
+    const touchEnd = e.changedTouches[0].clientX;
+    const distance = touchEnd - touchStart;
+
+    if (Math.abs(distance) > 100) { // Minimum swipe distance
+      if (distance > 0) {
+        onStatusChange(candidate.id, 'approved');
+        toast({
+          title: "Candidate Approved",
+          description: `${candidate.name} has been approved`,
+        });
+      } else {
+        onStatusChange(candidate.id, 'rejected');
+        toast({
+          title: "Candidate Rejected",
+          description: `${candidate.name} has been rejected`,
+        });
+      }
+    }
+    setTouchStart(null);
+  };
+
   useEffect(() => {
     if (sliderValue[0] !== 50 && onStatusChange) {
       const timer = setTimeout(() => {
@@ -47,11 +78,23 @@ export function CandidateCard({
     }
   }, [sliderValue, candidate.id, onStatusChange]);
 
+  const waitingTime = formatDistanceToNow(new Date(candidate.created_at));
+
   return (
-    <div className="space-y-4">
+    <div 
+      className="space-y-4"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <div className="flex flex-col p-4 bg-muted rounded-lg gap-4">
         <div className="space-y-1">
-          <h4 className="font-medium">{candidate.name}</h4>
+          <div className="flex justify-between items-start">
+            <h4 className="font-medium">{candidate.name}</h4>
+            <div className="flex items-center text-xs text-muted-foreground">
+              <Clock className="h-3 w-3 mr-1" />
+              {waitingTime}
+            </div>
+          </div>
           <p className="text-sm text-muted-foreground">{candidate.email}</p>
           {candidate.video_url && (
             <p className="text-xs text-muted-foreground">
@@ -91,7 +134,7 @@ export function CandidateCard({
                     className="w-full"
                   />
                   <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                    <span>Not Now</span>
+                    <span>Reject</span>
                     <span>Approve</span>
                   </div>
                 </div>

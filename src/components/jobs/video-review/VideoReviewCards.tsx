@@ -3,6 +3,8 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { VideoReviewModal } from "./VideoReviewModal"
 import { useState } from "react"
+import { Clock, AlertCircle } from "lucide-react"
+import { formatDistanceToNow } from "date-fns"
 
 interface VideoStats {
   jobId: string
@@ -10,6 +12,7 @@ interface VideoStats {
   videosReceived: number
   readyForReview: number
   approved: number
+  oldestPending?: Date
 }
 
 export function VideoReviewCards() {
@@ -21,7 +24,6 @@ export function VideoReviewCards() {
     queryFn: async () => {
       console.log('Fetching video stats...')
       
-      // First, get all open jobs
       const { data: jobs, error: jobsError } = await supabase
         .from('job_openings')
         .select('id, title')
@@ -36,12 +38,12 @@ export function VideoReviewCards() {
 
       const stats: VideoStats[] = []
 
-      // Then, for each job, get its candidates
       for (const job of jobs) {
         const { data: candidates, error: candidatesError } = await supabase
           .from('candidates')
           .select('*')
           .eq('job_id', job.id)
+          .order('created_at', { ascending: true })
 
         if (candidatesError) {
           console.error('Error fetching candidates for job', job.id, candidatesError)
@@ -57,7 +59,14 @@ export function VideoReviewCards() {
         const approved = candidates.filter(c => c.status === 'accepted').length
         const hasRequestedVideos = candidates.some(c => c.status === 'requested')
 
-        // Include job if it has any videos or requested videos
+        // Find oldest pending review
+        const pendingVideos = candidates.filter(c => 
+          c.video_url && ['new', 'reviewing'].includes(c.status)
+        )
+        const oldestPending = pendingVideos.length > 0 
+          ? new Date(pendingVideos[0].created_at) 
+          : undefined
+
         if (videosReceived > 0 || hasRequestedVideos) {
           console.log('Adding job to stats:', {
             jobId: job.id,
@@ -65,7 +74,8 @@ export function VideoReviewCards() {
             videosReceived,
             readyForReview,
             approved,
-            hasRequestedVideos
+            hasRequestedVideos,
+            oldestPending
           })
 
           stats.push({
@@ -74,6 +84,7 @@ export function VideoReviewCards() {
             videosReceived,
             readyForReview,
             approved,
+            oldestPending
           })
         }
       }
@@ -84,6 +95,19 @@ export function VideoReviewCards() {
   })
 
   const totalReadyForReview = videoStats.reduce((sum, stat) => sum + stat.readyForReview, 0)
+
+  const getPriorityIndicator = (stat: VideoStats) => {
+    if (!stat.oldestPending) return null
+    const waitingTime = formatDistanceToNow(stat.oldestPending)
+    const isUrgent = new Date().getTime() - stat.oldestPending.getTime() > 24 * 60 * 60 * 1000 // 24 hours
+
+    return (
+      <div className={`flex items-center gap-1 text-xs ${isUrgent ? 'text-red-600' : 'text-yellow-600'}`}>
+        {isUrgent ? <AlertCircle className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
+        <span>Waiting {waitingTime}</span>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4">
@@ -103,16 +127,26 @@ export function VideoReviewCards() {
         {videoStats.map((stat) => (
           <Card 
             key={stat.jobId}
-            className="cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98] border-primary/10"
+            className={`cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98] border-primary/10 ${
+              stat.readyForReview > 0 ? 'bg-gradient-to-br from-white to-red-50/30' : ''
+            }`}
             onClick={() => setSelectedJobId(stat.jobId)}
           >
             <CardHeader className="p-3 pb-0">
-              <CardTitle className="text-base truncate">{stat.jobTitle}</CardTitle>
+              <CardTitle className="text-base truncate flex items-start justify-between gap-2">
+                <span>{stat.jobTitle}</span>
+                {stat.readyForReview > 0 && (
+                  <span className="shrink-0 flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+                    {stat.readyForReview}
+                  </span>
+                )}
+              </CardTitle>
+              {stat.oldestPending && getPriorityIndicator(stat)}
             </CardHeader>
             <CardContent className="p-3">
               <dl className="space-y-1.5 text-sm">
                 <div className="flex justify-between items-center">
-                  <dt>Videos Received:</dt>
+                  <dt>Total Videos:</dt>
                   <dd>{stat.videosReceived}</dd>
                 </div>
                 {stat.readyForReview > 0 ? (
