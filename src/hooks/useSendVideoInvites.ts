@@ -10,15 +10,8 @@ export function useSendVideoInvites(jobId: string) {
   const queryClient = useQueryClient()
 
   const formatPhoneNumber = (phone: string) => {
-    // Remove all non-numeric characters
     const cleaned = phone.replace(/\D/g, '')
-    
-    // Check if the number already has a country code
-    if (cleaned.startsWith('1')) {
-      return `+${cleaned}`
-    }
-    // Add +1 for US numbers if no country code
-    return `+1${cleaned}`
+    return cleaned.startsWith('1') ? `+${cleaned}` : `+1${cleaned}`
   }
 
   const sendVideoInvites = async (selectedCandidates: string[], candidates: Candidate[]) => {
@@ -28,7 +21,6 @@ export function useSendVideoInvites(jobId: string) {
       console.log('All candidates:', candidates)
       console.log('Current user:', user)
 
-      // First get the job title
       const { data: jobData } = await supabase
         .from('job_openings')
         .select('title')
@@ -44,30 +36,16 @@ export function useSendVideoInvites(jobId: string) {
       console.log('Filtered candidates list:', selectedCandidatesList)
 
       for (const candidate of selectedCandidatesList) {
-        console.log('Processing candidate:', candidate)
-        
-        // Generate a unique video token
-        const videoToken = crypto.randomUUID()
-        
-        // Update the candidate with the video token
-        const { error: updateError } = await supabase
-          .from('candidates')
-          .update({ video_token: videoToken })
-          .eq('id', candidate.id)
-          .select()
-
-        if (updateError) {
-          console.error('Error updating video token:', updateError)
-          throw new Error('Failed to generate video token')
+        if (!candidate.video_token) {
+          console.error('No video token found for candidate:', candidate.id)
+          continue
         }
 
-        const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${videoToken}`
+        const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${candidate.video_token}`
         console.log('Generated submission URL:', videoSubmissionUrl)
 
-        // Send both email and SMS invites
         const promises = []
 
-        // Send email invite
         promises.push(
           supabase.functions.invoke('send-video-invite', {
             body: {
@@ -80,7 +58,6 @@ export function useSendVideoInvites(jobId: string) {
           })
         )
 
-        // Send SMS invite if phone number exists
         if (candidate.phone) {
           const formattedPhone = formatPhoneNumber(candidate.phone)
           console.log('Sending SMS to formatted phone:', formattedPhone)
@@ -98,10 +75,7 @@ export function useSendVideoInvites(jobId: string) {
           )
         }
 
-        // Wait for both email and SMS to be sent
         const results = await Promise.allSettled(promises)
-        
-        // Check for errors
         const errors = results
           .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
           .map(result => result.reason)
@@ -111,7 +85,6 @@ export function useSendVideoInvites(jobId: string) {
           throw new Error('Failed to send some invitations')
         }
 
-        // Update candidate status
         const { error: statusError } = await supabase
           .from('candidates')
           .update({ status: 'requested' })

@@ -9,23 +9,6 @@ export function useCandidateActions(jobId: string) {
   const { toast } = useToast()
   const { copyToClipboard } = useCopyToClipboard()
 
-  const generateTokenMutation = useMutation({
-    mutationFn: async (candidateId: string) => {
-      const token = crypto.randomUUID()
-      
-      const { error } = await supabase
-        .from('candidates')
-        .update({ video_token: token })
-        .eq('id', candidateId)
-
-      if (error) throw error
-      return { candidateId, token }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['candidates'] })
-    },
-  })
-
   const handleViewResume = async (resumeUrl: string) => {
     try {
       const { data, error } = await supabase.storage
@@ -51,25 +34,17 @@ export function useCandidateActions(jobId: string) {
 
   const copyVideoLink = async (candidateId: string) => {
     try {
-      // First, fetch the current candidate data
-      const { data: candidate } = await supabase
+      // Fetch the candidate's current token
+      const { data: candidate, error: fetchError } = await supabase
         .from('candidates')
-        .select('*')
+        .select('video_token')
         .eq('id', candidateId)
         .single()
 
-      if (!candidate) {
-        throw new Error('Candidate not found')
-      }
+      if (fetchError) throw fetchError
+      if (!candidate?.video_token) throw new Error('No video token found')
 
-      // Generate token if it doesn't exist
-      let token = candidate.video_token
-      if (!token) {
-        const result = await generateTokenMutation.mutateAsync(candidateId)
-        token = result.token
-      }
-
-      const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${token}`
+      const videoSubmissionUrl = `${window.location.origin}/video-submission?token=${candidate.video_token}`
       const copySuccess = await copyToClipboard(videoSubmissionUrl)
       
       if (!copySuccess) {
@@ -86,7 +61,7 @@ export function useCandidateActions(jobId: string) {
       console.error('Error in copyVideoLink:', error)
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to generate or copy video submission link",
+        description: error instanceof Error ? error.message : "Failed to copy video submission link",
         variant: "destructive",
       })
       return false
@@ -108,7 +83,6 @@ export function useCandidateActions(jobId: string) {
         description: `Successfully deleted ${candidateIds.length} candidate${candidateIds.length === 1 ? '' : 's'}`,
       })
 
-      // Invalidate the candidates query to refresh the list
       queryClient.invalidateQueries({ queryKey: ['job-candidates', jobId] })
     } catch (error) {
       console.error('Error deleting candidates:', error)
@@ -123,7 +97,6 @@ export function useCandidateActions(jobId: string) {
   return {
     handleViewResume,
     copyVideoLink,
-    generateTokenMutation,
     handleDelete,
   }
 }
