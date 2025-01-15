@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import twilio from 'npm:twilio'
+
+const SENDGRID_API_KEY = Deno.env.get('SENDGRID_API_KEY')
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,15 +24,8 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     console.log('Starting SMS invite handler')
     
-    const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID')
-    const TWILIO_AUTH_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN')
-    const TWILIO_PHONE_NUMBER = Deno.env.get('TWILIO_PHONE_NUMBER')
-
-    console.log('Validating Twilio credentials...')
-    if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
-      const error = new Error('Missing Twilio credentials')
-      console.error('Credential validation failed:', error)
-      throw error
+    if (!SENDGRID_API_KEY) {
+      throw new Error('SendGrid API key not found')
     }
 
     console.log('Parsing request body...')
@@ -50,64 +44,44 @@ const handler = async (req: Request): Promise<Response> => {
 
     const message = `Hi ${requestData.name}, ${requestData.senderName} from ${requestData.companyName} has requested a video introduction. Please click this link to record and submit your video: ${requestData.submissionUrl}`
 
-    console.log('Initializing Twilio client...')
-    const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-
-    console.log('Preparing to send SMS with:', {
-      to: formattedPhone,
-      from: TWILIO_PHONE_NUMBER,
-      messageLength: message.length
+    const response = await fetch('https://api.sendgrid.com/v3/sms/send', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SENDGRID_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to: formattedPhone,
+        content: message,
+      }),
     })
 
-    try {
-      const result = await client.messages.create({
-        body: message,
-        to: formattedPhone,
-        from: TWILIO_PHONE_NUMBER
-      })
-
-      console.log('Twilio API Response:', {
-        sid: result.sid,
-        status: result.status,
-        errorCode: result.errorCode,
-        errorMessage: result.errorMessage,
-        dateCreated: result.dateCreated,
-        direction: result.direction,
-        price: result.price
-      })
-
-      if (result.errorCode) {
-        throw new Error(`Twilio error: ${result.errorCode} - ${result.errorMessage}`)
-      }
-
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          messageId: result.sid,
-          status: result.status,
-          error: null
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
-      )
-    } catch (twilioError) {
-      console.error('Twilio API Error Details:', {
-        code: twilioError.code,
-        message: twilioError.message,
-        status: twilioError.status,
-        moreInfo: twilioError.moreInfo,
-        details: twilioError.details
-      })
-      throw twilioError
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('SendGrid API error:', errorText)
+      throw new Error(`SendGrid API error: ${errorText}`)
     }
+
+    const result = await response.json()
+    console.log('SendGrid API Response:', result)
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        messageId: result.id,
+        status: 'sent',
+        error: null
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    )
   } catch (error) {
     console.error('Full error details:', {
       name: error.name,
       message: error.message,
-      stack: error.stack,
-      code: error.code
+      stack: error.stack
     })
     
     return new Response(
@@ -115,7 +89,6 @@ const handler = async (req: Request): Promise<Response> => {
         success: false,
         error: error.message,
         details: {
-          code: error.code,
           name: error.name
         }
       }),
