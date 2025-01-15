@@ -80,7 +80,7 @@ export function DashboardStats() {
       </div>
       <div className="bg-muted/30 rounded-lg p-2 md:p-4">
         <div className="flex items-center justify-between mb-1 md:mb-2">
-          <p className="text-xs md:text-sm font-medium text-muted-foreground">Total Videos</p>
+          <p className="text-xs md:text-sm font-medium text-muted-foreground">Videos Received</p>
           <VideoIcon className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
         </div>
         <div className="space-y-0.5 md:space-y-1">
