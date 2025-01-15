@@ -76,21 +76,24 @@ export function UploadCandidates({ jobId, onSuccess }: UploadCandidatesProps) {
     }
   }
 
-  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+  // Prevent default behavior for the entire drop zone area
+  const preventDefaults = (e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
+  }
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    preventDefaults(e)
     setIsDragging(true)
   }
 
-  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
-    e.preventDefault()
-    e.stopPropagation()
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    preventDefaults(e)
     setIsDragging(false)
   }
 
-  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
-    e.preventDefault()
-    e.stopPropagation()
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    preventDefaults(e)
     setIsDragging(false)
 
     const file = e.dataTransfer.files[0]
@@ -100,7 +103,13 @@ export function UploadCandidates({ jobId, onSuccess }: UploadCandidatesProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div 
+      className="space-y-6"
+      onDragOver={handleDragOver}
+      onDragEnter={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <Card>
         <CardContent className="pt-6">
           <div className="text-sm text-muted-foreground space-y-4">
@@ -128,9 +137,6 @@ export function UploadCandidates({ jobId, onSuccess }: UploadCandidatesProps) {
                 ? "border-primary bg-primary/5" 
                 : "bg-muted/5 hover:bg-muted/10 border-muted-foreground/20"
             }`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
           >
             <div className="flex flex-col items-center justify-center pt-5 pb-6">
               <Upload className={`w-8 h-8 mb-2 ${isDragging ? 'text-primary' : 'text-muted-foreground'}`} />
