@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface JobFormFieldsProps {
   title: string;
@@ -11,6 +12,8 @@ interface JobFormFieldsProps {
   setLocation: (value: string) => void;
   description: string;
   setDescription: (value: string) => void;
+  publicPageEnabled: boolean;
+  setPublicPageEnabled: (value: boolean) => void;
 }
 
 export function JobFormFields({
@@ -22,6 +25,8 @@ export function JobFormFields({
   setLocation,
   description,
   setDescription,
+  publicPageEnabled,
+  setPublicPageEnabled,
 }: JobFormFieldsProps) {
   return (
     <div className="space-y-4">
@@ -61,6 +66,16 @@ export function JobFormFields({
           placeholder="Enter the job description..."
           className="h-32"
         />
+      </div>
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="publicPageEnabled"
+          checked={publicPageEnabled}
+          onCheckedChange={(checked) => setPublicPageEnabled(checked as boolean)}
+        />
+        <Label htmlFor="publicPageEnabled" className="font-normal">
+          Enable public job post page
+        </Label>
       </div>
     </div>
   );

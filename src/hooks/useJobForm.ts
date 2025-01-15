@@ -7,6 +7,7 @@ export function useJobForm(onSuccess?: () => void) {
   const [department, setDepartment] = useState("")
   const [location, setLocation] = useState("")
   const [description, setDescription] = useState("")
+  const [publicPageEnabled, setPublicPageEnabled] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
 
   const supabase = useSupabaseClient()
@@ -25,6 +26,7 @@ export function useJobForm(onSuccess?: () => void) {
           location,
           description,
           user_id: user?.id,
+          public_page_enabled: publicPageEnabled,
         },
       ])
 
@@ -59,6 +61,8 @@ export function useJobForm(onSuccess?: () => void) {
     setLocation,
     description,
     setDescription,
+    publicPageEnabled,
+    setPublicPageEnabled,
     isLoading,
     handleSubmit,
   }

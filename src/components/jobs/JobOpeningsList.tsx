@@ -113,7 +113,7 @@ export function JobOpeningsList() {
                   </Button>
                   <Button
                     variant="outline"
-                    className="flex-1 bg-white"
+                    className={`flex-1 bg-white ${!job.public_page_enabled && 'opacity-50'}`}
                     onClick={() => handleOpenActions(job)}
                   >
                     Manage

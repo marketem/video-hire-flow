@@ -21,6 +21,8 @@ export function CreateJobDialog({ onJobCreated, open, onOpenChange }: CreateJobD
     setLocation,
     description,
     setDescription,
+    publicPageEnabled,
+    setPublicPageEnabled,
     isLoading,
     handleSubmit,
   } = useJobForm(onJobCreated)
@@ -37,6 +39,8 @@ export function CreateJobDialog({ onJobCreated, open, onOpenChange }: CreateJobD
         setLocation={setLocation}
         description={description}
         setDescription={setDescription}
+        publicPageEnabled={publicPageEnabled}
+        setPublicPageEnabled={setPublicPageEnabled}
       />
       <FormActions
         isLoading={isLoading}
