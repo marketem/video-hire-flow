@@ -33,15 +33,29 @@ export function useVideoRecording() {
     }
   }, [isRecording])
 
-  const handleStartRecording = async () => {
+  const initializeCamera = async () => {
     try {
       resetVideoElement()
       const stream = await getStream()
       await setupVideoPreview(stream)
+      return true
+    } catch (error) {
+      console.error('Failed to initialize camera:', error)
+      throw error
+    }
+  }
+
+  const handleStartRecording = async () => {
+    try {
+      const stream = videoRef.current?.srcObject as MediaStream
+      if (!stream) {
+        throw new Error('No camera stream available')
+      }
       startRecording(stream)
       setTimeLeft(30)
     } catch (error) {
       console.error('Failed to start recording:', error)
+      throw error
     }
   }
 
@@ -67,6 +81,7 @@ export function useVideoRecording() {
     stopRecording: handleStopRecording,
     togglePlayback,
     resetRecording,
-    resetVideoElement
+    resetVideoElement,
+    initializeCamera
   }
 }

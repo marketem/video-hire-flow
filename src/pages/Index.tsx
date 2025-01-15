@@ -2,17 +2,41 @@ import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Link } from "react-router-dom";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Upload, Video, PhoneCall } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-const features = [
-  "Asynchronous video interviews",
-  "Unlimited job postings",
-  "Candidate management",
-  "SMS notifications",
-  "Team collaboration",
-  "Export/Import from Indeed",
+const steps = [
+  {
+    title: "Add Candidates",
+    description: "Multiple ways to add candidates to your hiring pipeline",
+    features: [
+      "Create an open job with public application",
+      "Import candidates via .CSV (ie. from Indeed)",
+      "Manually add candidates"
+    ],
+    icon: Upload
+  },
+  {
+    title: "Request Videos",
+    description: "Streamlined process to request video introductions",
+    features: [
+      "Invite candidates with text and email",
+      "Copy unique URL's for each candidate",
+      "Easy recording for candidates"
+    ],
+    icon: Video
+  },
+  {
+    title: "Review Videos",
+    description: "Efficiently evaluate and manage candidates",
+    features: [
+      "Easy review queue to approve and reject",
+      "Call candidates directly from web app",
+      "View metrics including response rate"
+    ],
+    icon: PhoneCall
+  }
 ];
 
 const Index = () => {
@@ -60,22 +84,42 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Features Section */}
+        {/* How It Works Section */}
         <section className="py-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-center mb-12">
-              Everything You Need to Streamline Hiring
+              How It Works
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {features.map((feature, index) => (
-                <div
-                  key={index}
-                  className="flex items-start space-x-3 p-4 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <CheckCircle2 className="h-6 w-6 text-success flex-shrink-0" />
-                  <span className="text-lg text-gray-700">{feature}</span>
-                </div>
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {steps.map((step, index) => {
+                const Icon = step.icon;
+                return (
+                  <div
+                    key={index}
+                    className="flex flex-col space-y-4 p-6 rounded-lg border bg-card"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <div className="p-2 rounded-full bg-primary/10">
+                        <Icon className="h-6 w-6 text-primary" />
+                      </div>
+                      <h3 className="text-xl font-semibold">
+                        {index + 1}. {step.title}
+                      </h3>
+                    </div>
+                    <p className="text-muted-foreground">
+                      {step.description}
+                    </p>
+                    <ul className="space-y-2">
+                      {step.features.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="flex items-start space-x-2">
+                          <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
+                          <span className="text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>

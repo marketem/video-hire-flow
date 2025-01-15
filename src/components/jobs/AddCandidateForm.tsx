@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Upload } from "lucide-react"
 import { formatPhoneNumber } from "@/utils/phoneUtils"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface AddCandidateFormProps {
   jobId: string
@@ -19,12 +20,23 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
   const [phone, setPhone] = useState("")
   const [resume, setResume] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [hasConsented, setHasConsented] = useState(false)
   const supabase = useSupabaseClient()
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!hasConsented) {
+      toast({
+        title: "Consent Required",
+        description: "Please confirm that the candidate has provided consent to proceed.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -33,16 +45,6 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
       if (resume) {
         const fileExt = resume.name.split('.').pop()
         const fileName = `${Math.random()}.${fileExt}`
-        console.log('Uploading file:', fileName)
-        
-        const { data: bucketData, error: bucketError } = await supabase
-          .storage
-          .getBucket('resumes')
-        
-        if (bucketError) {
-          console.error('Bucket error:', bucketError)
-          throw new Error('Storage bucket not configured properly')
-        }
         
         const { error: uploadError, data } = await supabase.storage
           .from('resumes')
@@ -51,18 +53,12 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
             upsert: false
           })
 
-        if (uploadError) {
-          console.error('Upload error:', uploadError)
-          throw uploadError
-        }
-        
-        console.log('Upload successful:', data)
+        if (uploadError) throw uploadError
         resumeUrl = fileName
       }
 
       const formattedPhone = formatPhoneNumber(phone)
 
-      console.log('Adding candidate to database:', { jobId, name, email, formattedPhone, resumeUrl })
       const { error } = await supabase
         .from('candidates')
         .insert([
@@ -161,6 +157,27 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
           </p>
         )}
       </div>
+
+      <div className="flex items-start space-x-2 border rounded-lg p-4 bg-muted/5">
+        <Checkbox 
+          id="consent" 
+          checked={hasConsented}
+          onCheckedChange={(checked) => setHasConsented(checked as boolean)}
+          className="mt-1"
+        />
+        <div className="grid gap-1.5 leading-none">
+          <label
+            htmlFor="consent"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Consent Confirmation
+          </label>
+          <p className="text-sm text-muted-foreground">
+            I confirm that the candidate has consented to receive SMS communications and agreed to VibeCheck's Terms of Service and Privacy Policy. Message and data rates may apply.
+          </p>
+        </div>
+      </div>
+
       <Button type="submit" disabled={isSubmitting}>
         {isSubmitting ? "Adding..." : "Add Candidate"}
       </Button>

@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Upload } from "lucide-react"
+import { Upload, MessageSquare } from "lucide-react"
 
 export function UploadCandidates({ jobId, onSuccess }: { jobId: string; onSuccess: () => void }) {
   const [isUploading, setIsUploading] = useState(false)
@@ -140,6 +140,13 @@ export function UploadCandidates({ jobId, onSuccess }: { jobId: string; onSucces
             <p className="text-xs">Example: name,email,phone<br />John Doe,john@example.com,1234567890</p>
           </div>
         </div>
+      </div>
+
+      <div className="flex items-start gap-2 p-4 bg-yellow-50/50 border border-yellow-200 rounded-lg">
+        <MessageSquare className="h-4 w-4 flex-shrink-0 mt-0.5 text-yellow-600" />
+        <p className="text-sm text-yellow-800">
+          By uploading candidate information, you confirm that you have obtained proper consent to contact these individuals via SMS. Each candidate may receive updates about their application via SMS.
+        </p>
       </div>
 
       <div className="space-y-4">

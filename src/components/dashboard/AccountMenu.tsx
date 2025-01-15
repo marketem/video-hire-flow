@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,9 +11,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSupabaseClient, useSession } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
-import { Settings, User, LogOut } from "lucide-react";
+import { Settings, User, LogOut, BookOpen, HelpCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AccountSettingsDialog } from "./AccountSettingsDialog";
+import { UserGuideDialog } from "./UserGuideDialog";
+import { SupportDialog } from "./SupportDialog";
 
 export function AccountMenu() {
   const session = useSession();
@@ -21,6 +23,17 @@ export function AccountMenu() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showSettings, setShowSettings] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+  const [showSupport, setShowSupport] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const hasSeenGuide = localStorage.getItem("hasSeenGuide");
+    if (!hasSeenGuide) {
+      setShowGuide(true);
+      localStorage.setItem("hasSeenGuide", "true");
+    }
+  }, []);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -33,7 +46,7 @@ export function AccountMenu() {
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full">
             <div className="flex h-full w-full items-center justify-center rounded-full bg-muted">
@@ -41,7 +54,7 @@ export function AccountMenu() {
             </div>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">
@@ -58,6 +71,14 @@ export function AccountMenu() {
               <Settings className="mr-2 h-4 w-4" />
               <span>Account Settings</span>
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowGuide(true)}>
+              <BookOpen className="mr-2 h-4 w-4" />
+              <span>User Guide</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowSupport(true)}>
+              <HelpCircle className="mr-2 h-4 w-4" />
+              <span>Support</span>
+            </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleSignOut}>
@@ -69,6 +90,14 @@ export function AccountMenu() {
       <AccountSettingsDialog 
         open={showSettings} 
         onOpenChange={setShowSettings}
+      />
+      <UserGuideDialog
+        open={showGuide}
+        onOpenChange={setShowGuide}
+      />
+      <SupportDialog
+        open={showSupport}
+        onOpenChange={setShowSupport}
       />
     </>
   );

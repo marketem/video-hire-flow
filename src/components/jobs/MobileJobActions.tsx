@@ -35,7 +35,7 @@ export function MobileJobActions({
 
   const actions = [
     {
-      label: "View Job",
+      label: "Job Details",
       icon: Eye,
       onClick: () => onView(job)
     },
