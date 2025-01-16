@@ -105,6 +105,13 @@ export default function VideoSubmission() {
 
       if (userError) throw userError
 
+      // Fix: Properly access the email from the user data structure
+      const managerEmail = userData.user?.email
+
+      if (!managerEmail) {
+        throw new Error('Could not find manager email')
+      }
+
       const { error: updateError } = await supabase
         .from('candidates')
         .update({ 
@@ -114,14 +121,14 @@ export default function VideoSubmission() {
 
       if (updateError) throw updateError
 
-      // Send email notification
+      // Send email notification with the correct email
       const { error: notificationError } = await supabase.functions
         .invoke('send-video-notification', {
           body: {
             candidateName: candidate.name,
             candidateEmail: candidate.email,
             jobTitle: jobData.title,
-            managerEmail: userData.email
+            managerEmail: managerEmail // Using the correctly accessed email
           }
         })
 
