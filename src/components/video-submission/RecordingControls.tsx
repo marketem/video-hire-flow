@@ -34,7 +34,7 @@ export function RecordingControls({
       )}
       
       {cameraInitialized && !isRecording && !recordedBlob && (
-        <Button onClick={startRecording} className="w-full">
+        <Button onClick={startRecording} variant="success" className="w-full">
           <Video className="mr-2 h-4 w-4" />
           Start Recording
         </Button>
