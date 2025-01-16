@@ -15,6 +15,24 @@ export function useVideoReview(jobId: string | null) {
     queryFn: async () => {
       if (!jobId) return null
       
+      console.log('Fetching candidates for job:', jobId)
+      console.log('User authenticated:', !!session?.user)
+      console.log('User ID:', session?.user?.id)
+
+      // First verify job ownership
+      const { data: jobData, error: jobError } = await supabase
+        .from('job_openings')
+        .select('user_id')
+        .eq('id', jobId)
+        .single()
+
+      if (jobError) {
+        console.error('Error fetching job:', jobError)
+        throw jobError
+      }
+
+      console.log('Job belongs to user:', jobData?.user_id === session?.user?.id)
+
       const { data, error } = await supabase
         .from('candidates')
         .select('*')
@@ -25,28 +43,33 @@ export function useVideoReview(jobId: string | null) {
         console.error('Error fetching candidates:', error)
         throw error
       }
+      
+      console.log('Raw Supabase response:', { data, error })
+      console.log('Fetched candidates:', data)
 
-      // Update status to 'reviewing' for candidates with videos
+      // Update status to 'reviewing' for candidates with videos that are still in 'requested' status
       const updatedData = data.map((candidate: Candidate) => {
         if (candidate.video_url && candidate.status === 'requested') {
+          // Update the database
+          supabase
+            .from('candidates')
+            .update({ status: 'reviewing' })
+            .eq('id', candidate.id)
+            .then(({ error }) => {
+              if (error) {
+                console.error('Error updating candidate status:', error)
+              }
+            })
+          
           return { ...candidate, status: 'reviewing' }
         }
         return candidate
       })
       
-      // Update the database with the new statuses
-      for (const candidate of updatedData) {
-        if (candidate.video_url && candidate.status === 'reviewing') {
-          await supabase
-            .from('candidates')
-            .update({ status: 'reviewing' })
-            .eq('id', candidate.id)
-        }
-      }
-      
       return updatedData as Candidate[]
     },
-    enabled: !!jobId && !!session,
+    enabled: !!jobId && !!session?.user?.id,
+    refetchInterval: 5000, // Refetch every 5 seconds to catch new uploads
   })
 
   const handleReviewAction = async (candidateId: string, status: 'reviewing' | 'rejected' | 'approved') => {
