@@ -7,6 +7,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { VideoPreview } from "@/components/video-submission/VideoPreview"
 import { RecordingTimer } from "@/components/video-submission/RecordingTimer"
 import { RecordingControls } from "@/components/video-submission/RecordingControls"
+import { WelcomeModal } from "@/components/video-submission/WelcomeModal"
 import { useVideoRecording } from "@/hooks/useVideoRecording"
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024
@@ -18,6 +19,7 @@ export default function VideoSubmission() {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [cameraInitialized, setCameraInitialized] = useState(false)
+  const [showWelcome, setShowWelcome] = useState(true)
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
@@ -141,6 +143,12 @@ export default function VideoSubmission() {
 
   return (
     <div className="min-h-screen bg-background p-4 flex flex-col">
+      <WelcomeModal 
+        open={showWelcome} 
+        onOpenChange={setShowWelcome}
+        onStartCamera={handleStartCamera}
+      />
+      
       <div className="mb-8">
         <Link to="/" className="flex items-center space-x-2">
           <img 
