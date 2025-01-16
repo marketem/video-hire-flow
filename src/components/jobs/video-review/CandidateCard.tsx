@@ -3,7 +3,7 @@ import { Slider } from "@/components/ui/slider"
 import { Phone, ThumbsDown, ThumbsUp, Clock } from "lucide-react"
 import { format, formatDistanceToNow } from "date-fns"
 import type { Candidate } from "@/types/candidate"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useToast } from "@/hooks/use-toast"
 
@@ -24,19 +24,34 @@ export function CandidateCard({
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [sliderValue, setSliderValue] = useState([50]);
   const [touchStart, setTouchStart] = useState<number | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
   const handleVideoClick = async () => {
-    if (isVideoOpen) {
-      setIsVideoOpen(false);
-      setVideoUrl(null);
-    } else {
-      const url = await onVideoReview(candidate.video_url!, candidate.name);
-      if (url) {
-        setVideoUrl(url);
-        setIsVideoOpen(true);
+    try {
+      if (isVideoOpen) {
+        if (videoRef.current) {
+          videoRef.current.pause();
+          videoRef.current.currentTime = 0;
+          videoRef.current.src = '';
+        }
+        setIsVideoOpen(false);
+        setVideoUrl(null);
+      } else {
+        const url = await onVideoReview(candidate.video_url!, candidate.name);
+        if (url) {
+          setVideoUrl(url);
+          setIsVideoOpen(true);
+        }
       }
+    } catch (error) {
+      console.error('Error handling video:', error);
+      toast({
+        title: "Video Error",
+        description: "There was an error playing the video. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -50,7 +65,7 @@ export function CandidateCard({
     const touchEnd = e.changedTouches[0].clientX;
     const distance = touchEnd - touchStart;
 
-    if (Math.abs(distance) > 100) { // Minimum swipe distance
+    if (Math.abs(distance) > 100) {
       if (distance > 0) {
         onStatusChange(candidate.id, 'approved');
         toast({
@@ -72,11 +87,22 @@ export function CandidateCard({
     if (sliderValue[0] !== 50 && onStatusChange) {
       const timer = setTimeout(() => {
         onStatusChange(candidate.id, sliderValue[0] > 50 ? 'approved' : 'rejected');
-        setSliderValue([50]); // Reset slider
+        setSliderValue([50]);
       }, 500);
       return () => clearTimeout(timer);
     }
   }, [sliderValue, candidate.id, onStatusChange]);
+
+  // Cleanup video resources when component unmounts
+  useEffect(() => {
+    return () => {
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.src = '';
+        videoRef.current.load();
+      }
+    };
+  }, []);
 
   const waitingTime = formatDistanceToNow(new Date(candidate.created_at));
 
@@ -165,14 +191,21 @@ export function CandidateCard({
       {isVideoOpen && videoUrl && (
         <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
           <video 
+            ref={videoRef}
             controls 
             autoPlay
             playsInline
-            preload="auto"
+            preload="metadata"
             className="w-full h-full"
-            crossOrigin="anonymous"
+            onError={(e) => {
+              console.error('Video playback error:', e);
+              toast({
+                title: "Playback Error",
+                description: "There was an error playing the video. Please try again.",
+                variant: "destructive",
+              });
+            }}
           >
-            <source src={videoUrl} type="video/webm" />
             <source src={videoUrl} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
