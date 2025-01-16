@@ -34,6 +34,14 @@ export function useCandidateActions(jobId: string) {
 
   const copyVideoLink = async (candidateId: string) => {
     try {
+      // Update status to 'requested' when copying link
+      const { error: updateError } = await supabase
+        .from('candidates')
+        .update({ status: 'requested' })
+        .eq('id', candidateId)
+
+      if (updateError) throw updateError
+
       // Fetch the candidate's current token
       const { data: candidate, error: fetchError } = await supabase
         .from('candidates')
@@ -55,6 +63,10 @@ export function useCandidateActions(jobId: string) {
         title: "Success",
         description: "Video submission link copied to clipboard",
       })
+
+      // Refresh the candidates list
+      queryClient.invalidateQueries({ queryKey: ['job-candidates', jobId] })
+      queryClient.invalidateQueries({ queryKey: ['candidates-review', jobId] })
       
       return true
     } catch (error) {
@@ -84,6 +96,7 @@ export function useCandidateActions(jobId: string) {
       })
 
       queryClient.invalidateQueries({ queryKey: ['job-candidates', jobId] })
+      queryClient.invalidateQueries({ queryKey: ['candidates-review', jobId] })
     } catch (error) {
       console.error('Error deleting candidates:', error)
       toast({
