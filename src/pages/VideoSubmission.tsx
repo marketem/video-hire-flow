@@ -90,28 +90,6 @@ export default function VideoSubmission() {
 
       if (uploadError) throw uploadError
 
-      // Get job details to include in the notification
-      const { data: jobData, error: jobError } = await supabase
-        .from('job_openings')
-        .select('title, user_id')
-        .eq('id', candidate.job_id)
-        .single()
-
-      if (jobError) throw jobError
-
-      // Get manager's email from auth.users
-      const { data: userData, error: userError } = await supabase.auth
-        .admin.getUserById(jobData.user_id)
-
-      if (userError) throw userError
-
-      // Fix: Properly access the email from the user data structure
-      const managerEmail = userData.user?.email
-
-      if (!managerEmail) {
-        throw new Error('Could not find manager email')
-      }
-
       const { error: updateError } = await supabase
         .from('candidates')
         .update({ 
@@ -120,22 +98,6 @@ export default function VideoSubmission() {
         .eq('id', candidate.id)
 
       if (updateError) throw updateError
-
-      // Send email notification with the correct email
-      const { error: notificationError } = await supabase.functions
-        .invoke('send-video-notification', {
-          body: {
-            candidateName: candidate.name,
-            candidateEmail: candidate.email,
-            jobTitle: jobData.title,
-            managerEmail: managerEmail // Using the correctly accessed email
-          }
-        })
-
-      if (notificationError) {
-        console.error('Failed to send notification:', notificationError)
-        // Don't throw here - we don't want to fail the upload if just the notification fails
-      }
 
       toast({
         title: "Success",
