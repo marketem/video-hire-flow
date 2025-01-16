@@ -17,18 +17,25 @@ describe('Video Submission Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     
-    // Mock MediaRecorder
-    const MediaRecorderMock = vi.fn(() => ({
-      start: vi.fn(),
-      stop: vi.fn(),
-      ondataavailable: vi.fn(),
-      state: 'inactive',
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-    }))
+    // Create a proper MediaRecorder mock class
+    class MediaRecorderMock {
+      start = vi.fn()
+      stop = vi.fn()
+      ondataavailable = vi.fn()
+      state = 'inactive'
+      addEventListener = vi.fn()
+      removeEventListener = vi.fn()
 
-    // Add isTypeSupported as a static method
-    MediaRecorderMock.isTypeSupported = vi.fn().mockReturnValue(true)
+      static isTypeSupported(type: string) {
+        return true
+      }
+
+      constructor(stream: MediaStream) {
+        // Constructor implementation
+      }
+    }
+
+    // Assign the mock class to window.MediaRecorder
     window.MediaRecorder = MediaRecorderMock as unknown as typeof MediaRecorder
 
     // Mock navigator.mediaDevices

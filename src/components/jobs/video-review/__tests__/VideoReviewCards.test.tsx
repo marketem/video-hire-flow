@@ -40,8 +40,7 @@ describe('VideoReviewCards', () => {
       isPlaceholderData: false,
       status: 'success',
       fetchStatus: 'idle',
-      refetch: vi.fn(),
-      remove: vi.fn()
+      refetch: vi.fn()
     })
   })
 
@@ -71,8 +70,7 @@ describe('VideoReviewCards', () => {
       isPlaceholderData: false,
       status: 'success',
       fetchStatus: 'idle',
-      refetch: vi.fn(),
-      remove: vi.fn()
+      refetch: vi.fn()
     })
 
     render(<VideoReviewCards />)
