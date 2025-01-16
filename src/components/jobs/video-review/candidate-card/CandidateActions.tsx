@@ -24,8 +24,8 @@ export function CandidateActions({
   const isMobile = useIsMobile()
 
   return (
-    <div className="flex flex-col sm:flex-row gap-2">
-      <div className="flex gap-2 flex-1">
+    <div className="flex flex-col gap-6">
+      <div className="flex gap-2">
         {candidate.video_url && (
           <Button
             variant="secondary"
@@ -44,23 +44,19 @@ export function CandidateActions({
           <span>Call Candidate</span>
         </Button>
       </div>
-      {showActions && onStatusChange && (
-        <div className="flex gap-2 flex-1 sm:flex-initial">
-          {isMobile && (
-            <div className="w-full px-2 mt-8 sm:mt-0">
-              <Slider
-                value={sliderValue}
-                onValueChange={onSliderChange}
-                max={100}
-                step={1}
-                className="w-full"
-              />
-              <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                <span>Reject</span>
-                <span>Approve</span>
-              </div>
-            </div>
-          )}
+      {showActions && onStatusChange && isMobile && (
+        <div className="w-full px-2">
+          <Slider
+            value={sliderValue}
+            onValueChange={onSliderChange}
+            max={100}
+            step={1}
+            className="w-full"
+          />
+          <div className="flex justify-between text-xs text-muted-foreground mt-1">
+            <span>Reject</span>
+            <span>Approve</span>
+          </div>
         </div>
       )}
     </div>
