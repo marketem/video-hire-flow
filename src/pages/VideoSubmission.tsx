@@ -8,6 +8,8 @@ import { VideoPreview } from "@/components/video-submission/VideoPreview"
 import { RecordingTimer } from "@/components/video-submission/RecordingTimer"
 import { RecordingControls } from "@/components/video-submission/RecordingControls"
 import { useVideoRecording } from "@/hooks/useVideoRecording"
+import { Card, CardContent } from "@/components/ui/card"
+import { Check } from "lucide-react"
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
@@ -154,9 +156,40 @@ export default function VideoSubmission() {
       <div className="flex-1 flex flex-col items-center justify-center">
         <div className="w-full max-w-md space-y-4">
           <h1 className="text-2xl font-bold text-center">Record Your Introduction</h1>
-          <p className="text-muted-foreground text-center mb-8">
+          <p className="text-muted-foreground text-center mb-4">
             Please record a 30-second video introducing yourself
           </p>
+
+          <Card className="mb-6">
+            <CardContent className="pt-6">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="mt-1">
+                    <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Check className="h-3 w-3 text-primary" />
+                    </div>
+                  </div>
+                  <p className="text-sm">Find a quiet, well-lit space with minimal background noise</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="mt-1">
+                    <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Check className="h-3 w-3 text-primary" />
+                    </div>
+                  </div>
+                  <p className="text-sm">Position yourself centered in the frame, with your face clearly visible</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="mt-1">
+                    <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Check className="h-3 w-3 text-primary" />
+                    </div>
+                  </div>
+                  <p className="text-sm">Briefly introduce yourself and explain why you're interested in this position</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {uploadError && (
             <Alert variant="destructive">
