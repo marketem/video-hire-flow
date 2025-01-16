@@ -38,12 +38,12 @@ const handler = async (req: Request): Promise<Response> => {
       candidate_id: payload.candidate_id,
       candidate_name: payload.candidate_name,
       candidate_email: payload.candidate_email,
-      // Don't log the full token for security
-      hasVideoToken: !!payload.video_token
+      has_video_token: !!payload.video_token
     })
 
-    // Create the video submission URL
-    const submissionUrl = `${req.headers.get('origin')}/video-submission/${payload.video_token}`
+    // Create the video submission URL using the request origin
+    const submissionUrl = `${req.headers.get('origin')}/video-submission?token=${payload.video_token}`
+    console.log('Generated submission URL:', submissionUrl)
     
     // Prepare email data
     const emailData = {
@@ -52,7 +52,7 @@ const handler = async (req: Request): Promise<Response> => {
           to: [{ email: payload.candidate_email }],
         },
       ],
-      from: { email: 'info@videovibecheck.com' },
+      from: { email: 'info@videovibecheck.com', name: 'Video Vibe Check' },
       subject: 'Video Introduction Request',
       content: [
         {
@@ -79,6 +79,8 @@ const handler = async (req: Request): Promise<Response> => {
       },
       body: JSON.stringify(emailData),
     })
+
+    console.log('SendGrid response status:', response.status)
 
     if (!response.ok) {
       const errorText = await response.text()
