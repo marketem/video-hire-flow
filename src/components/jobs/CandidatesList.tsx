@@ -21,9 +21,9 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
   const { toast } = useToast()
 
   useEffect(() => {
-    // Enable REPLICA IDENTITY FULL for the candidates table
+    // Subscribe to real-time updates for the candidates table
     const channel = supabase
-      .channel('candidates-changes')
+      .channel('candidates-updates')
       .on(
         'postgres_changes',
         {
@@ -34,16 +34,12 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
         },
         (payload) => {
           console.log('Real-time update received:', payload)
-          // Refetch candidates when any change occurs
           refetch()
         }
       )
-      .subscribe((status) => {
-        console.log('Realtime subscription status:', status)
-      })
+      .subscribe()
 
     return () => {
-      console.log('Cleaning up realtime subscription')
       supabase.removeChannel(channel)
     }
   }, [jobId, refetch, supabase])

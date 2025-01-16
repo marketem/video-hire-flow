@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useSearchParams, useNavigate, Link } from "react-router-dom"
-import { useSupabaseClient, useSession } from "@supabase/auth-helpers-react"
+import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
 import { useQuery } from "@tanstack/react-query"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
@@ -23,48 +23,6 @@ export default function VideoSubmission() {
   const [cameraInitialized, setCameraInitialized] = useState(false)
   const supabase = useSupabaseClient()
   const { toast } = useToast()
-  const session = useSession()
-
-  // Initialize anonymous session with video token
-  useEffect(() => {
-    if (!token || session) return
-
-    const initializeAnonymousSession = async () => {
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: `anonymous-${token}@temp.com`,
-          password: token,
-        })
-        
-        if (error) {
-          // If sign in fails, create an anonymous session
-          const { data: anonData, error: anonError } = await supabase.auth.signUp({
-            email: `anonymous-${token}@temp.com`,
-            password: token,
-            options: {
-              data: {
-                video_token: token
-              }
-            }
-          })
-          
-          if (anonError) {
-            console.error('Failed to create anonymous session:', anonError)
-            throw anonError
-          }
-        }
-      } catch (error) {
-        console.error('Session initialization error:', error)
-        toast({
-          title: "Authentication Error",
-          description: "Failed to initialize video submission session",
-          variant: "destructive",
-        })
-      }
-    }
-
-    initializeAnonymousSession()
-  }, [token, supabase, session, toast])
 
   const {
     isRecording,
@@ -123,7 +81,6 @@ export default function VideoSubmission() {
         type: 'video/webm'
       })
 
-      console.log('Starting video upload with token:', token)
       const { error: uploadError } = await supabase.storage
         .from('videos')
         .upload(fileName, file, {
@@ -131,12 +88,8 @@ export default function VideoSubmission() {
           upsert: false
         })
 
-      if (uploadError) {
-        console.error('Upload error:', uploadError)
-        throw uploadError
-      }
+      if (uploadError) throw uploadError
 
-      console.log('Video uploaded successfully, updating candidate record')
       const { error: updateError } = await supabase
         .from('candidates')
         .update({ 
