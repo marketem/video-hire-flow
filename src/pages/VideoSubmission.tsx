@@ -10,6 +10,7 @@ import { RecordingControls } from "@/components/video-submission/RecordingContro
 import { useVideoRecording } from "@/hooks/useVideoRecording"
 import { Card, CardContent } from "@/components/ui/card"
 import { Check } from "lucide-react"
+import { format } from "date-fns"
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
@@ -92,8 +93,7 @@ export default function VideoSubmission() {
       const { error: updateError } = await supabase
         .from('candidates')
         .update({ 
-          video_url: fileName,
-          video_token: null
+          video_url: fileName
         })
         .eq('id', candidate.id)
 
@@ -137,6 +137,28 @@ export default function VideoSubmission() {
     return (
       <div className="min-h-screen bg-background p-4 flex items-center justify-center">
         <div className="text-center">Loading...</div>
+      </div>
+    )
+  }
+
+  // Show already submitted message if video exists
+  if (candidate?.video_url) {
+    return (
+      <div className="min-h-screen bg-background p-4 flex flex-col items-center justify-center">
+        <div className="w-full max-w-md text-center space-y-4">
+          <h1 className="text-2xl font-bold">Video Already Submitted</h1>
+          <p className="text-muted-foreground">
+            You have already submitted a video for this application on{' '}
+            {format(new Date(candidate.created_at), 'MMMM d, yyyy')} at{' '}
+            {format(new Date(candidate.created_at), 'h:mm a')}
+          </p>
+          <Link 
+            to="/" 
+            className="inline-block mt-4 text-primary hover:underline"
+          >
+            Return to Home
+          </Link>
+        </div>
       </div>
     )
   }
@@ -222,5 +244,5 @@ export default function VideoSubmission() {
         </div>
       </div>
     </div>
-  );
+  )
 }
