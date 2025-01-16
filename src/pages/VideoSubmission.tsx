@@ -45,7 +45,7 @@ export default function VideoSubmission() {
       
       const { data, error } = await supabase
         .from('candidates')
-        .select('*, job_openings(title, user_id)')
+        .select('*')
         .eq('video_token', token)
         .single()
 
@@ -81,7 +81,6 @@ export default function VideoSubmission() {
         type: 'video/webm'
       })
 
-      // Upload video file
       const { error: uploadError } = await supabase.storage
         .from('videos')
         .upload(fileName, file, {
@@ -91,29 +90,14 @@ export default function VideoSubmission() {
 
       if (uploadError) throw uploadError
 
-      // Update candidate status and video URL
       const { error: updateError } = await supabase
         .from('candidates')
         .update({ 
-          video_url: fileName,
-          status: 'reviewing'
+          video_url: fileName
         })
         .eq('id', candidate.id)
 
       if (updateError) throw updateError
-
-      // Send email notification
-      if (candidate.job_openings) {
-        const dashboardUrl = `${window.location.origin}/dashboard`
-        await supabase.functions.invoke('send-status-email', {
-          body: {
-            to: candidate.job_openings.user_id,
-            candidateName: candidate.name,
-            jobTitle: candidate.job_openings.title,
-            dashboardUrl
-          }
-        })
-      }
 
       toast({
         title: "Success",
