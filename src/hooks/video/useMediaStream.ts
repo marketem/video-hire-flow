@@ -19,20 +19,32 @@ export function useMediaStream() {
           width: { ideal: 640, max: 1280 },
           height: { ideal: 480, max: 720 },
           frameRate: { ideal: 24, max: 30 },
-          // Add constraints to reduce bitrate
-          bitrate: 1000000, // 1 Mbps
         },
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           sampleRate: 44100,
-          // Reduce audio bitrate
           channelCount: 1
         }
       })
       
       console.log("Media stream obtained successfully")
       streamRef.current = stream
+
+      // After getting the stream, apply constraints to reduce bitrate
+      const videoTrack = stream.getVideoTracks()[0]
+      if (videoTrack) {
+        try {
+          await videoTrack.applyConstraints({
+            width: { ideal: 640, max: 1280 },
+            height: { ideal: 480, max: 720 },
+            frameRate: { ideal: 24, max: 30 }
+          })
+        } catch (error) {
+          console.warn('Could not apply additional video constraints:', error)
+        }
+      }
+
       return stream
     } catch (error) {
       console.error('Error accessing media devices:', error)
