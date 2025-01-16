@@ -169,7 +169,7 @@ export default function VideoSubmission() {
                       <Check className="h-3 w-3 text-primary" />
                     </div>
                   </div>
-                  <p className="text-sm">Find a quiet, well-lit space with minimal background noise</p>
+                  <p className="text-sm">Find a quiet, well lit space</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="mt-1">
@@ -177,7 +177,7 @@ export default function VideoSubmission() {
                       <Check className="h-3 w-3 text-primary" />
                     </div>
                   </div>
-                  <p className="text-sm">Position yourself centered in the frame, with your face clearly visible</p>
+                  <p className="text-sm">Face centered and visible</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="mt-1">
