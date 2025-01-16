@@ -7,12 +7,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface EmailData {
-  name: string
-  senderName: string
-  companyName: string
-  submissionUrl: string
-  email: string
+interface VideoInvitePayload {
+  candidate_id: string
+  video_token: string
+  candidate_name: string
+  candidate_email: string
+  candidate_phone: string
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -33,25 +33,23 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     console.log('Parsing request body...')
-    const emailData: EmailData = await req.json()
-    console.log('Received email data:', {
-      name: emailData.name,
-      email: emailData.email,
-      companyName: emailData.companyName,
-      senderName: emailData.senderName,
-      // Don't log the full URL for security
-      hasSubmissionUrl: !!emailData.submissionUrl
+    const payload: VideoInvitePayload = await req.json()
+    console.log('Received payload:', {
+      candidate_id: payload.candidate_id,
+      candidate_name: payload.candidate_name,
+      candidate_email: payload.candidate_email,
+      // Don't log the full token for security
+      hasVideoToken: !!payload.video_token
     })
 
-    // Validate required fields
-    if (!emailData.email || !emailData.name || !emailData.submissionUrl) {
-      throw new Error('Missing required fields in request')
-    }
-
-    const emailContent = {
+    // Create the video submission URL
+    const submissionUrl = `${req.headers.get('origin')}/video-submission/${payload.video_token}`
+    
+    // Prepare email data
+    const emailData = {
       personalizations: [
         {
-          to: [{ email: emailData.email }],
+          to: [{ email: payload.candidate_email }],
         },
       ],
       from: { email: 'info@videovibecheck.com' },
@@ -61,10 +59,10 @@ const handler = async (req: Request): Promise<Response> => {
           type: 'text/html',
           value: `
             <h2>Video Introduction Request</h2>
-            <p>Hello ${emailData.name},</p>
-            <p>${emailData.senderName} from ${emailData.companyName} has requested that you submit a 30-second video introduction.</p>
+            <p>Hello ${payload.candidate_name},</p>
+            <p>You have been requested to submit a 30-second video introduction.</p>
             <p>Please click the link below to record and submit your video:</p>
-            <p><a href="${emailData.submissionUrl}">Submit Your Video</a></p>
+            <p><a href="${submissionUrl}">Submit Your Video</a></p>
             <p>This link will expire in 24 hours for security purposes.</p>
           `,
         },
@@ -79,7 +77,7 @@ const handler = async (req: Request): Promise<Response> => {
         'Authorization': `Bearer ${SENDGRID_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(emailContent),
+      body: JSON.stringify(emailData),
     })
 
     if (!response.ok) {
