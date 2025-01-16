@@ -93,12 +93,7 @@ export function CandidatesTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-12">
-              <Checkbox 
-                checked={selectedCandidates.length === candidates.length}
-                onCheckedChange={(checked) => onToggleSelectAll(checked as boolean)}
-              />
-            </TableHead>
+            <TableHead className="w-12"></TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
