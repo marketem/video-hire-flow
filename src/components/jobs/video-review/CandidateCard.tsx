@@ -50,7 +50,7 @@ export function CandidateCard({
     const touchEnd = e.changedTouches[0].clientX;
     const distance = touchEnd - touchStart;
 
-    if (Math.abs(distance) > 100) { // Minimum swipe distance
+    if (Math.abs(distance) > 100) {
       if (distance > 0) {
         onStatusChange(candidate.id, 'approved');
         toast({
@@ -102,7 +102,7 @@ export function CandidateCard({
             </p>
           )}
         </div>
-        <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex flex-col gap-6">
           <div className="flex gap-2 flex-1">
             {candidate.video_url && (
               <Button
@@ -123,7 +123,7 @@ export function CandidateCard({
             </Button>
           </div>
           {showActions && onStatusChange && (
-            <div className="flex gap-2 flex-1 sm:flex-initial">
+            <div className="flex gap-2 flex-1 sm:flex-initial pt-4">
               {isMobile ? (
                 <div className="w-full px-2">
                   <Slider
