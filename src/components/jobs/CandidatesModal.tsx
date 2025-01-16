@@ -57,7 +57,7 @@ export function CandidatesModal({
       </TabsList>
 
       <div className="flex-1 overflow-hidden mt-4">
-        <ScrollArea className="h-full">
+        <ScrollArea className="h-[60vh]">
           <TabsContent value="list" className="space-y-4 mt-0">
             {candidates?.length > 0 && (
               <BulkActions
@@ -112,7 +112,7 @@ export function CandidatesModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
+      <DialogContent className="max-w-4xl flex flex-col p-0">
         <DialogHeader className="p-6 pb-0">
           <DialogTitle>Manage Candidates</DialogTitle>
         </DialogHeader>
