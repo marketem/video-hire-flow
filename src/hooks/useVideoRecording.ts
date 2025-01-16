@@ -6,6 +6,7 @@ import { useVideoPlayback } from "./video/useVideoPlayback"
 export function useVideoRecording() {
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null)
   const [timeLeft, setTimeLeft] = useState(30)
+  const [cameraInitialized, setCameraInitialized] = useState(false)
   const { getStream, stopStream } = useMediaStream()
   const { isRecording, startRecording, stopRecording } = useRecorder()
   const { 
@@ -38,6 +39,7 @@ export function useVideoRecording() {
       resetVideoElement()
       const stream = await getStream()
       await setupVideoPreview(stream)
+      setCameraInitialized(true)
       return true
     } catch (error) {
       console.error('Failed to initialize camera:', error)
@@ -69,6 +71,8 @@ export function useVideoRecording() {
   const resetRecording = () => {
     resetVideoElement()
     setRecordedBlob(null)
+    setCameraInitialized(false)
+    stopStream()
   }
 
   return {
@@ -77,6 +81,7 @@ export function useVideoRecording() {
     isPlaying,
     timeLeft,
     videoRef,
+    cameraInitialized,
     startRecording: handleStartRecording,
     stopRecording: handleStopRecording,
     togglePlayback,

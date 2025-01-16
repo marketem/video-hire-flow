@@ -24,6 +24,12 @@ export function RecordingControls({
   resetRecording,
   onStartCamera
 }: RecordingControlsProps) {
+  const handleReset = () => {
+    resetRecording()
+    // This will trigger the initial camera setup flow again
+    onStartCamera()
+  }
+
   return (
     <div className="flex justify-center gap-4">
       {!cameraInitialized && !recordedBlob && (
@@ -49,7 +55,7 @@ export function RecordingControls({
 
       {recordedBlob && !isUploading && (
         <div className="flex w-full gap-2">
-          <Button onClick={resetRecording} variant="outline" className="flex-1">
+          <Button onClick={handleReset} variant="outline" className="flex-1">
             Record Again
           </Button>
           <Button onClick={handleUpload} className="flex-1">
