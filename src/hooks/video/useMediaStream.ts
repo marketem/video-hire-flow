@@ -7,7 +7,7 @@ export function useMediaStream() {
 
   const getStream = async () => {
     try {
-      // First check if we already have a stream
+      // First check if we already have a stream and stop it
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop())
         streamRef.current = null
@@ -56,7 +56,9 @@ export function useMediaStream() {
 
   const stopStream = () => {
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop())
+      streamRef.current.getTracks().forEach(track => {
+        track.stop()
+      })
       streamRef.current = null
     }
   }

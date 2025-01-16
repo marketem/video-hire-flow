@@ -47,7 +47,11 @@ export function useVideoRecording() {
 
   const handleStartRecording = async () => {
     try {
-      const stream = videoRef.current?.srcObject as MediaStream
+      // Make sure we have a fresh stream
+      stopStream()
+      const stream = await getStream()
+      await setupVideoPreview(stream)
+      
       if (!stream) {
         throw new Error('No camera stream available')
       }
@@ -67,8 +71,10 @@ export function useVideoRecording() {
   }
 
   const resetRecording = () => {
+    stopStream()
     resetVideoElement()
     setRecordedBlob(null)
+    setTimeLeft(30)
   }
 
   return {
