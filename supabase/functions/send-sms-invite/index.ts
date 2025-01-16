@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const SENDGRID_API_KEY = Deno.env.get('SENDGRID_API_KEY')
+const TINYURL_API_KEY = Deno.env.get('TINYURL_API_KEY')
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,6 +16,36 @@ interface SMSRequest {
   submissionUrl: string
 }
 
+async function shortenUrl(longUrl: string): Promise<string> {
+  try {
+    console.log('Shortening URL:', longUrl)
+    const response = await fetch('https://api.tinyurl.com/create', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${TINYURL_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        url: longUrl,
+        domain: "tinyurl.com"
+      })
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('TinyURL API error:', errorText)
+      return longUrl // Fallback to original URL if shortening fails
+    }
+
+    const data = await response.json()
+    console.log('TinyURL response:', data)
+    return data.data.tiny_url
+  } catch (error) {
+    console.error('Error shortening URL:', error)
+    return longUrl // Fallback to original URL if shortening fails
+  }
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -26,6 +57,10 @@ const handler = async (req: Request): Promise<Response> => {
     
     if (!SENDGRID_API_KEY) {
       throw new Error('SendGrid API key not found')
+    }
+
+    if (!TINYURL_API_KEY) {
+      throw new Error('TinyURL API key not found')
     }
 
     console.log('Parsing request body...')
@@ -42,7 +77,11 @@ const handler = async (req: Request): Promise<Response> => {
     const formattedPhone = requestData.phone.startsWith('+') ? requestData.phone : `+${requestData.phone}`
     console.log('Formatted phone number:', formattedPhone)
 
-    const message = `Hi ${requestData.name}, ${requestData.senderName} from ${requestData.companyName} has requested a video introduction. Please click this link to record and submit your video: ${requestData.submissionUrl}`
+    // Shorten the submission URL
+    const shortUrl = await shortenUrl(requestData.submissionUrl)
+    console.log('Shortened URL:', shortUrl)
+
+    const message = `Hi ${requestData.name}, ${requestData.senderName} from ${requestData.companyName} has requested a video introduction. Please click this link to record and submit your video: ${shortUrl}`
 
     const response = await fetch('https://api.sendgrid.com/v3/sms/send', {
       method: 'POST',
