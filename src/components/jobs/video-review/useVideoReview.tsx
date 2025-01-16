@@ -47,19 +47,24 @@ export function useVideoReview(jobId: string | null) {
       console.log('Raw Supabase response:', { data, error })
       console.log('Fetched candidates:', data)
 
-      // Update status to 'reviewing' for candidates with videos that are still in 'requested' status
-      const updatedData = await Promise.all(data.map(async (candidate: Candidate) => {
-        if (candidate.video_url && candidate.status === 'requested') {
-          // Update the database
-          const { error: updateError } = await supabase
-            .from('candidates')
-            .update({ status: 'reviewing' })
-            .eq('id', candidate.id)
+      // Update status to 'reviewing' for candidates with videos but not in reviewing status
+      const candidatesToUpdate = data.filter(
+        (c: Candidate) => c.video_url && c.status !== 'reviewing'
+      )
 
-          if (updateError) {
-            console.error('Error updating candidate status:', updateError)
-          } else {
-            // Send email notification
+      if (candidatesToUpdate.length > 0) {
+        console.log('Updating candidates to reviewing status:', candidatesToUpdate)
+        
+        const { error: updateError } = await supabase
+          .from('candidates')
+          .update({ status: 'reviewing' })
+          .in('id', candidatesToUpdate.map(c => c.id))
+
+        if (updateError) {
+          console.error('Error updating candidate statuses:', updateError)
+        } else {
+          // Send email notifications for each updated candidate
+          for (const candidate of candidatesToUpdate) {
             try {
               const dashboardUrl = `${window.location.origin}/dashboard`
               await supabase.functions.invoke('send-status-email', {
@@ -70,17 +75,22 @@ export function useVideoReview(jobId: string | null) {
                   dashboardUrl
                 }
               })
+              console.log('Email notification sent for candidate:', candidate.name)
             } catch (error) {
               console.error('Error sending email notification:', error)
             }
           }
-          
-          return { ...candidate, status: 'reviewing' }
+
+          // Update the local data to reflect the changes
+          data.forEach(candidate => {
+            if (candidatesToUpdate.find(c => c.id === candidate.id)) {
+              candidate.status = 'reviewing'
+            }
+          })
         }
-        return candidate
-      }))
-      
-      return updatedData as Candidate[]
+      }
+
+      return data as Candidate[]
     },
     enabled: !!jobId && !!session?.user?.id,
     refetchInterval: 5000, // Refetch every 5 seconds to catch new uploads
@@ -163,7 +173,7 @@ export function useVideoReview(jobId: string | null) {
 
   // Filter candidates based on their status
   const readyForReview = candidates?.filter(c => 
-    c.status === 'reviewing' || (c.video_url && c.status === 'requested')
+    c.status === 'reviewing'
   ) || []
 
   const awaitingResponse = candidates?.filter(c => 
