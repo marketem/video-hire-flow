@@ -10,7 +10,6 @@ import { RecordingControls } from "@/components/video-submission/RecordingContro
 import { useVideoRecording } from "@/hooks/useVideoRecording"
 import { Card, CardContent } from "@/components/ui/card"
 import { Check } from "lucide-react"
-import { format } from "date-fns"
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
@@ -38,34 +37,19 @@ export default function VideoSubmission() {
     initializeCamera
   } = useVideoRecording()
 
-  // First query to get candidate info and check for existing videos
-  const { data: candidateData, isLoading: isLoadingCandidate } = useQuery({
-    queryKey: ['candidate-with-videos', token],
+  const { data: candidate, isLoading: isLoadingCandidate } = useQuery({
+    queryKey: ['candidate', token],
     queryFn: async () => {
       if (!token) throw new Error('No token provided')
       
-      // Get candidate info
-      const { data: candidate, error: candidateError } = await supabase
+      const { data, error } = await supabase
         .from('candidates')
         .select('*')
         .eq('video_token', token)
         .single()
 
-      if (candidateError) throw candidateError
-
-      // Get existing videos
-      const { data: videos, error: videosError } = await supabase
-        .from('candidate_videos')
-        .select('*')
-        .eq('candidate_id', candidate.id)
-        .order('created_at', { ascending: false })
-
-      if (videosError) throw videosError
-
-      return {
-        candidate,
-        existingVideos: videos
-      }
+      if (error) throw error
+      return data
     },
     enabled: !!token,
     retry: false,
@@ -82,17 +66,20 @@ export default function VideoSubmission() {
   })
 
   const handleUpload = async () => {
-    if (!recordedBlob || !candidateData?.candidate.id) return
+    if (!recordedBlob || !candidate?.id) return
     setUploadError(null)
     setIsUploading(true)
 
     try {
-      const fileName = `${candidateData.candidate.id}/${Date.now()}.webm`
+      if (recordedBlob.size > MAX_FILE_SIZE) {
+        throw new Error(`Video size (${Math.round(recordedBlob.size / (1024 * 1024))}MB) exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit. Please record a shorter video.`)
+      }
+
+      const fileName = `${candidate.id}-${Date.now()}.webm`
       const file = new File([recordedBlob], fileName, {
         type: 'video/webm'
       })
 
-      // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from('videos')
         .upload(fileName, file, {
@@ -102,19 +89,15 @@ export default function VideoSubmission() {
 
       if (uploadError) throw uploadError
 
-      // Create video record
-      const { error: insertError } = await supabase
-        .from('candidate_videos')
-        .insert({
-          candidate_id: candidateData.candidate.id,
+      const { error: updateError } = await supabase
+        .from('candidates')
+        .update({ 
           video_url: fileName,
-          file_name: fileName,
-          file_size: file.size,
-          content_type: file.type,
-          status: 'ready'
+          video_token: null
         })
+        .eq('id', candidate.id)
 
-      if (insertError) throw insertError
+      if (updateError) throw updateError
 
       toast({
         title: "Success",
@@ -154,40 +137,6 @@ export default function VideoSubmission() {
     return (
       <div className="min-h-screen bg-background p-4 flex items-center justify-center">
         <div className="text-center">Loading...</div>
-      </div>
-    )
-  }
-
-  // Show message if video already exists
-  if (candidateData?.existingVideos && candidateData.existingVideos.length > 0) {
-    const latestVideo = candidateData.existingVideos[0]
-    return (
-      <div className="min-h-screen bg-background p-4 flex flex-col">
-        <div className="mb-2">
-          <Link to="/" className="flex items-center space-x-2">
-            <img 
-              src="/lovable-uploads/658547e3-9dac-4df0-84d6-a891876840a9.png" 
-              alt="VibeCheck Logo" 
-              className="h-8 w-auto"
-            />
-            <span className="text-xl font-bold">VibeCheck</span>
-          </Link>
-        </div>
-        <div className="flex-1 flex flex-col items-center justify-center -mt-8">
-          <Card className="w-full max-w-md">
-            <CardContent className="pt-6 text-center">
-              <h2 className="text-2xl font-bold mb-4">Video Already Submitted</h2>
-              <p className="text-muted-foreground mb-2">
-                A video has already been submitted on{' '}
-                {format(new Date(latestVideo.created_at), 'MMMM d, yyyy')} at{' '}
-                {format(new Date(latestVideo.created_at), 'h:mm a')}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                If you need to submit a new video, please contact the hiring team.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     )
   }
