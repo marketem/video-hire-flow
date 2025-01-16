@@ -25,7 +25,7 @@ export function useVideoStats() {
 
       const stats: VideoStats[] = []
 
-      for (const job of jobs) {
+      for (const job of jobs || []) {
         const { data: candidates, error: candidatesError } = await supabase
           .from('candidates')
           .select('*')
@@ -39,17 +39,35 @@ export function useVideoStats() {
 
         if (!candidates?.length) continue
 
+        // Count videos received (candidates with video_url)
         const videosReceived = candidates.filter(c => c.video_url).length
+
+        // Count candidates ready for review (have video but status is new or reviewing)
         const readyForReview = candidates.filter(c => 
           c.video_url && ['new', 'reviewing'].includes(c.status)
         ).length
-        const awaitingResponse = candidates.filter(c => 
-          c.video_token && !c.video_url
-        ).length
-        const approvedCount = candidates.filter(c => c.status === 'approved').length
-        const rejectedCount = candidates.filter(c => c.status === 'rejected').length
-        const totalInvitesSent = candidates.filter(c => c.video_token).length
 
+        // Count candidates awaiting response (have token but no video yet)
+        const awaitingResponse = candidates.filter(c => 
+          c.video_token && !c.video_url && c.status === 'requested'
+        ).length
+
+        // Count approved candidates (status is approved)
+        const approvedCount = candidates.filter(c => 
+          c.status === 'approved'
+        ).length
+
+        // Count rejected candidates (status is rejected)
+        const rejectedCount = candidates.filter(c => 
+          c.status === 'rejected'
+        ).length
+
+        // Count total invites sent (candidates with video_token)
+        const totalInvitesSent = candidates.filter(c => 
+          c.video_token
+        ).length
+
+        // Get the oldest pending video for prioritization
         const pendingVideos = candidates.filter(c => 
           c.video_url && ['new', 'reviewing'].includes(c.status)
         )
@@ -57,6 +75,7 @@ export function useVideoStats() {
           ? parseISO(pendingVideos[0].created_at)
           : undefined
 
+        // Only add jobs that have either received videos or have pending invites
         if (videosReceived > 0 || awaitingResponse > 0) {
           stats.push({
             jobId: job.id,
@@ -74,6 +93,6 @@ export function useVideoStats() {
 
       return stats
     },
-    refetchInterval: 5000,
+    refetchInterval: 5000, // Refresh every 5 seconds
   })
 }
