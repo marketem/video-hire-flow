@@ -22,7 +22,7 @@ export function useVideoReview(jobId: string | null) {
       // First verify job ownership
       const { data: jobData, error: jobError } = await supabase
         .from('job_openings')
-        .select('user_id')
+        .select('user_id, title')
         .eq('id', jobId)
         .single()
 
@@ -48,23 +48,37 @@ export function useVideoReview(jobId: string | null) {
       console.log('Fetched candidates:', data)
 
       // Update status to 'reviewing' for candidates with videos that are still in 'requested' status
-      const updatedData = data.map((candidate: Candidate) => {
+      const updatedData = await Promise.all(data.map(async (candidate: Candidate) => {
         if (candidate.video_url && candidate.status === 'requested') {
           // Update the database
-          supabase
+          const { error: updateError } = await supabase
             .from('candidates')
             .update({ status: 'reviewing' })
             .eq('id', candidate.id)
-            .then(({ error }) => {
-              if (error) {
-                console.error('Error updating candidate status:', error)
-              }
-            })
+
+          if (updateError) {
+            console.error('Error updating candidate status:', updateError)
+          } else {
+            // Send email notification
+            try {
+              const dashboardUrl = `${window.location.origin}/dashboard`
+              await supabase.functions.invoke('send-status-email', {
+                body: {
+                  to: session?.user?.email,
+                  candidateName: candidate.name,
+                  jobTitle: jobData.title,
+                  dashboardUrl
+                }
+              })
+            } catch (error) {
+              console.error('Error sending email notification:', error)
+            }
+          }
           
           return { ...candidate, status: 'reviewing' }
         }
         return candidate
-      })
+      }))
       
       return updatedData as Candidate[]
     },
