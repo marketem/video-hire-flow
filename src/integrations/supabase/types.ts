@@ -19,6 +19,7 @@ export type Database = {
           phone: string
           resume_url: string | null
           status: string
+          video_submitted_at: string | null
           video_token: string | null
           video_url: string | null
         }
@@ -31,6 +32,7 @@ export type Database = {
           phone: string
           resume_url?: string | null
           status?: string
+          video_submitted_at?: string | null
           video_token?: string | null
           video_url?: string | null
         }
@@ -43,6 +45,7 @@ export type Database = {
           phone?: string
           resume_url?: string | null
           status?: string
+          video_submitted_at?: string | null
           video_token?: string | null
           video_url?: string | null
         }

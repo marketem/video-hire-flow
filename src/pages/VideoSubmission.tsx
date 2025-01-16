@@ -149,8 +149,8 @@ export default function VideoSubmission() {
           <h1 className="text-2xl font-bold">Video Already Submitted</h1>
           <p className="text-muted-foreground">
             You have already submitted a video for this application on{' '}
-            {format(new Date(candidate.created_at), 'MMMM d, yyyy')} at{' '}
-            {format(new Date(candidate.created_at), 'h:mm a')}
+            {format(new Date(candidate.video_submitted_at || candidate.created_at), 'MMMM d, yyyy')} at{' '}
+            {format(new Date(candidate.video_submitted_at || candidate.created_at), 'h:mm a')}
           </p>
           <Link 
             to="/" 

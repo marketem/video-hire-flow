@@ -8,4 +8,5 @@ export interface Candidate {
   resume_url: string | null
   video_url: string | null
   video_token?: string | null
+  video_submitted_at?: string | null
 }
