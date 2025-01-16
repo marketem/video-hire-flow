@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { VideoReviewCards } from '../VideoReviewCards'
 import { useVideoStats } from '../useVideoStats'
@@ -40,6 +40,12 @@ describe('VideoReviewCards', () => {
       isPlaceholderData: false,
       status: 'success',
       fetchStatus: 'idle',
+      dataUpdatedAt: Date.now(),
+      errorUpdatedAt: 0,
+      isFetched: true,
+      isFetchedAfterMount: true,
+      isRefetching: false,
+      isLoading: false,
       refetch: vi.fn()
     })
   })
@@ -70,6 +76,12 @@ describe('VideoReviewCards', () => {
       isPlaceholderData: false,
       status: 'success',
       fetchStatus: 'idle',
+      dataUpdatedAt: Date.now(),
+      errorUpdatedAt: 0,
+      isFetched: true,
+      isFetchedAfterMount: true,
+      isRefetching: false,
+      isLoading: false,
       refetch: vi.fn()
     })
 

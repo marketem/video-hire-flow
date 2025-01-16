@@ -57,7 +57,7 @@ describe('Video Submission Integration', () => {
           upload: vi.fn().mockResolvedValue({ data: { path: 'test.webm' }, error: null }),
         }),
       },
-      from: vi.fn().mockReturnValue({
+      from: () => ({
         update: vi.fn().mockResolvedValue({ error: null }),
       }),
     } as any)
