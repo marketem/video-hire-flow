@@ -90,6 +90,21 @@ export default function VideoSubmission() {
 
       if (uploadError) throw uploadError
 
+      // Get job details to include in the notification
+      const { data: jobData, error: jobError } = await supabase
+        .from('job_openings')
+        .select('title, user_id')
+        .eq('id', candidate.job_id)
+        .single()
+
+      if (jobError) throw jobError
+
+      // Get manager's email from auth.users
+      const { data: userData, error: userError } = await supabase.auth
+        .admin.getUserById(jobData.user_id)
+
+      if (userError) throw userError
+
       const { error: updateError } = await supabase
         .from('candidates')
         .update({ 
@@ -98,6 +113,22 @@ export default function VideoSubmission() {
         .eq('id', candidate.id)
 
       if (updateError) throw updateError
+
+      // Send email notification
+      const { error: notificationError } = await supabase.functions
+        .invoke('send-video-notification', {
+          body: {
+            candidateName: candidate.name,
+            candidateEmail: candidate.email,
+            jobTitle: jobData.title,
+            managerEmail: userData.email
+          }
+        })
+
+      if (notificationError) {
+        console.error('Failed to send notification:', notificationError)
+        // Don't throw here - we don't want to fail the upload if just the notification fails
+      }
 
       toast({
         title: "Success",
