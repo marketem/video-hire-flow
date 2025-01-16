@@ -17,8 +17,8 @@ describe('Video Submission Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     
-    // Mock MediaRecorder with isTypeSupported
-    const MediaRecorderMock = vi.fn().mockImplementation(() => ({
+    // Mock MediaRecorder
+    const MediaRecorderMock = vi.fn(() => ({
       start: vi.fn(),
       stop: vi.fn(),
       ondataavailable: vi.fn(),
@@ -26,8 +26,10 @@ describe('Video Submission Integration', () => {
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
     }))
+
+    // Add isTypeSupported as a static method
     MediaRecorderMock.isTypeSupported = vi.fn().mockReturnValue(true)
-    window.MediaRecorder = MediaRecorderMock
+    window.MediaRecorder = MediaRecorderMock as unknown as typeof MediaRecorder
 
     // Mock navigator.mediaDevices
     Object.defineProperty(navigator, 'mediaDevices', {
@@ -42,7 +44,7 @@ describe('Video Submission Integration', () => {
     })
 
     // Mock Supabase client
-    ;(useSupabaseClient as any).mockReturnValue({
+    vi.mocked(useSupabaseClient).mockReturnValue({
       storage: {
         from: () => ({
           upload: vi.fn().mockResolvedValue({ data: { path: 'test.webm' }, error: null }),
@@ -51,7 +53,7 @@ describe('Video Submission Integration', () => {
       from: vi.fn().mockReturnValue({
         update: vi.fn().mockResolvedValue({ error: null }),
       }),
-    })
+    } as any)
   })
 
   it('completes full video submission flow', async () => {

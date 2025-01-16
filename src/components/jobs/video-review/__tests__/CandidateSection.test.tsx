@@ -10,10 +10,10 @@ describe('CandidateSection', () => {
       name: 'John Doe',
       email: 'john@example.com',
       phone: '1234567890',
-      job_id: 'job-1',
       status: 'reviewing',
       created_at: new Date().toISOString(),
       video_url: 'video.mp4',
+      resume_url: null
     }
   ]
 
