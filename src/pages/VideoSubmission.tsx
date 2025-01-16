@@ -157,7 +157,7 @@ export default function VideoSubmission() {
         <div className="w-full max-w-md space-y-3">
           <h1 className="text-2xl font-bold text-center">Record Your Introduction</h1>
           <p className="text-muted-foreground text-center mb-2">
-            Please record a 30-second video introducing yourself
+            Please record a 30-second video
           </p>
 
           <Card className="mb-6">
