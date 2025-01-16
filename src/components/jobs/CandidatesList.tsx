@@ -22,7 +22,18 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
   const handleSendInvites = async () => {
     const success = await sendVideoInvites(selectedCandidates, candidates || [])
     if (success) {
+      // Update status to 'requested' for selected candidates
+      const { error } = await supabase
+        .from('candidates')
+        .update({ status: 'requested' })
+        .in('id', selectedCandidates)
+
+      if (error) {
+        console.error('Error updating candidate statuses:', error)
+      }
+
       setSelectedCandidates([])
+      refetch()
     }
   }
 

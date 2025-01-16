@@ -5,6 +5,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { FileText, MoreHorizontal } from "lucide-react"
 import { CandidateStatusBadge } from "./CandidateStatusBadge"
 import type { Candidate } from "@/types/candidate"
+import { useSupabaseClient } from "@supabase/auth-helpers-react"
+import { useQueryClient } from "@tanstack/react-query"
 
 interface DesktopCandidateRowProps {
   candidate: Candidate
@@ -21,6 +23,30 @@ export function DesktopCandidateRow({
   onEditClick,
   onCopyInviteUrl
 }: DesktopCandidateRowProps) {
+  const supabase = useSupabaseClient()
+  const queryClient = useQueryClient()
+
+  const handleCopyInviteUrl = async () => {
+    // First update the status to 'requested' if it's 'new'
+    if (candidate.status === 'new') {
+      const { error } = await supabase
+        .from('candidates')
+        .update({ status: 'requested' })
+        .eq('id', candidate.id)
+
+      if (error) {
+        console.error('Error updating candidate status:', error)
+      } else {
+        // Invalidate queries to refresh the data
+        queryClient.invalidateQueries({ queryKey: ['job-candidates'] })
+        queryClient.invalidateQueries({ queryKey: ['candidates-review'] })
+      }
+    }
+
+    // Then proceed with copying the URL
+    onCopyInviteUrl(candidate)
+  }
+
   return (
     <TableRow>
       <TableCell>
@@ -63,7 +89,7 @@ export function DesktopCandidateRow({
             <DropdownMenuItem onClick={() => onEditClick(candidate)}>
               Edit Candidate
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onCopyInviteUrl(candidate)}>
+            <DropdownMenuItem onClick={handleCopyInviteUrl}>
               Copy Invite URL
             </DropdownMenuItem>
           </DropdownMenuContent>
