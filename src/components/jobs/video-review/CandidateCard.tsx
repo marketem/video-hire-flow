@@ -33,8 +33,8 @@ export function CandidateCard({
       if (isVideoOpen) {
         if (videoRef.current) {
           videoRef.current.pause();
-          videoRef.current.currentTime = 0;
           videoRef.current.src = '';
+          videoRef.current.load();
         }
         setIsVideoOpen(false);
         setVideoUrl(null);
@@ -93,16 +93,22 @@ export function CandidateCard({
     }
   }, [sliderValue, candidate.id, onStatusChange]);
 
-  // Cleanup video resources when component unmounts
+  // Cleanup video resources when component unmounts or video closes
   useEffect(() => {
-    return () => {
+    const cleanup = () => {
       if (videoRef.current) {
         videoRef.current.pause();
-        videoRef.current.src = '';
+        videoRef.current.removeAttribute('src');
         videoRef.current.load();
       }
     };
-  }, []);
+
+    if (!isVideoOpen) {
+      cleanup();
+    }
+
+    return cleanup;
+  }, [isVideoOpen]);
 
   const waitingTime = formatDistanceToNow(new Date(candidate.created_at));
 
