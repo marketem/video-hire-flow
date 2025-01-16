@@ -25,7 +25,11 @@ export function useRecorder() {
     
     console.log("Creating MediaRecorder with MIME type:", mimeType)
     const mediaRecorder = new MediaRecorder(stream, {
-      mimeType
+      mimeType,
+      // Add video bitrate (1Mbps)
+      videoBitsPerSecond: 1000000,
+      // Add audio bitrate (64Kbps)
+      audioBitsPerSecond: 64000
     })
     mediaRecorderRef.current = mediaRecorder
     chunksRef.current = []
@@ -36,7 +40,8 @@ export function useRecorder() {
       }
     }
 
-    mediaRecorder.start()
+    // Request data more frequently to handle smaller chunks
+    mediaRecorder.start(1000) // Collect data every second instead of waiting until stop
     setIsRecording(true)
   }
 

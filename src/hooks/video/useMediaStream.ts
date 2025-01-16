@@ -16,11 +16,19 @@ export function useMediaStream() {
       console.log("Requesting media devices...")
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
-          width: 640, 
-          height: 480,
-          facingMode: 'user'
+          width: { ideal: 640, max: 1280 },
+          height: { ideal: 480, max: 720 },
+          frameRate: { ideal: 24, max: 30 },
+          // Add constraints to reduce bitrate
+          bitrate: 1000000, // 1 Mbps
         },
-        audio: true 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 44100,
+          // Reduce audio bitrate
+          channelCount: 1
+        }
       })
       
       console.log("Media stream obtained successfully")
