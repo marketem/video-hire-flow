@@ -50,8 +50,6 @@ export function useRecorder() {
       mediaRecorderRef.current.onstop = () => {
         const mimeType = getSupportedMimeType()
         const blob = new Blob(chunksRef.current, { type: mimeType })
-        chunksRef.current = []
-        mediaRecorderRef.current = null
         resolve(blob)
       }
 
