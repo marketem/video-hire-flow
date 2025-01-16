@@ -143,7 +143,7 @@ export default function VideoSubmission() {
 
   return (
     <div className="min-h-screen bg-background p-4 flex flex-col">
-      <div className="mb-8">
+      <div className="mb-4">
         <Link to="/" className="flex items-center space-x-2">
           <img 
             src="/lovable-uploads/658547e3-9dac-4df0-84d6-a891876840a9.png" 
