@@ -49,15 +49,15 @@ export function CandidatesModal({
   }
 
   const content = (
-    <Tabs defaultValue="list" className="space-y-4">
+    <Tabs defaultValue="list" className="space-y-4 h-full flex flex-col">
       <TabsList className="w-full grid grid-cols-3">
         <TabsTrigger value="list" className="flex-1">Candidates</TabsTrigger>
         <TabsTrigger value="add" className="flex-1">Add Candidate</TabsTrigger>
         <TabsTrigger value="import" className="flex-1">Import</TabsTrigger>
       </TabsList>
 
-      <ScrollArea className="h-[60vh]">
-        <TabsContent value="list" className="space-y-4">
+      <ScrollArea className="flex-1">
+        <TabsContent value="list" className="space-y-4 mt-0">
           {candidates?.length > 0 && (
             <BulkActions
               selectedCount={selectedCandidates.length}
@@ -84,11 +84,11 @@ export function CandidatesModal({
           )}
         </TabsContent>
 
-        <TabsContent value="add">
+        <TabsContent value="add" className="mt-0">
           <AddCandidateForm jobId={jobId} onSuccess={fetchCandidates} />
         </TabsContent>
 
-        <TabsContent value="import">
+        <TabsContent value="import" className="mt-0">
           <UploadCandidates jobId={jobId} onSuccess={fetchCandidates} />
         </TabsContent>
       </ScrollArea>
@@ -98,11 +98,11 @@ export function CandidatesModal({
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-full sm:max-w-xl">
+        <SheetContent side="right" className="w-full sm:max-w-xl flex flex-col">
           <SheetHeader>
             <SheetTitle>Manage Candidates</SheetTitle>
           </SheetHeader>
-          <div className="mt-4">{content}</div>
+          <div className="mt-4 flex-1">{content}</div>
         </SheetContent>
       </Sheet>
     )
@@ -110,11 +110,11 @@ export function CandidatesModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Manage Candidates</DialogTitle>
         </DialogHeader>
-        {content}
+        <div className="flex-1">{content}</div>
       </DialogContent>
     </Dialog>
   )
