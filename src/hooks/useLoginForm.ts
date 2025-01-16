@@ -77,11 +77,6 @@ export function useLoginForm() {
           console.error("No active session found after login");
           throw new Error("Failed to establish session");
         }
-
-        toast({
-          title: "Success",
-          description: "You've successfully logged in!",
-        });
         
         navigate('/dashboard', { replace: true });
       }
