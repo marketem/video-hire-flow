@@ -47,7 +47,7 @@ export function CandidateActions({
       {showActions && onStatusChange && (
         <div className="flex gap-2 flex-1 sm:flex-initial">
           {isMobile && (
-            <div className="w-full px-2 mt-4 sm:mt-0">
+            <div className="w-full px-2 mt-8 sm:mt-0">
               <Slider
                 value={sliderValue}
                 onValueChange={onSliderChange}
