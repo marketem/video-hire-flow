@@ -6,6 +6,7 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { JobOpenings } from "@/components/jobs/JobOpenings";
 import { VideoReviewCards } from "@/components/jobs/video-review/VideoReviewCards";
+import { CandidateNotifications } from "@/components/jobs/notifications/CandidateNotifications";
 
 export default function Dashboard() {
   const session = useSession();
@@ -42,6 +43,7 @@ export default function Dashboard() {
         <VideoReviewCards />
         <JobOpenings />
       </div>
+      <CandidateNotifications />
     </div>
   );
 }
