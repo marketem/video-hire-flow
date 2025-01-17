@@ -80,8 +80,15 @@ export function useJobOpenings() {
           switch (payload.eventType) {
             case 'INSERT':
               setJobs(currentJobs => {
-                const newJob = {
-                  ...payload.new,
+                const newJob: JobOpening = {
+                  id: payload.new.id,
+                  title: payload.new.title,
+                  department: payload.new.department,
+                  location: payload.new.location,
+                  status: payload.new.status,
+                  created_at: payload.new.created_at,
+                  description: payload.new.description,
+                  public_page_enabled: payload.new.public_page_enabled,
                   candidates_count: 0 // New job has no candidates
                 }
                 return [newJob, ...currentJobs]
@@ -92,7 +99,7 @@ export function useJobOpenings() {
               setJobs(currentJobs =>
                 currentJobs.map(job =>
                   job.id === payload.new.id
-                    ? { ...job, ...payload.new }
+                    ? { ...job, ...payload.new, candidates_count: job.candidates_count }
                     : job
                 )
               )
