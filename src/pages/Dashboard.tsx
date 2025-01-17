@@ -100,16 +100,16 @@ export default function Dashboard() {
   }
 
   return (
-    <div 
-      className={`container mx-auto px-4 py-8 ${isViewOnlyMode ? 'pointer-events-none select-none opacity-50' : ''}`}
-    >
+    <div className="container mx-auto px-4 py-8">
       <DashboardHeader />
-      <DashboardStats />
-      <div className="space-y-8">
-        <VideoReviewCards />
-        <JobOpenings />
+      <div className={isViewOnlyMode ? 'pointer-events-none select-none opacity-50' : ''}>
+        <DashboardStats />
+        <div className="space-y-8">
+          <VideoReviewCards />
+          <JobOpenings />
+        </div>
+        <CandidateNotifications />
       </div>
-      <CandidateNotifications />
       <UserGuideDialog
         open={showGuide}
         onOpenChange={setShowGuide}
