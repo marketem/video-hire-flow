@@ -23,8 +23,8 @@ export function useSignUpForm() {
         throw new Error("Password must be at least 8 characters long");
       }
 
-      // Set the full redirect URL including the domain
-      const redirectTo = 'https://videovibecheck.com/login?verified=true';
+      // Dynamically construct the redirect URL based on the current origin
+      const redirectTo = `${window.location.origin}/login?verified=true`;
 
       console.log('Redirect URL:', redirectTo); // Debug log
 
