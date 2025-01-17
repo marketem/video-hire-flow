@@ -16,26 +16,29 @@ export default function Login() {
       const error = searchParams.get("error_description");
 
       if (verified) {
-        // Get the user's details
+        // Get the user's session to ensure we have the latest data
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
-          const { data: metadata } = await supabase.from('auth.users')
-            .select('raw_user_meta_data')
-            .eq('id', user.id)
-            .single();
-
-          if (metadata?.raw_user_meta_data) {
-            const { first_name, trial_ends_at } = metadata.raw_user_meta_data;
-
-            // Send welcome email
-            await supabase.functions.invoke('send-welcome-email', {
+          console.log('User verified, sending welcome email for:', user.email);
+          
+          try {
+            const { error: welcomeEmailError } = await supabase.functions.invoke('send-welcome-email', {
               body: {
                 email: user.email,
-                firstName: first_name,
-                trialEndsAt: trial_ends_at,
+                firstName: user.user_metadata.first_name,
+                trialEndsAt: user.user_metadata.trial_ends_at,
               },
             });
+
+            if (welcomeEmailError) {
+              console.error('Welcome email error:', welcomeEmailError);
+              throw welcomeEmailError;
+            }
+
+            console.log('Welcome email sent successfully');
+          } catch (error) {
+            console.error('Failed to send welcome email:', error);
           }
         }
 

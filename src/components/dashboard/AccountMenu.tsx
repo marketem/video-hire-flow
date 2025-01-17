@@ -28,12 +28,16 @@ export function AccountMenu() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
+    // Check if this is the user's first visit after email verification
     const hasSeenGuide = localStorage.getItem("hasSeenGuide");
-    if (!hasSeenGuide) {
+    const isEmailVerified = session?.user?.email_confirmed_at;
+    
+    if (!hasSeenGuide && isEmailVerified) {
+      console.log('Showing user guide for first time visitor');
       setShowGuide(true);
       localStorage.setItem("hasSeenGuide", "true");
     }
-  }, []);
+  }, [session]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
