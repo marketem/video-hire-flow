@@ -24,16 +24,29 @@ export default function Dashboard() {
     queryFn: async () => {
       if (!session?.user?.id) return null;
       console.log('Fetching profile for user:', session.user.id);
+      
+      // First ensure profile exists
+      const { error: upsertError } = await supabase
+        .from('profiles')
+        .upsert({ id: session.user.id });
+
+      if (upsertError) {
+        console.error('Error upserting profile:', upsertError);
+        throw upsertError;
+      }
+
+      // Then fetch the profile
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', session.user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching profile:', error);
         throw error;
       }
+      
       console.log('Profile data:', data);
       return data;
     },
