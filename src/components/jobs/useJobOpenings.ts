@@ -2,6 +2,7 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
 import { useState, useCallback, useEffect } from "react"
 import type { JobOpening } from "./types"
+import { RealtimeChannel } from "@supabase/supabase-js"
 
 export function useJobOpenings() {
   const [jobs, setJobs] = useState<JobOpening[]>([])
@@ -60,10 +61,35 @@ export function useJobOpenings() {
     }
   }, [supabase, toast])
 
-  // Fetch jobs on mount
+  // Subscribe to real-time changes
   useEffect(() => {
+    console.log('Setting up real-time subscription for jobs...')
+    const channel: RealtimeChannel = supabase
+      .channel('job_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'job_openings'
+        },
+        (payload) => {
+          console.log('Received real-time update:', payload)
+          // Refresh the jobs list when any change occurs
+          fetchJobs()
+        }
+      )
+      .subscribe()
+
+    // Fetch initial data
     fetchJobs()
-  }, [fetchJobs])
+
+    // Cleanup subscription on unmount
+    return () => {
+      console.log('Cleaning up real-time subscription')
+      supabase.removeChannel(channel)
+    }
+  }, [supabase, fetchJobs])
 
   return {
     jobs,
