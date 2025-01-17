@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button"
 import { Send, Trash2 } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Checkbox } from "@/components/ui/checkbox"
-import { PremiumFeature } from "@/components/premium/PremiumFeature"
 
 interface BulkActionsProps {
   selectedCount: number
@@ -43,17 +42,15 @@ export function BulkActions({
         </label>
       </div>
       <div className="flex gap-2 w-full sm:w-auto sm:ml-auto">
-        <PremiumFeature featureName="Request Video">
-          <Button
-            size={isMobile ? "default" : "sm"}
-            onClick={onSendInvites}
-            disabled={selectedCount === 0 || isSending}
-            className="flex-1 sm:flex-initial"
-          >
-            <Send className="mr-2 h-4 w-4" />
-            {isSending ? "Sending..." : (isMobile ? "Request Video" : "Request Video (via Text & Email)")}
-          </Button>
-        </PremiumFeature>
+        <Button
+          size={isMobile ? "default" : "sm"}
+          onClick={onSendInvites}
+          disabled={selectedCount === 0 || isSending}
+          className="flex-1 sm:flex-initial"
+        >
+          <Send className="mr-2 h-4 w-4" />
+          {isSending ? "Sending..." : (isMobile ? "Request Video" : "Request Video (via Text & Email)")}
+        </Button>
         <Button
           size={isMobile ? "default" : "sm"}
           variant="destructive"
