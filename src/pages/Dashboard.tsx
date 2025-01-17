@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useToast } from "@/hooks/use-toast";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -9,7 +9,8 @@ import { VideoReviewCards } from "@/components/jobs/video-review/VideoReviewCard
 import { CandidateNotifications } from "@/components/jobs/notifications/CandidateNotifications";
 import { UserGuideDialog } from "@/components/dashboard/UserGuideDialog";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 export default function Dashboard() {
   const session = useSession();
@@ -17,28 +18,69 @@ export default function Dashboard() {
   const { toast } = useToast();
   const supabase = useSupabaseClient();
   const [showGuide, setShowGuide] = useState(false);
+  const [searchParams] = useSearchParams();
+  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
+
+  // Handle payment status from URL params
+  useEffect(() => {
+    const paymentStatus = searchParams.get('payment');
+    if (paymentStatus === 'success') {
+      toast({
+        title: "Payment successful",
+        description: "Your subscription has been activated",
+      });
+    } else if (paymentStatus === 'cancelled') {
+      toast({
+        title: "Payment cancelled",
+        description: "Your payment was not processed",
+      });
+    }
+  }, [searchParams, toast]);
 
   // Fetch user profile data including login count
   const { data: profile } = useQuery({
     queryKey: ['profile', session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id) return null;
-      console.log('Fetching profile for user:', session.user.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', session.user.id)
         .single();
 
-      if (error) {
-        console.error('Error fetching profile:', error);
-        throw error;
-      }
-      console.log('Profile data:', data);
+      if (error) throw error;
       return data;
     },
     enabled: !!session?.user?.id
   });
+
+  // Check subscription status
+  const { data: subscriptionData, isLoading: isCheckingSubscription } = useQuery({
+    queryKey: ['subscription', session?.user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!session?.user?.id,
+    refetchInterval: 60000 // Refresh every minute
+  });
+
+  const handleStartSubscription = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout-session');
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to start subscription process. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   useEffect(() => {
     const checkSession = async () => {
@@ -59,22 +101,19 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!session?.user || !profile) {
-      console.log('Session or profile not available:', { session: !!session, profile: !!profile });
       return;
     }
 
-    console.log('Checking first time user:', { 
-      userId: session.user.id,
-      loginCount: profile.login_count,
-      shouldShowGuide: profile.login_count === 1
-    });
-
-    // Show guide if this is their first login (login_count === 1)
     if (profile.login_count === 1) {
-      console.log('First time user detected (login_count = 1), showing guide');
       setShowGuide(true);
     }
   }, [session, profile]);
+
+  useEffect(() => {
+    if (subscriptionData?.status === 'expired') {
+      setShowSubscriptionDialog(true);
+    }
+  }, [subscriptionData]);
 
   if (!session) {
     return null;
@@ -93,6 +132,22 @@ export default function Dashboard() {
         open={showGuide}
         onOpenChange={setShowGuide}
       />
+      <AlertDialog open={showSubscriptionDialog} onOpenChange={setShowSubscriptionDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Trial Period Expired</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your trial period has ended. To continue using all features, please subscribe to our service.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Later</AlertDialogCancel>
+            <AlertDialogAction onClick={handleStartSubscription}>
+              Subscribe Now
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
