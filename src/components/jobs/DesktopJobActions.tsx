@@ -5,7 +5,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Eye, Pencil, ExternalLink, Copy, Trash } from "lucide-react"
+import { MoreHorizontal, Eye, Pencil, ExternalLink, Copy, Trash, XCircle } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,7 +34,7 @@ export function DesktopJobActions({
   onJobsUpdated,
 }: DesktopJobActionsProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const { handleDelete, handleVisitPost, handleCopyPost } = useJobActionHandlers(job, onJobsUpdated)
+  const { handleDelete, handleVisitPost, handleCopyPost, handleCloseJob } = useJobActionHandlers(job, onJobsUpdated)
 
   const actions = [
     {
@@ -57,13 +57,18 @@ export function DesktopJobActions({
       icon: Copy,
       onClick: handleCopyPost
     },
+    job.status === 'open' && {
+      label: "Close Job",
+      icon: XCircle,
+      onClick: handleCloseJob
+    },
     {
       label: "Delete Job",
       icon: Trash,
       onClick: () => setShowDeleteConfirm(true),
       className: "text-destructive"
     }
-  ]
+  ].filter(Boolean)
 
   return (
     <>
