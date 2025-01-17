@@ -9,7 +9,6 @@ import { VideoReviewCards } from "@/components/jobs/video-review/VideoReviewCard
 import { CandidateNotifications } from "@/components/jobs/notifications/CandidateNotifications"
 import { UserGuideDialog } from "@/components/dashboard/UserGuideDialog"
 import { useQuery } from "@tanstack/react-query"
-import { PremiumModal } from "@/components/premium/PremiumModal"
 
 export default function Dashboard() {
   const session = useSession()
@@ -18,7 +17,6 @@ export default function Dashboard() {
   const supabase = useSupabaseClient()
   const [showGuide, setShowGuide] = useState(false)
   const [searchParams] = useSearchParams()
-  const [showPremiumModal, setShowPremiumModal] = useState(false)
   const [isViewOnlyMode, setIsViewOnlyMode] = useState(false)
 
   // Fetch user profile data including login count and premium status
@@ -80,20 +78,15 @@ export default function Dashboard() {
       setShowGuide(true)
     }
 
-    // Show premium modal if user doesn't have premium access and isn't in view-only mode
-    if (!profile.has_premium_access && !isViewOnlyMode) {
-      setShowPremiumModal(true)
+    // Set view-only mode if user doesn't have premium access
+    if (!profile.has_premium_access) {
+      setIsViewOnlyMode(true)
+      toast({
+        title: "View-Only Mode Activated",
+        description: "You can browse but interactions are limited. Upgrade anytime to unlock all features.",
+      })
     }
-  }, [session, profile, isViewOnlyMode])
-
-  const handleViewOnlyMode = () => {
-    setIsViewOnlyMode(true)
-    setShowPremiumModal(false)
-    toast({
-      title: "View-Only Mode Activated",
-      description: "You can browse but interactions are limited. Upgrade anytime to unlock all features.",
-    })
-  }
+  }, [session, profile, toast])
 
   if (!session) {
     return null
@@ -113,11 +106,6 @@ export default function Dashboard() {
       <UserGuideDialog
         open={showGuide}
         onOpenChange={setShowGuide}
-      />
-      <PremiumModal
-        open={showPremiumModal}
-        onOpenChange={setShowPremiumModal}
-        onViewOnlyMode={handleViewOnlyMode}
       />
     </div>
   )
