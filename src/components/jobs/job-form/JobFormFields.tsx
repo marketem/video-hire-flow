@@ -30,6 +30,12 @@ export function JobFormFields({
   setPublicPageEnabled,
   isJobClosed = false,
 }: JobFormFieldsProps) {
+  console.log('JobFormFields render:', { 
+    publicPageEnabled, 
+    isJobClosed,
+    checkboxDisabled: isJobClosed 
+  });
+  
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -73,7 +79,10 @@ export function JobFormFields({
         <Checkbox
           id="publicPageEnabled"
           checked={publicPageEnabled}
-          onCheckedChange={(checked) => setPublicPageEnabled(checked as boolean)}
+          onCheckedChange={(checked) => {
+            console.log('Checkbox clicked:', { checked });
+            setPublicPageEnabled(checked as boolean);
+          }}
           disabled={isJobClosed}
         />
         <Label 
