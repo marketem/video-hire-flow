@@ -1,37 +1,41 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
-import { useToast } from "@/hooks/use-toast";
-import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { DashboardStats } from "@/components/dashboard/DashboardStats";
-import { JobOpenings } from "@/components/jobs/JobOpenings";
-import { VideoReviewCards } from "@/components/jobs/video-review/VideoReviewCards";
+import { useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react"
+import { useToast } from "@/hooks/use-toast"
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader"
+import { DashboardStats } from "@/components/dashboard/DashboardStats"
+import { JobOpenings } from "@/components/jobs/JobOpenings"
+import { VideoReviewCards } from "@/components/jobs/video-review/VideoReviewCards"
+import { useRealtimeCandidateStatus } from "@/hooks/useRealtimeCandidateStatus"
 
 export default function Dashboard() {
-  const session = useSession();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const supabase = useSupabaseClient();
+  const session = useSession()
+  const navigate = useNavigate()
+  const { toast } = useToast()
+  const supabase = useSupabaseClient()
+
+  // Add the realtime status updates hook
+  useRealtimeCandidateStatus()
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      const { data: { session: currentSession } } = await supabase.auth.getSession()
       
       if (!currentSession) {
         toast({
           title: "Authentication Required",
           description: "Please log in to access the dashboard",
           variant: "destructive",
-        });
-        navigate("/login");
+        })
+        navigate("/login")
       }
-    };
+    }
 
-    checkSession();
-  }, [navigate, supabase.auth, toast]);
+    checkSession()
+  }, [navigate, supabase.auth, toast])
 
   if (!session) {
-    return null;
+    return null
   }
 
   return (
@@ -43,5 +47,5 @@ export default function Dashboard() {
         <JobOpenings />
       </div>
     </div>
-  );
+  )
 }
