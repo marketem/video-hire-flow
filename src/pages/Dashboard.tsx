@@ -93,19 +93,15 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/50 via-white to-blue-50/50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      <div className="container mx-auto px-4 py-8">
-        <div className="backdrop-blur-sm bg-white/80 dark:bg-slate-900/80 rounded-xl shadow-lg p-6">
-          <DashboardHeader />
-          <div className={isViewOnlyMode ? 'pointer-events-none select-none opacity-50' : ''}>
-            <DashboardStats />
-            <div className="space-y-8">
-              <VideoReviewCards />
-              <JobOpenings />
-            </div>
-            <CandidateNotifications />
-          </div>
+    <div className="container mx-auto px-4 py-8">
+      <DashboardHeader />
+      <div className={isViewOnlyMode ? 'pointer-events-none select-none opacity-50' : ''}>
+        <DashboardStats />
+        <div className="space-y-8">
+          <VideoReviewCards />
+          <JobOpenings />
         </div>
+        <CandidateNotifications />
       </div>
       <UserGuideDialog
         open={showGuide}
