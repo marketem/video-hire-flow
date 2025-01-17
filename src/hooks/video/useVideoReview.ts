@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
 import { useQuery } from "@tanstack/react-query"
@@ -25,6 +26,30 @@ export function useVideoReview(jobId: string | null) {
         throw error
       }
 
+      // If there are any candidates with videos but still in 'new' status,
+      // update them to 'reviewing'
+      const candidatesToUpdate = data.filter(
+        c => c.video_url && c.status === 'new'
+      )
+
+      if (candidatesToUpdate.length > 0) {
+        const { error: updateError } = await supabase
+          .from('candidates')
+          .update({ status: 'reviewing' })
+          .in('id', candidatesToUpdate.map(c => c.id))
+
+        if (updateError) {
+          console.error('Error updating candidate statuses:', updateError)
+        } else {
+          // Update local data to reflect the changes
+          data.forEach(c => {
+            if (c.video_url && c.status === 'new') {
+              c.status = 'reviewing'
+            }
+          })
+        }
+      }
+      
       return data as Candidate[]
     },
     enabled: !!jobId,
