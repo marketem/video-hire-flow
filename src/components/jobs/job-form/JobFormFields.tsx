@@ -14,6 +14,7 @@ interface JobFormFieldsProps {
   setDescription: (value: string) => void;
   publicPageEnabled: boolean;
   setPublicPageEnabled: (value: boolean) => void;
+  isJobClosed?: boolean;
 }
 
 export function JobFormFields({
@@ -27,6 +28,7 @@ export function JobFormFields({
   setDescription,
   publicPageEnabled,
   setPublicPageEnabled,
+  isJobClosed = false,
 }: JobFormFieldsProps) {
   return (
     <div className="space-y-4">
@@ -72,9 +74,13 @@ export function JobFormFields({
           id="publicPageEnabled"
           checked={publicPageEnabled}
           onCheckedChange={(checked) => setPublicPageEnabled(checked as boolean)}
+          disabled={isJobClosed}
         />
-        <Label htmlFor="publicPageEnabled" className="font-normal">
-          Enable public job post page
+        <Label 
+          htmlFor="publicPageEnabled" 
+          className={`font-normal ${isJobClosed ? 'text-gray-400' : ''}`}
+        >
+          Enable public job post page {isJobClosed && "(disabled for closed jobs)"}
         </Label>
       </div>
     </div>

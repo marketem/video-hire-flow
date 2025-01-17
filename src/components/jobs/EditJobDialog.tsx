@@ -65,7 +65,11 @@ export function EditJobDialog({
           description={form.watch("description")}
           setDescription={(value) => form.setValue("description", value)}
           publicPageEnabled={form.watch("public_page_enabled")}
-          setPublicPageEnabled={(value) => form.setValue("public_page_enabled", value)}
+          setPublicPageEnabled={(value) => {
+            console.log('Setting public_page_enabled to:', value)
+            form.setValue("public_page_enabled", value)
+          }}
+          isJobClosed={job.status === 'closed'}
         />
         <FormActions
           isLoading={isSubmitting}
