@@ -64,7 +64,7 @@ export function useJobOpenings() {
   // Subscribe to real-time changes
   useEffect(() => {
     console.log('Setting up real-time subscription for jobs...')
-    const channel: RealtimeChannel = supabase
+    const channel = supabase
       .channel('job_changes')
       .on(
         'postgres_changes',
@@ -79,7 +79,9 @@ export function useJobOpenings() {
           fetchJobs()
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('Subscription status:', status)
+      })
 
     // Fetch initial data
     fetchJobs()
@@ -87,7 +89,7 @@ export function useJobOpenings() {
     // Cleanup subscription on unmount
     return () => {
       console.log('Cleaning up real-time subscription')
-      supabase.removeChannel(channel)
+      channel.unsubscribe()
     }
   }, [supabase, fetchJobs])
 
