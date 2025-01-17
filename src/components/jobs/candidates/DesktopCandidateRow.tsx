@@ -27,24 +27,29 @@ export function DesktopCandidateRow({
   const queryClient = useQueryClient()
 
   const handleCopyInviteUrl = async () => {
-    // First update the status to 'requested' if it's 'new'
-    if (candidate.status === 'new') {
-      const { error } = await supabase
-        .from('candidates')
-        .update({ status: 'requested' })
-        .eq('id', candidate.id)
+    try {
+      // Update status to 'requested' if it's 'new'
+      if (candidate.status === 'new') {
+        const { error } = await supabase
+          .from('candidates')
+          .update({ status: 'requested' })
+          .eq('id', candidate.id)
 
-      if (error) {
-        console.error('Error updating candidate status:', error)
-      } else {
+        if (error) {
+          console.error('Error updating candidate status:', error)
+          return
+        }
+
         // Invalidate queries to refresh the data
         queryClient.invalidateQueries({ queryKey: ['job-candidates'] })
         queryClient.invalidateQueries({ queryKey: ['candidates-review'] })
       }
-    }
 
-    // Then proceed with copying the URL
-    onCopyInviteUrl(candidate)
+      // Proceed with copying the URL regardless of status
+      onCopyInviteUrl(candidate)
+    } catch (error) {
+      console.error('Error in handleCopyInviteUrl:', error)
+    }
   }
 
   return (
