@@ -33,13 +33,18 @@ export function AccountMenu() {
     queryKey: ['profile', session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id) return null;
+      console.log('Fetching profile for user:', session.user.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', session.user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+      }
+      console.log('Profile data:', data);
       return data;
     },
     enabled: !!session?.user?.id
@@ -47,7 +52,16 @@ export function AccountMenu() {
 
   useEffect(() => {
     const checkFirstTimeUser = async () => {
-      if (!session?.user || !profile) return;
+      if (!session?.user || !profile) {
+        console.log('Session or profile not available:', { session: !!session, profile: !!profile });
+        return;
+      }
+
+      console.log('Checking first time user:', { 
+        userId: session.user.id,
+        loginCount: profile.login_count,
+        shouldShowGuide: profile.login_count === 1
+      });
 
       // Show guide if this is their first login (login_count === 1)
       if (profile.login_count === 1) {
