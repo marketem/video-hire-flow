@@ -46,11 +46,20 @@ export function EditJobDialog({
 
   useEffect(() => {
     if (job && open) {
+      console.log('Resetting form with job:', job)
       resetForm()
     }
   }, [job, open, resetForm])
 
   if (!job) return null
+
+  const handlePublicPageChange = (checked: boolean) => {
+    console.log('Setting public_page_enabled to:', checked)
+    form.setValue("public_page_enabled", checked, {
+      shouldDirty: true,
+      shouldTouch: true,
+    })
+  }
 
   const content = (
     <Form {...form}>
@@ -65,10 +74,7 @@ export function EditJobDialog({
           description={form.watch("description")}
           setDescription={(value) => form.setValue("description", value)}
           publicPageEnabled={form.watch("public_page_enabled")}
-          setPublicPageEnabled={(value) => {
-            console.log('Setting public_page_enabled to:', value)
-            form.setValue("public_page_enabled", value)
-          }}
+          setPublicPageEnabled={handlePublicPageChange}
           isJobClosed={job.status === 'closed'}
         />
         <FormActions
