@@ -62,10 +62,37 @@ export const useJobActionHandlers = (job: JobOpening, onJobsUpdated: () => void)
     }
   }
 
+  const handleReopenJob = async () => {
+    console.log('Reopening job:', job.id)
+    const { error } = await supabase
+      .from("job_openings")
+      .update({ 
+        status: 'open',
+        public_page_enabled: true 
+      })
+      .eq("id", job.id)
+
+    if (error) {
+      console.error('Error reopening job:', error)
+      toast({
+        title: "Error",
+        description: "Failed to reopen job",
+        variant: "destructive",
+      })
+    } else {
+      toast({
+        title: "Success",
+        description: "Job has been reopened and public posting enabled",
+      })
+      onJobsUpdated()
+    }
+  }
+
   return {
     handleDelete,
     handleVisitPost,
     handleCopyPost,
-    handleCloseJob
+    handleCloseJob,
+    handleReopenJob
   }
 }

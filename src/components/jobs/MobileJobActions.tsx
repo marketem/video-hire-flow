@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { Eye, Pencil, ExternalLink, Copy, Trash, XCircle } from "lucide-react"
+import { Eye, Pencil, ExternalLink, Copy, Trash, XCircle, RefreshCw } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,7 +31,7 @@ export function MobileJobActions({
   hideMobileManage = false,
 }: MobileJobActionsProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const { handleDelete, handleVisitPost, handleCopyPost, handleCloseJob } = useJobActionHandlers(job, onJobsUpdated)
+  const { handleDelete, handleVisitPost, handleCopyPost, handleCloseJob, handleReopenJob } = useJobActionHandlers(job, onJobsUpdated)
 
   const actions = [
     {
@@ -49,7 +49,7 @@ export function MobileJobActions({
       icon: ExternalLink,
       onClick: handleVisitPost
     },
-    {
+    job.status === 'open' && {
       label: "Copy Post URL",
       icon: Copy,
       onClick: handleCopyPost
@@ -58,6 +58,11 @@ export function MobileJobActions({
       label: "Close Job",
       icon: XCircle,
       onClick: handleCloseJob
+    },
+    job.status === 'closed' && {
+      label: "Reopen Job",
+      icon: RefreshCw,
+      onClick: handleReopenJob
     },
     {
       label: "Delete Job",
