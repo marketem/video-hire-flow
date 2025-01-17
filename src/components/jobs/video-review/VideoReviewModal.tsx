@@ -21,7 +21,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import { useEffect } from "react"
 
 interface VideoReviewModalProps {
   jobId: string | null
@@ -39,17 +38,6 @@ export function VideoReviewModal({ jobId, open, onOpenChange }: VideoReviewModal
     handleReviewAction,
     getVideoUrl
   } = useVideoReview(jobId)
-
-  // Pre-fetch video URLs for ready-for-review candidates
-  useEffect(() => {
-    if (jobId && readyForReview) {
-      readyForReview.forEach(candidate => {
-        if (candidate.video_url) {
-          getVideoUrl(candidate.video_url, candidate.name)
-        }
-      })
-    }
-  }, [jobId, readyForReview, getVideoUrl])
 
   const content = (
     <Accordion type="single" defaultValue="ready-for-review" className="space-y-4">
