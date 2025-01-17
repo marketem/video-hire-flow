@@ -81,7 +81,8 @@ export default function VideoSubmission() {
         type: 'video/webm'
       })
 
-      const { error: uploadError } = await supabase.storage
+      // Upload to storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('videos')
         .upload(fileName, file, {
           cacheControl: '3600',
@@ -90,14 +91,18 @@ export default function VideoSubmission() {
 
       if (uploadError) throw uploadError
 
+      console.log('Video uploaded successfully:', fileName)
+
+      // Update candidate record with video URL
       const { error: updateError } = await supabase
         .from('candidates')
-        .update({ 
-          video_url: fileName
-        })
+        .update({ video_url: fileName })
         .eq('id', candidate.id)
 
-      if (updateError) throw updateError
+      if (updateError) {
+        console.error('Error updating candidate:', updateError)
+        throw updateError
+      }
 
       toast({
         title: "Success",
