@@ -23,6 +23,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Pricing from "./pages/Pricing";
 import EmailVerificationSent from "./pages/EmailVerificationSent";
+import Logo from "./pages/Logo";
 
 const queryClient = new QueryClient()
 
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/email-verification-sent" element={<EmailVerificationSent />} />
+            <Route path="/logo" element={<Logo />} />
             </Routes>
           </BrowserRouter>
         </VideoSubmissionProvider>
