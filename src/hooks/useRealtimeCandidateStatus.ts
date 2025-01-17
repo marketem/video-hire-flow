@@ -2,7 +2,7 @@ import { useEffect } from "react"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
-import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js"
+import type { RealtimePostgresUpdatePayload } from "@supabase/supabase-js"
 import type { Database } from "@/integrations/supabase/types"
 
 type CandidateRow = Database['public']['Tables']['candidates']['Row']
@@ -24,7 +24,7 @@ export function useRealtimeCandidateStatus() {
           schema: 'public',
           table: 'candidates'
         },
-        async (payload: RealtimePostgresChangesPayload<CandidateRow>) => {
+        async (payload: RealtimePostgresUpdatePayload<CandidateRow>) => {
           console.log('Realtime candidate update received:', payload)
           
           const oldRecord = payload.old_record
