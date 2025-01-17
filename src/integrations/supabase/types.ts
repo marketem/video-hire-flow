@@ -120,18 +120,21 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          has_premium_access: boolean | null
           id: string
           last_login: string | null
           login_count: number | null
         }
         Insert: {
           created_at?: string
+          has_premium_access?: boolean | null
           id: string
           last_login?: string | null
           login_count?: number | null
         }
         Update: {
           created_at?: string
+          has_premium_access?: boolean | null
           id?: string
           last_login?: string | null
           login_count?: number | null

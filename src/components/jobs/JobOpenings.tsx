@@ -4,6 +4,7 @@ import { PlusCircle } from "lucide-react"
 import { CreateJobDialog } from "./CreateJobDialog"
 import { JobOpeningsList } from "./JobOpeningsList"
 import { useJobOpenings } from "./useJobOpenings"
+import { PremiumFeature } from "@/components/premium/PremiumFeature"
 
 export function JobOpenings() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
@@ -14,7 +15,6 @@ export function JobOpenings() {
     fetchJobs()
   }
 
-  // Determine button appearance based on jobs existence and loading state
   const showCompactButton = !isLoading && jobs.length > 0
   const buttonText = showCompactButton ? "Job" : "Create Job Opening"
   const buttonSize = showCompactButton ? "sm" : "default"
@@ -25,15 +25,17 @@ export function JobOpenings() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">Request Videos</h2>
-        <Button 
-          onClick={() => setIsCreateDialogOpen(true)}
-          className={buttonClassName}
-          size={buttonSize}
-          variant="default"
-        >
-          <PlusCircle className={`${showCompactButton ? 'mr-1' : 'mr-2'} ${iconSize}`} />
-          {buttonText}
-        </Button>
+        <PremiumFeature featureName="Create Job">
+          <Button 
+            onClick={() => setIsCreateDialogOpen(true)}
+            className={buttonClassName}
+            size={buttonSize}
+            variant="default"
+          >
+            <PlusCircle className={`${showCompactButton ? 'mr-1' : 'mr-2'} ${iconSize}`} />
+            {buttonText}
+          </Button>
+        </PremiumFeature>
       </div>
       <JobOpeningsList />
       <CreateJobDialog 
