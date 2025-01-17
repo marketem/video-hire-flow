@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
-import { RealtimePostgresUpdatePayload } from "@supabase/supabase-js"
+import { RealtimePostgresChangesPayload } from "@supabase/supabase-js"
 import { Database } from "@/integrations/supabase/types"
 
 type CandidateRow = Database['public']['Tables']['candidates']['Row']
@@ -23,9 +23,10 @@ export function CandidateNotifications() {
           table: 'candidates',
           filter: 'video_url=not.is.null'
         },
-        async (payload: RealtimePostgresUpdatePayload<CandidateRow>) => {
-          const oldRecord = payload.old_record
-          const newRecord = payload.new_record
+        async (payload: RealtimePostgresChangesPayload<CandidateRow>) => {
+          // For UPDATE events, we can safely cast to get old and new records
+          const oldRecord = (payload as any).old_record as CandidateRow
+          const newRecord = (payload as any).new_record as CandidateRow
           console.log('Candidate update detected:', { oldRecord, newRecord })
 
           // Only send notification if this is a new video submission
