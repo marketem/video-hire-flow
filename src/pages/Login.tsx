@@ -3,29 +3,57 @@ import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from "react-router-dom";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
 
 export default function Login() {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
+  const supabase = useSupabaseClient();
 
   useEffect(() => {
-    // Check both the verified parameter and the error description
-    const verified = searchParams.get("verified") === "true";
-    const error = searchParams.get("error_description");
+    const handleEmailVerification = async () => {
+      const verified = searchParams.get("verified") === "true";
+      const error = searchParams.get("error_description");
 
-    if (verified) {
-      toast({
-        title: "Email Verified",
-        description: "Your email has been verified successfully. You can now log in.",
-      });
-    } else if (error) {
-      toast({
-        title: "Verification Error",
-        description: decodeURIComponent(error),
-        variant: "destructive",
-      });
-    }
-  }, [searchParams, toast]);
+      if (verified) {
+        // Get the user's details
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          const { data: metadata } = await supabase.from('auth.users')
+            .select('raw_user_meta_data')
+            .eq('id', user.id)
+            .single();
+
+          if (metadata?.raw_user_meta_data) {
+            const { first_name, trial_ends_at } = metadata.raw_user_meta_data;
+
+            // Send welcome email
+            await supabase.functions.invoke('send-welcome-email', {
+              body: {
+                email: user.email,
+                firstName: first_name,
+                trialEndsAt: trial_ends_at,
+              },
+            });
+          }
+        }
+
+        toast({
+          title: "Email Verified",
+          description: "Your email has been verified successfully. You can now log in.",
+        });
+      } else if (error) {
+        toast({
+          title: "Verification Error",
+          description: decodeURIComponent(error),
+          variant: "destructive",
+        });
+      }
+    };
+
+    handleEmailVerification();
+  }, [searchParams, toast, supabase]);
 
   return (
     <>
