@@ -28,15 +28,24 @@ export function AccountMenu() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    // Check if this is the user's first visit after email verification
-    const hasSeenGuide = localStorage.getItem("hasSeenGuide");
-    const isEmailVerified = session?.user?.email_confirmed_at;
-    
-    if (!hasSeenGuide && isEmailVerified) {
-      console.log('Showing user guide for first time visitor');
-      setShowGuide(true);
-      localStorage.setItem("hasSeenGuide", "true");
-    }
+    const checkFirstTimeUser = async () => {
+      if (!session?.user) return;
+
+      const hasSeenGuide = localStorage.getItem("hasSeenGuide");
+      const isEmailVerified = session.user.email_confirmed_at;
+      
+      // Only show guide if user hasn't seen it and email is verified
+      if (!hasSeenGuide && isEmailVerified) {
+        console.log('First time user detected, showing guide');
+        // Small delay to ensure components are mounted
+        setTimeout(() => {
+          setShowGuide(true);
+          localStorage.setItem("hasSeenGuide", "true");
+        }, 500);
+      }
+    };
+
+    checkFirstTimeUser();
   }, [session]);
 
   const handleSignOut = async () => {
