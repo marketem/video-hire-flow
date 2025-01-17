@@ -40,7 +40,10 @@ export const useJobActionHandlers = (job: JobOpening, onJobsUpdated: () => void)
     console.log('Closing job:', job.id)
     const { error } = await supabase
       .from("job_openings")
-      .update({ status: 'closed' })
+      .update({ 
+        status: 'closed',
+        public_page_enabled: false 
+      })
       .eq("id", job.id)
 
     if (error) {
@@ -53,7 +56,7 @@ export const useJobActionHandlers = (job: JobOpening, onJobsUpdated: () => void)
     } else {
       toast({
         title: "Success",
-        description: "Job has been closed",
+        description: "Job has been closed and public posting disabled",
       })
       onJobsUpdated()
     }

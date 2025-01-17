@@ -39,12 +39,12 @@ export function MobileJobActions({
       icon: Eye,
       onClick: () => onView(job)
     },
-    {
+    job.status === 'open' && {
       label: "Edit Job",
       icon: Pencil,
       onClick: () => onEdit(job)
     },
-    !hideMobileManage && {
+    !hideMobileManage && job.status === 'open' && {
       label: "Visit Job Post",
       icon: ExternalLink,
       onClick: handleVisitPost
