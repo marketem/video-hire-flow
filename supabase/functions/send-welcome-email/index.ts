@@ -40,7 +40,7 @@ serve(async (req) => {
           to: [{ email }]
         }],
         from: {
-          email: 'support@videovibecheck.com',
+          email: 'info@videovibecheck.com',
           name: 'VibeCheck'
         },
         subject: 'Welcome to VibeCheck! Here\'s how to get started',
