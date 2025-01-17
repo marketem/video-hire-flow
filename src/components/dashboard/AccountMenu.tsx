@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,7 +16,6 @@ import { useToast } from "@/hooks/use-toast";
 import { AccountSettingsDialog } from "./AccountSettingsDialog";
 import { UserGuideDialog } from "./UserGuideDialog";
 import { SupportDialog } from "./SupportDialog";
-import { useQuery } from "@tanstack/react-query";
 
 export function AccountMenu() {
   const session = useSession();
@@ -27,54 +26,6 @@ export function AccountMenu() {
   const [showGuide, setShowGuide] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-
-  // Fetch user profile data including login count
-  const { data: profile } = useQuery({
-    queryKey: ['profile', session?.user?.id],
-    queryFn: async () => {
-      if (!session?.user?.id) return null;
-      console.log('Fetching profile for user:', session.user.id);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching profile:', error);
-        throw error;
-      }
-      console.log('Profile data:', data);
-      return data;
-    },
-    enabled: !!session?.user?.id
-  });
-
-  useEffect(() => {
-    const checkFirstTimeUser = async () => {
-      if (!session?.user || !profile) {
-        console.log('Session or profile not available:', { session: !!session, profile: !!profile });
-        return;
-      }
-
-      console.log('Checking first time user:', { 
-        userId: session.user.id,
-        loginCount: profile.login_count,
-        shouldShowGuide: profile.login_count === 1
-      });
-
-      // Show guide if this is their first login (login_count === 1)
-      if (profile.login_count === 1) {
-        console.log('First time user detected (login_count = 1), showing guide');
-        // Small delay to ensure components are mounted
-        setTimeout(() => {
-          setShowGuide(true);
-        }, 500);
-      }
-    };
-
-    checkFirstTimeUser();
-  }, [session, profile]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
