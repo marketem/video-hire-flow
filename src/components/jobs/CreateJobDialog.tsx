@@ -25,7 +25,10 @@ export function CreateJobDialog({ onJobCreated, open, onOpenChange }: CreateJobD
     setPublicPageEnabled,
     isLoading,
     handleSubmit,
-  } = useJobForm(onJobCreated)
+  } = useJobForm(() => {
+    console.log('Job created successfully, triggering refresh...')
+    onJobCreated()
+  })
   const isMobile = useIsMobile()
 
   const content = (

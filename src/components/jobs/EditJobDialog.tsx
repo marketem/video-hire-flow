@@ -38,7 +38,10 @@ export function EditJobDialog({
     resetForm,
     onSubmit,
     isSubmitting
-  } = useEditJobForm(job, onJobUpdated, () => onOpenChange(false))
+  } = useEditJobForm(job, () => {
+    console.log('Job updated successfully, triggering refresh...')
+    onJobUpdated()
+  }, () => onOpenChange(false))
   const isMobile = useIsMobile()
 
   useEffect(() => {
