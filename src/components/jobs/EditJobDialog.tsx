@@ -46,7 +46,6 @@ export function EditJobDialog({
 
   useEffect(() => {
     if (job && open) {
-      console.log('Resetting form with job:', job)
       resetForm()
     }
   }, [job, open, resetForm])
@@ -66,8 +65,7 @@ export function EditJobDialog({
           description={form.watch("description")}
           setDescription={(value) => form.setValue("description", value)}
           publicPageEnabled={form.watch("public_page_enabled")}
-          setPublicPageEnabled={(checked) => form.setValue("public_page_enabled", checked)}
-          isJobClosed={job.status === 'closed'}
+          setPublicPageEnabled={(value) => form.setValue("public_page_enabled", value)}
         />
         <FormActions
           isLoading={isSubmitting}
