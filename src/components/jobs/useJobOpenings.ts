@@ -54,7 +54,6 @@ export function useJobOpenings() {
         description: "Failed to fetch job openings",
         variant: "destructive",
       })
-      // Set empty array on error to ensure consistent state
       setJobs([])
     } finally {
       setIsLoading(false)
@@ -64,8 +63,9 @@ export function useJobOpenings() {
   // Subscribe to real-time changes
   useEffect(() => {
     console.log('Setting up real-time subscription for jobs...')
+    
     const channel = supabase
-      .channel('job_changes')
+      .channel('schema-db-changes')
       .on(
         'postgres_changes',
         {
@@ -75,18 +75,45 @@ export function useJobOpenings() {
         },
         (payload) => {
           console.log('Received real-time update:', payload)
-          // Refresh the jobs list when any change occurs
-          fetchJobs()
+          
+          // Handle different event types
+          switch (payload.eventType) {
+            case 'INSERT':
+              setJobs(currentJobs => {
+                const newJob = {
+                  ...payload.new,
+                  candidates_count: 0 // New job has no candidates
+                }
+                return [newJob, ...currentJobs]
+              })
+              break
+              
+            case 'UPDATE':
+              setJobs(currentJobs =>
+                currentJobs.map(job =>
+                  job.id === payload.new.id
+                    ? { ...job, ...payload.new }
+                    : job
+                )
+              )
+              break
+              
+            case 'DELETE':
+              setJobs(currentJobs =>
+                currentJobs.filter(job => job.id !== payload.old.id)
+              )
+              break
+          }
         }
       )
-      .subscribe((status) => {
+      .subscribe(async (status) => {
         console.log('Subscription status:', status)
+        if (status === 'SUBSCRIBED') {
+          // Only fetch initial data after subscription is established
+          await fetchJobs()
+        }
       })
 
-    // Fetch initial data
-    fetchJobs()
-
-    // Cleanup subscription on unmount
     return () => {
       console.log('Cleaning up real-time subscription')
       channel.unsubscribe()
