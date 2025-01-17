@@ -62,7 +62,29 @@ export function useJobOpenings() {
   useEffect(() => {
     console.log('Setting up initial fetch...')
     fetchJobs()
-  }, [fetchJobs])
+
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('job-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'job_openings'
+        },
+        () => {
+          console.log('Job changes detected, refreshing...')
+          fetchJobs()
+        }
+      )
+      .subscribe()
+
+    // Cleanup subscription on unmount
+    return () => {
+      channel.unsubscribe()
+    }
+  }, [fetchJobs, supabase])
 
   return {
     jobs,
