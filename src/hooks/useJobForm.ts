@@ -14,6 +14,14 @@ export function useJobForm(onSuccess?: () => void) {
   const { toast } = useToast()
   const user = useUser()
 
+  const resetForm = () => {
+    setTitle("")
+    setDepartment("")
+    setLocation("")
+    setDescription("")
+    setPublicPageEnabled(true)
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
@@ -36,6 +44,8 @@ export function useJobForm(onSuccess?: () => void) {
         title: "Success",
         description: "Job opening created successfully",
       })
+
+      resetForm()
 
       if (onSuccess) {
         onSuccess()
