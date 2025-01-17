@@ -27,8 +27,9 @@ export function useRealtimeCandidateStatus() {
         async (payload: RealtimePostgresUpdatePayload<CandidateRow>) => {
           console.log('Realtime candidate update received:', payload)
           
-          const oldRecord = payload.old_record
-          const newRecord = payload.new_record
+          // In Supabase's RealtimePostgresUpdatePayload, the properties are oldRecord and newRecord
+          const oldRecord = payload.oldRecord
+          const newRecord = payload.newRecord
 
           // Check if a video was just submitted
           if (newRecord.video_url && !oldRecord.video_url) {
