@@ -1,4 +1,3 @@
-import { useEffect } from "react"
 import { CandidatesTable } from "./candidates/CandidatesTable"
 import { BulkActions } from "./candidates/BulkActions"
 import { CandidatesLoading } from "./candidates/CandidatesLoading"
@@ -8,6 +7,7 @@ import { useCandidateSelection } from "@/hooks/useCandidateSelection"
 import { useSendVideoInvites } from "@/hooks/useSendVideoInvites"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
+import { useRealtimeCandidates } from "@/hooks/useRealtimeCandidates"
 
 interface CandidatesListProps {
   jobId: string
@@ -20,29 +20,8 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
-  useEffect(() => {
-    // Subscribe to real-time updates for the candidates table
-    const channel = supabase
-      .channel('candidates-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'candidates',
-          filter: `job_id=eq.${jobId}`
-        },
-        (payload) => {
-          console.log('Real-time update received:', payload)
-          refetch()
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [jobId, refetch, supabase])
+  // Use the new realtime hook
+  useRealtimeCandidates(jobId, refetch)
 
   const handleSendInvites = async () => {
     const success = await sendVideoInvites(selectedCandidates, candidates || [])
