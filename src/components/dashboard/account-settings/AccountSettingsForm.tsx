@@ -71,8 +71,7 @@ export function AccountSettingsForm({ onSuccess }: { onSuccess: () => void }) {
       // Try to create profile if it doesn't exist
       const { error: profileError } = await supabase
         .from('profiles')
-        .upsert({ id: session?.user.id })
-        .select();
+        .upsert({ id: session?.user.id });
 
       if (profileError) {
         console.error('Error ensuring profile exists:', profileError);
