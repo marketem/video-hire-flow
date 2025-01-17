@@ -53,14 +53,6 @@ export function EditJobDialog({
 
   if (!job) return null
 
-  const handlePublicPageChange = (checked: boolean) => {
-    console.log('Setting public_page_enabled to:', checked)
-    form.setValue("public_page_enabled", checked, {
-      shouldDirty: true,
-      shouldTouch: true,
-    })
-  }
-
   const content = (
     <Form {...form}>
       <form onSubmit={onSubmit} className="space-y-4">
@@ -74,7 +66,7 @@ export function EditJobDialog({
           description={form.watch("description")}
           setDescription={(value) => form.setValue("description", value)}
           publicPageEnabled={form.watch("public_page_enabled")}
-          setPublicPageEnabled={handlePublicPageChange}
+          setPublicPageEnabled={(checked) => form.setValue("public_page_enabled", checked)}
           isJobClosed={job.status === 'closed'}
         />
         <FormActions
