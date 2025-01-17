@@ -20,8 +20,8 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
-  // Use the new realtime hook
-  useRealtimeCandidates(jobId, refetch)
+  // Use the realtime hook with just the jobId
+  useRealtimeCandidates(jobId)
 
   const handleSendInvites = async () => {
     const success = await sendVideoInvites(selectedCandidates, candidates || [])

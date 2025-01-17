@@ -27,19 +27,19 @@ export function useRealtimeCandidateStatus() {
         async (payload: RealtimePostgresUpdatePayload<CandidateRow>) => {
           console.log('Realtime candidate update received:', payload)
           
-          // In Supabase's RealtimePostgresUpdatePayload, the properties are oldRecord and newRecord
-          const oldRecord = payload.oldRecord
-          const newRecord = payload.newRecord
+          // In Supabase's RealtimePostgresUpdatePayload, the properties are old and new
+          const oldData = payload.old
+          const newData = payload.new
 
           // Check if a video was just submitted
-          if (newRecord.video_url && !oldRecord.video_url) {
+          if (newData.video_url && !oldData.video_url) {
             console.log('Video submission detected, updating status to reviewing')
             
             try {
               const { error } = await supabase
                 .from('candidates')
                 .update({ status: 'reviewing' })
-                .eq('id', newRecord.id)
+                .eq('id', newData.id)
 
               if (error) {
                 console.error('Error updating candidate status:', error)
@@ -49,7 +49,7 @@ export function useRealtimeCandidateStatus() {
               // Show notification
               toast({
                 title: "New Video Submission",
-                description: `${newRecord.name} has submitted their video interview.`,
+                description: `${newData.name} has submitted their video interview.`,
               })
 
               // Refresh queries
