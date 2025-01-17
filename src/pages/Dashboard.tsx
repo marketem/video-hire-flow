@@ -93,34 +93,19 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-purple-900">
-      <div className="container mx-auto px-4 py-8">
-        <DashboardHeader />
-        <div className={`space-y-8 relative ${isViewOnlyMode ? 'pointer-events-none select-none opacity-50' : ''}`}>
-          {/* Decorative elements */}
-          <div className="absolute -top-4 -left-4 w-64 h-64 bg-orange-100 dark:bg-orange-900/20 rounded-full blur-3xl opacity-20" />
-          <div className="absolute top-1/2 -right-8 w-72 h-72 bg-purple-100 dark:bg-purple-900/20 rounded-full blur-3xl opacity-20" />
-          
-          {/* Content with glass effect */}
-          <div className="relative backdrop-blur-sm bg-white/50 dark:bg-slate-900/50 rounded-2xl p-6 shadow-xl border border-white/20 dark:border-slate-700/30">
+    <div className="min-h-screen">
+      <div className="container mx-auto px-4 py-8 relative">
+        <div className="backdrop-blur-sm bg-white/50 dark:bg-black/20 rounded-xl p-8 shadow-lg">
+          <DashboardHeader />
+          <div className={isViewOnlyMode ? 'pointer-events-none select-none opacity-50' : ''}>
             <DashboardStats />
-          </div>
-          
-          <div className="space-y-8 relative">
-            <div className="backdrop-blur-sm bg-white/50 dark:bg-slate-900/50 rounded-2xl p-6 shadow-xl border border-white/20 dark:border-slate-700/30">
+            <div className="space-y-8">
               <VideoReviewCards />
-            </div>
-            
-            <div className="backdrop-blur-sm bg-white/50 dark:bg-slate-900/50 rounded-2xl p-6 shadow-xl border border-white/20 dark:border-slate-700/30">
               <JobOpenings />
             </div>
-          </div>
-          
-          <div className="backdrop-blur-sm bg-white/50 dark:bg-slate-900/50 rounded-2xl p-6 shadow-xl border border-white/20 dark:border-slate-700/30">
             <CandidateNotifications />
           </div>
         </div>
-        
         <UserGuideDialog
           open={showGuide}
           onOpenChange={setShowGuide}
