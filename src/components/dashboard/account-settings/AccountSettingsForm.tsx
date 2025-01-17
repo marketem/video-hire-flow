@@ -43,7 +43,6 @@ export function AccountSettingsForm({ onSuccess }: { onSuccess: () => void }) {
   const onSubmit = async (data: AccountFormValues) => {
     setIsLoading(true);
     try {
-      // First update user metadata
       const { error: metadataError } = await supabase.auth.updateUser({
         data: {
           first_name: data.first_name,
@@ -54,7 +53,6 @@ export function AccountSettingsForm({ onSuccess }: { onSuccess: () => void }) {
 
       if (metadataError) throw metadataError;
 
-      // Then handle email update if changed
       if (data.email !== session?.user.email) {
         const { error: emailError } = await supabase.auth.updateUser({
           email: data.email,
@@ -66,15 +64,6 @@ export function AccountSettingsForm({ onSuccess }: { onSuccess: () => void }) {
           title: "Email update initiated",
           description: "Please check your new email for a confirmation link.",
         });
-      }
-
-      // Try to create profile if it doesn't exist
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({ id: session?.user.id });
-
-      if (profileError) {
-        console.error('Error ensuring profile exists:', profileError);
       }
 
       toast({
