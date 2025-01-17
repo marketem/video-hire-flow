@@ -1,9 +1,11 @@
 import { useEffect } from "react"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
+import { useQueryClient } from "@tanstack/react-query"
 import { Database } from "@/integrations/supabase/types"
 
-export function useRealtimeCandidates(jobId: string, onUpdate: () => void) {
+export function useRealtimeCandidates(jobId: string) {
   const supabase = useSupabaseClient<Database>()
+  const queryClient = useQueryClient()
 
   useEffect(() => {
     console.log('Setting up realtime candidates listener for job:', jobId)
@@ -20,7 +22,9 @@ export function useRealtimeCandidates(jobId: string, onUpdate: () => void) {
         },
         (payload) => {
           console.log('Real-time candidate update received:', payload)
-          onUpdate()
+          // Invalidate both queries to ensure all components update
+          queryClient.invalidateQueries({ queryKey: ['job-candidates', jobId] })
+          queryClient.invalidateQueries({ queryKey: ['candidates-review', jobId] })
         }
       )
       .subscribe()
@@ -29,5 +33,5 @@ export function useRealtimeCandidates(jobId: string, onUpdate: () => void) {
       console.log('Cleaning up realtime candidates listener')
       supabase.removeChannel(channel)
     }
-  }, [jobId, onUpdate, supabase])
+  }, [jobId, queryClient, supabase])
 }

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -37,7 +37,14 @@ export function CandidatesModal({
   const { sendVideoInvites } = useSendVideoInvites(jobId)
 
   // Add realtime updates
-  useRealtimeCandidates(jobId, fetchCandidates)
+  useRealtimeCandidates(jobId)
+
+  // Pre-fetch candidates when jobId changes
+  useEffect(() => {
+    if (jobId) {
+      fetchCandidates()
+    }
+  }, [jobId, fetchCandidates])
 
   const handleSendInvites = async () => {
     setIsSending(true)
