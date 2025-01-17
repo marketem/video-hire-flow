@@ -67,13 +67,18 @@ export function JobFormFields({
           className="h-32"
         />
       </div>
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-2 opacity-50">
         <Checkbox
           id="publicPageEnabled"
           checked={publicPageEnabled}
           onCheckedChange={(checked) => setPublicPageEnabled(checked as boolean)}
+          disabled
+          className="cursor-not-allowed"
         />
-        <Label htmlFor="publicPageEnabled" className="font-normal">
+        <Label 
+          htmlFor="publicPageEnabled" 
+          className="font-normal cursor-not-allowed"
+        >
           Enable public job post page
         </Label>
       </div>
