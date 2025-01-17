@@ -28,7 +28,7 @@ export default function Dashboard() {
         .from('profiles')
         .select('*')
         .eq('id', session.user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching profile:', error);
@@ -59,7 +59,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!session?.user || !profile) {
-      console.log('Session or profile not available:', { session: !!session, profile: !!profile });
+      console.log('Session or profile not available:', { 
+        session: !!session, 
+        profile: !!profile 
+      });
       return;
     }
 
