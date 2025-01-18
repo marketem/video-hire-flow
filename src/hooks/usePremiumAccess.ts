@@ -19,6 +19,7 @@ export function usePremiumAccess() {
 
       // If no profile exists, create one
       if (!profile && !profileError) {
+        console.log('No profile found, creating one...')
         const { data: newProfile, error: insertError } = await supabase
           .from('profiles')
           .insert([{ 
@@ -28,7 +29,7 @@ export function usePremiumAccess() {
             last_login: new Date().toISOString()
           }])
           .select('has_premium_access')
-          .single()
+          .maybeSingle()
 
         if (insertError) {
           console.error('Error creating profile:', insertError)
