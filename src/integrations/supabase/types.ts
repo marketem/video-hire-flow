@@ -141,6 +141,30 @@ export type Database = {
         }
         Relationships: []
       }
+      video_request_logs: {
+        Row: {
+          created_at: string
+          id: string
+          request_count: number
+          request_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          request_count: number
+          request_date?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          request_count?: number
+          request_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

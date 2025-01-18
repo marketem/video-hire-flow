@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Send, Trash2 } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Checkbox } from "@/components/ui/checkbox"
+import { usePremiumAccess } from "@/hooks/usePremiumAccess"
 
 interface BulkActionsProps {
   selectedCount: number
@@ -23,6 +24,9 @@ export function BulkActions({
   isSending = false
 }: BulkActionsProps) {
   const isMobile = useIsMobile()
+  const hasPremiumAccess = usePremiumAccess()
+
+  const isOverLimit = !hasPremiumAccess && selectedCount > 5
 
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-muted rounded-lg">
@@ -45,8 +49,9 @@ export function BulkActions({
         <Button
           size={isMobile ? "default" : "sm"}
           onClick={onSendInvites}
-          disabled={selectedCount === 0 || isSending}
+          disabled={selectedCount === 0 || isSending || isOverLimit}
           className="flex-1 sm:flex-initial"
+          title={isOverLimit ? "Free trial users can only send 5 video requests per day" : undefined}
         >
           <Send className="mr-2 h-4 w-4" />
           {isSending ? "Sending..." : (isMobile ? "Request Video" : "Request Video (via Text & Email)")}
@@ -62,6 +67,11 @@ export function BulkActions({
           Delete
         </Button>
       </div>
+      {isOverLimit && (
+        <div className="w-full text-sm text-destructive">
+          Free trial users can only send 5 video requests per day. Upgrade to premium for unlimited requests.
+        </div>
+      )}
     </div>
   )
 }

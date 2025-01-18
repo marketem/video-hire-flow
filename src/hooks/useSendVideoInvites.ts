@@ -1,10 +1,12 @@
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
 import type { Candidate } from "@/types/candidate"
+import { usePremiumAccess } from "@/hooks/usePremiumAccess"
 
 export function useSendVideoInvites(jobId: string) {
   const supabase = useSupabaseClient()
   const { toast } = useToast()
+  const hasPremiumAccess = usePremiumAccess()
 
   const sendVideoInvites = async (selectedIds: string[], candidates: Candidate[]) => {
     if (!jobId || selectedIds.length === 0) {
@@ -17,6 +19,51 @@ export function useSendVideoInvites(jobId: string) {
     }
 
     try {
+      // Check daily request limit for trial users
+      if (!hasPremiumAccess) {
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Get today's request count
+        const { data: logData, error: logError } = await supabase
+          .from('video_request_logs')
+          .select('request_count')
+          .eq('request_date', today)
+          .single()
+
+        if (logError && logError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+          console.error('Error checking request limit:', logError)
+          throw new Error('Failed to check request limit')
+        }
+
+        const currentCount = logData?.request_count || 0
+        const newCount = currentCount + selectedIds.length
+
+        if (newCount > 5) {
+          toast({
+            title: "Daily Limit Exceeded",
+            description: "Free trial users can only send 5 video requests per day. Upgrade to premium for unlimited requests.",
+            variant: "destructive",
+          })
+          return false
+        }
+
+        // Update or insert request log
+        const { error: upsertError } = await supabase
+          .from('video_request_logs')
+          .upsert({
+            user_id: (await supabase.auth.getUser()).data.user?.id,
+            request_date: today,
+            request_count: newCount
+          }, {
+            onConflict: 'user_id, request_date'
+          })
+
+        if (upsertError) {
+          console.error('Error updating request log:', upsertError)
+          throw new Error('Failed to update request log')
+        }
+      }
+
       console.log('Starting to send video invites for candidates:', selectedIds)
       const selectedCandidates = candidates.filter(c => selectedIds.includes(c.id))
       
