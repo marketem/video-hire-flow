@@ -10,18 +10,40 @@ export function usePremiumAccess() {
     queryFn: async () => {
       if (!session?.user?.id) return false
       
-      const { data, error } = await supabase
+      // First check if profile exists
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('has_premium_access')
         .eq('id', session.user.id)
-        .single()
+        .maybeSingle() // Use maybeSingle instead of single to handle missing profiles
 
-      if (error) {
-        console.error('Error fetching premium access:', error)
+      // If no profile exists, create one
+      if (!profile && !profileError) {
+        const { data: newProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert([{ 
+            id: session.user.id,
+            has_premium_access: false,
+            login_count: 1,
+            last_login: new Date().toISOString()
+          }])
+          .select('has_premium_access')
+          .single()
+
+        if (insertError) {
+          console.error('Error creating profile:', insertError)
+          return false
+        }
+
+        return newProfile?.has_premium_access ?? false
+      }
+
+      if (profileError) {
+        console.error('Error fetching premium access:', profileError)
         return false
       }
 
-      return data?.has_premium_access ?? false
+      return profile?.has_premium_access ?? false
     },
     enabled: !!session?.user?.id
   })
