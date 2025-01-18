@@ -29,7 +29,8 @@ serve(async (req) => {
       year: 'numeric'
     })
 
-    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    // Send welcome email to the new user
+    const welcomeEmailResponse = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${SENDGRID_API_KEY}`,
@@ -90,8 +91,48 @@ serve(async (req) => {
       })
     });
 
-    if (!response.ok) {
-      throw new Error(`Failed to send welcome email: ${response.statusText}`);
+    if (!welcomeEmailResponse.ok) {
+      throw new Error(`Failed to send welcome email: ${welcomeEmailResponse.statusText}`);
+    }
+
+    // Send notification email to admin
+    const notificationEmailResponse = await fetch('https://api.sendgrid.com/v3/mail/send', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SENDGRID_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        personalizations: [{
+          to: [{ email: 'info@videovibecheck.com' }]
+        }],
+        from: {
+          email: 'info@videovibecheck.com',
+          name: 'VibeCheck System'
+        },
+        subject: 'New User Signup Alert',
+        content: [{
+          type: 'text/html',
+          value: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #1a365d;">New User Signup Alert</h1>
+              
+              <p>A new user has just signed up for VibeCheck:</p>
+              
+              <ul style="line-height: 1.6;">
+                <li><strong>Name:</strong> ${firstName}</li>
+                <li><strong>Email:</strong> ${email}</li>
+                <li><strong>Trial End Date:</strong> ${trialEndDate}</li>
+              </ul>
+            </div>
+          `
+        }]
+      })
+    });
+
+    if (!notificationEmailResponse.ok) {
+      console.error('Failed to send notification email:', await notificationEmailResponse.text());
+      // Don't throw error here as we don't want to affect the user experience if admin notification fails
     }
 
     return new Response(
@@ -103,7 +144,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error sending welcome email:', error);
+    console.error('Error sending emails:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
