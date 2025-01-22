@@ -69,11 +69,18 @@ const Index = () => {
                 Screen candidates efficiently with asynchronous video interviews. Save time and make better hiring decisions.
               </p>
               <div className="flex flex-col items-center gap-4">
-                <Link to="/signup">
-                  <Button size="lg" className="w-full sm:w-auto">
-                    Sign up for free
-                  </Button>
-                </Link>
+                <div className="flex gap-4">
+                  <Link to="/signup">
+                    <Button size="lg" className="w-full sm:w-auto">
+                      Sign up for free
+                    </Button>
+                  </Link>
+                  <Link to="/features">
+                    <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                      Features
+                    </Button>
+                  </Link>
+                </div>
                 <div className="flex items-center gap-6 text-sm text-gray-600">
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
@@ -84,11 +91,6 @@ const Index = () => {
                     <span>No credit card required</span>
                   </div>
                 </div>
-                <Link to="/features">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                    Features
-                  </Button>
-                </Link>
               </div>
             </div>
           </div>
