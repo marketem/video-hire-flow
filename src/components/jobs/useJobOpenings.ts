@@ -2,6 +2,7 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
 import { useState, useCallback, useEffect } from "react"
 import type { JobOpening } from "./types"
+import { RealtimeChannel } from "@supabase/supabase-js"
 
 export function useJobOpenings() {
   const [jobs, setJobs] = useState<JobOpening[]>([])
@@ -84,8 +85,10 @@ export function useJobOpenings() {
       .subscribe((status) => {
         console.log('Subscription status:', status)
         
-        if (status === 'SUBSCRIPTION_ERROR') {
-          console.error('Failed to subscribe to real-time updates')
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to real-time updates')
+        } else {
+          console.error('Failed to subscribe to real-time updates:', status)
           toast({
             title: "Real-time Updates Error",
             description: "Failed to subscribe to job updates. Some changes might not appear immediately.",
