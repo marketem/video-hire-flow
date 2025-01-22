@@ -2,7 +2,7 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
 import { useState, useCallback, useEffect, useRef } from "react"
 import type { JobOpening } from "./types"
-import { RealtimeChannel } from "@supabase/supabase-js"
+import { RealtimeChannel, RealtimeChannelStatus } from "@supabase/supabase-js"
 
 export function useJobOpenings() {
   const [jobs, setJobs] = useState<JobOpening[]>([])
@@ -90,7 +90,7 @@ export function useJobOpenings() {
     channelRef.current = channel
 
     // Subscribe to the channel
-    channel.subscribe((status) => {
+    channel.subscribe((status: RealtimeChannelStatus) => {
       console.log('Subscription status:', status)
       
       // Clear any existing toast timeout
