@@ -71,10 +71,7 @@ const Index = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/signup">
                   <Button size="lg" className="w-full sm:w-auto">
-                    Sign up for free
-                    <span className="block text-sm font-normal mt-1">
-                      14-day free trial • No credit card required
-                    </span>
+                    Sign Up
                   </Button>
                 </Link>
                 <Link to="/features">
