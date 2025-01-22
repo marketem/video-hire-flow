@@ -60,10 +60,10 @@ export function useJobOpenings() {
   }, [supabase, toast])
 
   useEffect(() => {
-    console.log('Setting up initial fetch...')
+    console.log('Setting up initial fetch and real-time subscription...')
     fetchJobs()
 
-    // Set up real-time subscription
+    // Set up real-time subscription with improved error handling
     const channel = supabase
       .channel('job-updates')
       .on(
@@ -73,18 +73,33 @@ export function useJobOpenings() {
           schema: 'public',
           table: 'job_openings'
         },
-        () => {
-          console.log('Job changes detected, refreshing...')
-          fetchJobs()
+        async (payload) => {
+          console.log('Real-time update received:', payload)
+          
+          // Refresh the entire list to ensure consistency
+          // This also ensures we get fresh candidate counts
+          await fetchJobs()
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('Subscription status:', status)
+        
+        if (status === 'SUBSCRIPTION_ERROR') {
+          console.error('Failed to subscribe to real-time updates')
+          toast({
+            title: "Real-time Updates Error",
+            description: "Failed to subscribe to job updates. Some changes might not appear immediately.",
+            variant: "destructive",
+          })
+        }
+      })
 
     // Cleanup subscription on unmount
     return () => {
+      console.log('Cleaning up real-time subscription...')
       channel.unsubscribe()
     }
-  }, [fetchJobs, supabase])
+  }, [fetchJobs, supabase, toast])
 
   return {
     jobs,
