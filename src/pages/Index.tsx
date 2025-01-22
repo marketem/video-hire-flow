@@ -71,7 +71,7 @@ const Index = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/signup">
                   <Button size="lg" className="w-full sm:w-auto">
-                    Try Now For Free
+                    Sign Up
                   </Button>
                 </Link>
                 <Link to="/features">
