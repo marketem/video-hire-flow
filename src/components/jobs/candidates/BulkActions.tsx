@@ -54,7 +54,7 @@ export function BulkActions({
           title={isOverLimit ? "Free trial users can only send 5 video requests per day" : undefined}
         >
           <Send className="mr-2 h-4 w-4" />
-          {isSending ? "Sending..." : (isMobile ? "Request Video" : "Request Videos via Email")}
+          {isSending ? "Sending..." : (isMobile ? "Request Video" : "Request Video via Email")}
         </Button>
         <Button
           size={isMobile ? "default" : "sm"}
