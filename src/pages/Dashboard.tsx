@@ -78,12 +78,16 @@ export default function Dashboard() {
       setShowGuide(true)
     }
 
-    // Set view-only mode if user doesn't have premium access
-    if (!profile.has_premium_access) {
+    // Check if user has premium access or is in trial period
+    const trialEndsAt = session.user.user_metadata?.trial_ends_at
+    const isTrialValid = trialEndsAt && new Date(trialEndsAt) > new Date()
+    
+    // Only set view-only mode if user doesn't have premium access AND is not in trial
+    if (!profile.has_premium_access && !isTrialValid) {
       setIsViewOnlyMode(true)
       toast({
         title: "View-Only Mode Activated",
-        description: "You can browse but interactions are limited. Upgrade anytime to unlock all features.",
+        description: "Your trial has expired. Upgrade to unlock all features.",
       })
     }
   }, [session, profile, toast])
