@@ -64,8 +64,8 @@ export function useJobOpenings() {
     console.log('Setting up initial fetch and real-time subscription...')
     fetchJobs()
 
-    // Set up real-time subscription with improved error handling
-    const channel = supabase
+    // Set up real-time subscription
+    const channel: RealtimeChannel = supabase
       .channel('job-updates')
       .on(
         'postgres_changes',
@@ -76,31 +76,30 @@ export function useJobOpenings() {
         },
         async (payload) => {
           console.log('Real-time update received:', payload)
-          
-          // Refresh the entire list to ensure consistency
-          // This also ensures we get fresh candidate counts
           await fetchJobs()
         }
       )
-      .subscribe((status) => {
-        console.log('Subscription status:', status)
-        
-        if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to real-time updates')
-        } else {
-          console.error('Failed to subscribe to real-time updates:', status)
-          toast({
-            title: "Real-time Updates Error",
-            description: "Failed to subscribe to job updates. Some changes might not appear immediately.",
-            variant: "destructive",
-          })
-        }
-      })
+
+    // Subscribe to the channel
+    const subscription = channel.subscribe((status) => {
+      console.log('Subscription status:', status)
+      
+      if (status !== 'SUBSCRIBED') {
+        console.warn('Subscription status not optimal:', status)
+        toast({
+          title: "Real-time Updates Status",
+          description: "Attempting to establish real-time connection...",
+          variant: "default",
+        })
+      } else {
+        console.log('Successfully subscribed to real-time updates')
+      }
+    })
 
     // Cleanup subscription on unmount
     return () => {
       console.log('Cleaning up real-time subscription...')
-      channel.unsubscribe()
+      supabase.removeChannel(channel)
     }
   }, [fetchJobs, supabase, toast])
 
