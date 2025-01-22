@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Link } from "react-router-dom";
-import { CheckCircle2, Upload, Video, PhoneCall } from "lucide-react";
+import { CheckCircle2, Upload, Video, PhoneCall, Calendar, CreditCard } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -68,12 +68,22 @@ const Index = () => {
               <p className="text-xl text-gray-600 mb-8">
                 Screen candidates efficiently with asynchronous video interviews. Save time and make better hiring decisions.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col items-center gap-4">
                 <Link to="/signup">
                   <Button size="lg" className="w-full sm:w-auto">
-                    Sign Up
+                    Sign up for free
                   </Button>
                 </Link>
+                <div className="flex items-center gap-6 text-sm text-gray-600">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-4 w-4" />
+                    <span>14-day free trial</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <CreditCard className="h-4 w-4" />
+                    <span>No credit card required</span>
+                  </div>
+                </div>
                 <Link to="/features">
                   <Button size="lg" variant="outline" className="w-full sm:w-auto">
                     Features
