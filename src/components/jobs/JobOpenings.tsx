@@ -11,6 +11,7 @@ export function JobOpenings() {
 
   const handleJobCreated = () => {
     setIsCreateDialogOpen(false)
+    // Immediately fetch jobs after creation
     fetchJobs()
   }
 
