@@ -2,7 +2,7 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
 import { useState, useCallback, useEffect, useRef } from "react"
 import type { JobOpening } from "./types"
-import { RealtimeChannel, REALTIME_CHANNEL_STATES } from "@supabase/supabase-js"
+import { RealtimeChannel } from "@supabase/supabase-js"
 
 export function useJobOpenings() {
   const [jobs, setJobs] = useState<JobOpening[]>([])
@@ -98,12 +98,12 @@ export function useJobOpenings() {
         clearTimeout(toastTimeoutRef.current)
       }
 
-      if (status === REALTIME_CHANNEL_STATES.SUBSCRIBED) {
+      if (status === 'SUBSCRIBED') {
         console.log('Successfully subscribed to real-time updates')
       } else {
         // Set a timeout to show the toast only if the connection isn't established quickly
         toastTimeoutRef.current = setTimeout(() => {
-          if (status !== REALTIME_CHANNEL_STATES.SUBSCRIBED) {
+          if (status !== 'SUBSCRIBED') {
             console.warn('Subscription status not optimal:', status)
             toast({
               title: "Real-time Updates Status",
