@@ -14,13 +14,24 @@ export function useMediaStream() {
         streamRef.current = null
       }
 
-      console.log("Checking media devices permissions...")
-      const devices = await navigator.mediaDevices.enumerateDevices()
-      const videoDevices = devices.filter(device => device.kind === 'videoinput')
-      console.log("Available video devices:", videoDevices)
+      // First try to enumerate devices to check system permissions
+      console.log("Checking system permissions via enumerateDevices...")
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices()
+        console.log("All available devices:", devices)
+        
+        const videoDevices = devices.filter(device => device.kind === 'videoinput')
+        console.log("Available video devices:", videoDevices)
 
-      if (videoDevices.length === 0) {
-        throw new Error("No video devices found")
+        // Check if we have labels - no labels usually means no system permission
+        const hasSystemPermission = videoDevices.some(device => device.label)
+        console.log("Has system permission (based on device labels):", hasSystemPermission)
+
+        if (!hasSystemPermission) {
+          console.warn("No system permission detected - device labels are empty")
+        }
+      } catch (enumError) {
+        console.error("Error enumerating devices:", enumError)
       }
 
       console.log("Requesting media stream with constraints...")
@@ -41,26 +52,19 @@ export function useMediaStream() {
       console.log("Media stream obtained successfully")
       streamRef.current = stream
 
-      // Log active tracks for debugging
+      // Log detailed track information
       stream.getTracks().forEach(track => {
-        console.log(`Active track: ${track.kind}, enabled: ${track.enabled}, state: ${track.readyState}`)
+        console.log("Track details:", {
+          kind: track.kind,
+          label: track.label,
+          id: track.id,
+          enabled: track.enabled,
+          muted: track.muted,
+          readyState: track.readyState,
+          constraints: track.getConstraints(),
+          settings: track.getSettings()
+        })
       })
-
-      // After getting the stream, apply constraints to reduce bitrate
-      const videoTrack = stream.getVideoTracks()[0]
-      if (videoTrack) {
-        try {
-          console.log("Applying additional video constraints...")
-          await videoTrack.applyConstraints({
-            width: { ideal: 640, max: 1280 },
-            height: { ideal: 480, max: 720 },
-            frameRate: { ideal: 24, max: 30 }
-          })
-          console.log("Video constraints applied successfully")
-        } catch (error) {
-          console.warn('Could not apply additional video constraints:', error)
-        }
-      }
 
       return stream
     } catch (error) {
@@ -68,16 +72,31 @@ export function useMediaStream() {
       
       if (error instanceof DOMException) {
         if (error.name === 'NotAllowedError') {
-          console.log('Permission denied error details:', {
+          // Log detailed error information
+          console.error('System permission denied details:', {
             name: error.name,
             message: error.message,
-            stack: error.stack
+            stack: error.stack,
+            // Additional system info that might be helpful
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            vendor: navigator.vendor
           })
-          toast({
-            title: "Camera Access Denied",
-            description: "Please ensure camera access is allowed in your browser settings. You may need to refresh the page after enabling permissions.",
-            variant: "destructive",
-          })
+
+          // Check if this is likely a system-level block
+          if (error.message.toLowerCase().includes('system')) {
+            toast({
+              title: "System Camera Access Blocked",
+              description: "Your operating system is blocking camera access. Please check your system privacy settings and ensure camera access is allowed for your browser.",
+              variant: "destructive",
+            })
+          } else {
+            toast({
+              title: "Camera Access Denied",
+              description: "Please check both browser and system camera permissions, then refresh the page.",
+              variant: "destructive",
+            })
+          }
         } else if (error.name === 'NotFoundError') {
           toast({
             title: "Camera Not Found",
@@ -93,16 +112,10 @@ export function useMediaStream() {
         } else {
           toast({
             title: "Camera Error",
-            description: `Unexpected error: ${error.name}. Please refresh the page and try again.`,
+            description: `Unexpected error: ${error.name}. Please refresh and try again.`,
             variant: "destructive",
           })
         }
-      } else {
-        toast({
-          title: "Camera Error",
-          description: "An unexpected error occurred while accessing your camera. Please refresh and try again.",
-          variant: "destructive",
-        })
       }
       throw error
     }
