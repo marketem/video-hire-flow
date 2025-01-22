@@ -13,7 +13,7 @@ export const Navbar = () => {
         <Button variant="ghost">Log in</Button>
       </Link>
       <Link to="/signup">
-        <Button>Start Free Trial</Button>
+        <Button>Try Now</Button>
       </Link>
     </>
   );
