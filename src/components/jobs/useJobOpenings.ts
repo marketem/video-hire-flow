@@ -1,6 +1,6 @@
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import type { JobOpening } from "./types"
 import { RealtimeChannel } from "@supabase/supabase-js"
 
@@ -9,6 +9,8 @@ export function useJobOpenings() {
   const [isLoading, setIsLoading] = useState(true)
   const supabase = useSupabaseClient()
   const { toast } = useToast()
+  const toastTimeoutRef = useRef<NodeJS.Timeout>()
+  const channelRef = useRef<RealtimeChannel>()
 
   const fetchJobs = useCallback(async () => {
     setIsLoading(true)
@@ -64,13 +66,18 @@ export function useJobOpenings() {
     console.log('Setting up initial fetch and real-time subscription...')
     fetchJobs()
 
+    // Clear any existing channel
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current)
+    }
+
     // Set up real-time subscription
-    const channel: RealtimeChannel = supabase
+    const channel = supabase
       .channel('job-updates')
       .on(
         'postgres_changes',
         {
-          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          event: '*',
           schema: 'public',
           table: 'job_openings'
         },
@@ -80,17 +87,29 @@ export function useJobOpenings() {
         }
       )
 
+    channelRef.current = channel
+
     // Subscribe to the channel
-    const subscription = channel.subscribe((status) => {
+    channel.subscribe((status) => {
       console.log('Subscription status:', status)
       
+      // Clear any existing toast timeout
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current)
+      }
+
       if (status !== 'SUBSCRIBED') {
-        console.warn('Subscription status not optimal:', status)
-        toast({
-          title: "Real-time Updates Status",
-          description: "Attempting to establish real-time connection...",
-          variant: "default",
-        })
+        // Set a timeout to show the toast only if the connection isn't established quickly
+        toastTimeoutRef.current = setTimeout(() => {
+          if (status !== 'SUBSCRIBED') {
+            console.warn('Subscription status not optimal:', status)
+            toast({
+              title: "Real-time Updates Status",
+              description: "Attempting to establish real-time connection...",
+              variant: "default",
+            })
+          }
+        }, 2000) // Wait 2 seconds before showing the toast
       } else {
         console.log('Successfully subscribed to real-time updates')
       }
@@ -99,7 +118,12 @@ export function useJobOpenings() {
     // Cleanup subscription on unmount
     return () => {
       console.log('Cleaning up real-time subscription...')
-      supabase.removeChannel(channel)
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current)
+      }
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current)
+      }
     }
   }, [fetchJobs, supabase, toast])
 
