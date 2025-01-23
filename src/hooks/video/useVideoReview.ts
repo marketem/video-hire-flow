@@ -74,21 +74,30 @@ export function useVideoReview(jobId: string | null) {
 
   const handleReviewAction = async (candidateId: string, status: 'reviewing' | 'rejected' | 'approved') => {
     try {
-      const { error } = await supabase
+      console.log('Updating candidate status:', { candidateId, status })
+      
+      const { data, error } = await supabase
         .from('candidates')
         .update({ status })
         .eq('id', candidateId)
+        .select()
 
-      if (error) throw error
+      if (error) {
+        console.error('Error updating candidate status:', error)
+        throw error
+      }
+
+      console.log('Status update successful:', data)
 
       toast({
         title: "Success",
         description: `Candidate marked as ${status}`,
       })
 
-      refetch()
+      // Immediately refetch to update the UI
+      await refetch()
     } catch (error) {
-      console.error('Error updating candidate status:', error)
+      console.error('Error in handleReviewAction:', error)
       toast({
         title: "Error",
         description: "Failed to update candidate status",
