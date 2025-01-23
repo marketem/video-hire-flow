@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
 import { useQuery } from "@tanstack/react-query"
@@ -81,6 +80,7 @@ export function useVideoReview(jobId: string | null) {
         .update({ status })
         .eq('id', candidateId)
         .select()
+        .single()
 
       if (error) {
         console.error('Error updating candidate status:', error)

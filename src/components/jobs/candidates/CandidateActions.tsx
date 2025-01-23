@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import type { Candidate } from "@/types/candidate"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useEffect } from "react"
 
 interface CandidateActionsProps {
   candidate: Candidate
@@ -24,18 +25,31 @@ export function CandidateActions({
   const isMobile = useIsMobile()
 
   const handleApprove = () => {
-    console.log('Approve button clicked')
+    console.log('Approve button clicked for candidate:', candidate.id)
     if (onStatusChange) {
       onStatusChange('approved')
     }
   }
 
   const handleReject = () => {
-    console.log('Reject button clicked')
+    console.log('Reject button clicked for candidate:', candidate.id)
     if (onStatusChange) {
       onStatusChange('rejected')
     }
   }
+
+  // Monitor slider value changes and trigger status update
+  useEffect(() => {
+    if (sliderValue[0] !== 50 && onStatusChange) {
+      const timer = setTimeout(() => {
+        const newStatus = sliderValue[0] > 50 ? 'approved' : 'rejected'
+        console.log('Slider triggered status change:', newStatus)
+        onStatusChange(newStatus)
+        onSliderChange([50]) // Reset slider
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [sliderValue, onStatusChange, onSliderChange])
 
   return (
     <div className="flex flex-col sm:flex-row gap-2">
