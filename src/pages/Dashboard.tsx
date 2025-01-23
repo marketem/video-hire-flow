@@ -69,13 +69,17 @@ export default function Dashboard() {
     checkSession()
   }, [navigate, supabase.auth, toast])
 
+  // Only show guide on first login, not on every profile load
+  useEffect(() => {
+    if (profile && profile.login_count === 1) {
+      setShowGuide(true)
+    }
+  }, [profile])
+
+  // Check premium access status
   useEffect(() => {
     if (!session?.user || !profile) {
       return
-    }
-
-    if (profile.login_count === 1) {
-      setShowGuide(true)
     }
 
     // Check if user has premium access or is in trial period
