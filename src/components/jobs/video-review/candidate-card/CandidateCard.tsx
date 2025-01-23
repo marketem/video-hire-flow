@@ -48,16 +48,13 @@ export function CandidateCard({
     const distance = touchEnd - touchStart
 
     if (Math.abs(distance) > 100) {
-      console.log('Touch gesture detected, attempting status change')
       if (distance > 0) {
-        console.log('Approving candidate:', candidate.id)
         onStatusChange(candidate.id, 'approved')
         toast({
           title: "Candidate Approved",
           description: `${candidate.name} has been approved`,
         })
       } else {
-        console.log('Rejecting candidate:', candidate.id)
         onStatusChange(candidate.id, 'rejected')
         toast({
           title: "Candidate Rejected",
@@ -66,13 +63,6 @@ export function CandidateCard({
       }
     }
     setTouchStart(null)
-  }
-
-  const handleStatusChange = (status: 'reviewing' | 'rejected' | 'approved') => {
-    console.log('Status change requested:', { candidateId: candidate.id, status })
-    if (onStatusChange) {
-      onStatusChange(candidate.id, status)
-    }
   }
 
   return (
@@ -87,7 +77,7 @@ export function CandidateCard({
           candidate={candidate}
           showActions={showActions}
           onVideoClick={handleVideoClick}
-          onStatusChange={handleStatusChange}
+          onStatusChange={onStatusChange}
           sliderValue={sliderValue}
           onSliderChange={setSliderValue}
         />
