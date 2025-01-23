@@ -1,9 +1,11 @@
+import { useState, useEffect } from "react"
 import { ThumbsDown, ThumbsUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import type { Candidate } from "@/types/candidate"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { useEffect } from "react"
+import { useSupabaseClient } from "@supabase/auth-helpers-react"
+import { useToast } from "@/hooks/use-toast"
 
 interface CandidateActionsProps {
   candidate: Candidate
@@ -23,33 +25,65 @@ export function CandidateActions({
   onSliderChange
 }: CandidateActionsProps) {
   const isMobile = useIsMobile()
+  const supabase = useSupabaseClient()
+  const { toast } = useToast()
+  const [isUpdating, setIsUpdating] = useState(false)
+
+  const updateCandidateStatus = async (status: 'reviewing' | 'rejected' | 'approved') => {
+    console.log('Updating candidate status:', { candidateId: candidate.id, status })
+    setIsUpdating(true)
+    try {
+      const { error } = await supabase
+        .from('candidates')
+        .update({ status })
+        .eq('id', candidate.id)
+        .single()
+
+      if (error) throw error
+
+      console.log('Status update successful')
+      toast({
+        title: "Success",
+        description: `Candidate ${status === 'approved' ? 'approved' : 'rejected'}`,
+      })
+
+      if (onStatusChange) {
+        onStatusChange(status)
+      }
+    } catch (error) {
+      console.error('Error updating candidate status:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update candidate status",
+        variant: "destructive",
+      })
+    } finally {
+      setIsUpdating(false)
+    }
+  }
 
   const handleApprove = () => {
     console.log('Approve button clicked for candidate:', candidate.id)
-    if (onStatusChange) {
-      onStatusChange('approved')
-    }
+    updateCandidateStatus('approved')
   }
 
   const handleReject = () => {
     console.log('Reject button clicked for candidate:', candidate.id)
-    if (onStatusChange) {
-      onStatusChange('rejected')
-    }
+    updateCandidateStatus('rejected')
   }
 
   // Monitor slider value changes and trigger status update
   useEffect(() => {
-    if (sliderValue[0] !== 50 && onStatusChange) {
+    if (sliderValue[0] !== 50 && !isUpdating) {
       const timer = setTimeout(() => {
         const newStatus = sliderValue[0] > 50 ? 'approved' : 'rejected'
         console.log('Slider triggered status change:', newStatus)
-        onStatusChange(newStatus)
+        updateCandidateStatus(newStatus)
         onSliderChange([50]) // Reset slider
       }, 500)
       return () => clearTimeout(timer)
     }
-  }, [sliderValue, onStatusChange, onSliderChange])
+  }, [sliderValue])
 
   return (
     <div className="flex flex-col sm:flex-row gap-2">
@@ -64,7 +98,7 @@ export function CandidateActions({
           </Button>
         )}
       </div>
-      {showActions && onStatusChange && (
+      {showActions && (
         <div className="flex gap-2 flex-1 sm:flex-initial">
           {isMobile ? (
             <div className="w-full px-2">
@@ -74,6 +108,7 @@ export function CandidateActions({
                 max={100}
                 step={1}
                 className="w-full"
+                disabled={isUpdating}
               />
               <div className="flex justify-between text-xs text-muted-foreground mt-1">
                 <span>Reject</span>
@@ -87,6 +122,7 @@ export function CandidateActions({
                 size="icon"
                 onClick={handleApprove}
                 className="flex-1 sm:flex-initial bg-[#E5F7D3] hover:bg-[#D8F0C0]"
+                disabled={isUpdating}
               >
                 <ThumbsUp className="h-4 w-4" />
               </Button>
@@ -95,6 +131,7 @@ export function CandidateActions({
                 size="icon"
                 onClick={handleReject}
                 className="flex-1 sm:flex-initial bg-[#FFE5E5] hover:bg-[#FFD6D6] text-[#ea384c]"
+                disabled={isUpdating}
               >
                 <ThumbsDown className="h-4 w-4" />
               </Button>
