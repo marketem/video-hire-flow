@@ -1,18 +1,37 @@
 import { useSupabaseClient, useSession } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
+import { useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import type { Candidate } from "@/types/candidate"
 
 export function useVideoReview(jobId: string | null) {
   const supabase = useSupabaseClient()
+  const session = useSession()
+  const navigate = useNavigate()
   const { toast } = useToast()
 
-  const { data: candidates = [], refetch } = useQuery({
+  const { data: candidates, refetch } = useQuery({
     queryKey: ['candidates-review', jobId],
     queryFn: async () => {
-      if (!jobId) return []
+      if (!jobId) return null
       
-      console.log('Fetching candidates for video review, job:', jobId)
+      console.log('Fetching candidates for job:', jobId)
+      console.log('User authenticated:', !!session?.user)
+      console.log('User ID:', session?.user?.id)
+
+      // First verify job ownership
+      const { data: jobData, error: jobError } = await supabase
+        .from('job_openings')
+        .select('user_id, title')
+        .eq('id', jobId)
+        .single()
+
+      if (jobError) {
+        console.error('Error fetching job:', jobError)
+        throw jobError
+      }
+
+      console.log('Job belongs to user:', jobData?.user_id === session?.user?.id)
 
       const { data, error } = await supabase
         .from('candidates')
@@ -24,13 +43,18 @@ export function useVideoReview(jobId: string | null) {
         console.error('Error fetching candidates:', error)
         throw error
       }
+      
+      console.log('Raw Supabase response:', { data, error })
+      console.log('Fetched candidates:', data)
 
-      // Only update and send notifications for NEW videos that haven't been reviewed yet
+      // Update status to 'reviewing' for candidates that have submitted videos but aren't in reviewing status
       const candidatesToUpdate = data.filter(
-        c => c.video_url && c.status === 'new'
+        (c: Candidate) => c.video_url && c.status === 'requested'
       )
 
       if (candidatesToUpdate.length > 0) {
+        console.log('Updating candidates to reviewing status:', candidatesToUpdate)
+        
         const { error: updateError } = await supabase
           .from('candidates')
           .update({ status: 'reviewing' })
@@ -39,15 +63,15 @@ export function useVideoReview(jobId: string | null) {
         if (updateError) {
           console.error('Error updating candidate statuses:', updateError)
         } else {
-          // Send email notifications only for newly submitted videos
+          // Send email notifications for newly received video submissions
           for (const candidate of candidatesToUpdate) {
             try {
               const dashboardUrl = `${window.location.origin}/dashboard`
               await supabase.functions.invoke('send-status-email', {
                 body: {
-                  to: supabase.auth.getUser().then(res => res.data.user?.email),
+                  to: session?.user?.email,
                   candidateName: candidate.name,
-                  jobTitle: 'Job Opening', // You might want to fetch the actual job title
+                  jobTitle: jobData.title,
                   dashboardUrl
                 }
               })
@@ -57,64 +81,48 @@ export function useVideoReview(jobId: string | null) {
             }
           }
 
-          // Update local data to reflect the changes
-          data.forEach(c => {
-            if (c.video_url && c.status === 'new') {
-              c.status = 'reviewing'
+          // Update the local data to reflect the changes
+          data.forEach(candidate => {
+            if (candidatesToUpdate.find(c => c.id === candidate.id)) {
+              candidate.status = 'reviewing'
             }
           })
         }
       }
-      
+
       return data as Candidate[]
     },
-    enabled: !!jobId,
-    refetchInterval: 5000,
+    enabled: !!jobId && !!session?.user?.id,
+    refetchInterval: 5000, // Refetch every 5 seconds to catch new uploads
   })
 
-  const readyForReview = candidates.filter(c => 
-    c.video_url && ['new', 'reviewing'].includes(c.status)
-  )
-
-  const awaitingResponse = candidates.filter(c => 
-    c.video_token && !c.video_url && c.status === 'requested'
-  )
-
-  const approvedCandidates = candidates.filter(c => 
-    c.status === 'approved'
-  )
-
-  const rejectedCandidates = candidates.filter(c => 
-    c.status === 'rejected'
-  )
-
   const handleReviewAction = async (candidateId: string, status: 'reviewing' | 'rejected' | 'approved') => {
+    if (!session) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to review candidates",
+        variant: "destructive",
+      })
+      navigate('/login')
+      return
+    }
+
     try {
-      console.log('Updating candidate status:', { candidateId, status })
-      
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('candidates')
         .update({ status })
         .eq('id', candidateId)
-        .select()
-        .single()
 
-      if (error) {
-        console.error('Error updating candidate status:', error)
-        throw error
-      }
-
-      console.log('Status update successful:', data)
+      if (error) throw error
 
       toast({
         title: "Success",
         description: `Candidate marked as ${status}`,
       })
 
-      // Immediately refetch to update the UI
-      await refetch()
+      refetch()
     } catch (error) {
-      console.error('Error in handleReviewAction:', error)
+      console.error('Error updating candidate status:', error)
       toast({
         title: "Error",
         description: "Failed to update candidate status",
@@ -124,6 +132,16 @@ export function useVideoReview(jobId: string | null) {
   }
 
   const getVideoUrl = async (videoPath: string, candidateName: string): Promise<string | null> => {
+    if (!session) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to view videos",
+        variant: "destructive",
+      })
+      navigate('/login')
+      return null
+    }
+
     try {
       console.log('Getting signed URL for video:', videoPath)
       const { data, error } = await supabase
@@ -152,6 +170,23 @@ export function useVideoReview(jobId: string | null) {
       return null
     }
   }
+
+  // Filter candidates based on their status
+  const readyForReview = candidates?.filter(c => 
+    c.status === 'reviewing'
+  ) || []
+
+  const awaitingResponse = candidates?.filter(c => 
+    c.status === 'requested' && !c.video_url
+  ) || []
+
+  const approvedCandidates = candidates?.filter(c => 
+    c.status === 'approved'
+  ) || []
+
+  const rejectedCandidates = candidates?.filter(c => 
+    c.status === 'rejected'
+  ) || []
 
   return {
     readyForReview,
