@@ -15,6 +15,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { useState } from "react"
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard"
 import { useToast } from "@/hooks/use-toast"
+import { useSupabaseClient } from "@supabase/auth-helpers-react"
 
 interface CandidatesTableProps {
   candidates: Candidate[]
@@ -36,6 +37,7 @@ export function CandidatesTable({
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false)
   const { copyToClipboard } = useCopyToClipboard()
   const { toast } = useToast()
+  const supabase = useSupabaseClient()
 
   const handleEditClick = (candidate: Candidate) => {
     setSelectedCandidate(candidate)
@@ -63,6 +65,33 @@ export function CandidatesTable({
     }
   }
 
+  const handleStatusChange = async (candidateId: string, status: 'reviewing' | 'rejected' | 'approved') => {
+    try {
+      console.log('Updating candidate status:', { candidateId, status })
+      
+      const { error } = await supabase
+        .from('candidates')
+        .update({ status })
+        .eq('id', candidateId)
+        .select()
+
+      if (error) throw error
+
+      toast({
+        title: "Success",
+        description: `Candidate marked as ${status}`,
+      })
+
+    } catch (error) {
+      console.error('Error updating candidate status:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update candidate status",
+        variant: "destructive",
+      })
+    }
+  }
+
   if (isMobile) {
     return (
       <>
@@ -75,6 +104,7 @@ export function CandidatesTable({
               onToggleSelect={onToggleSelect}
               onEditClick={handleEditClick}
               onCopyInviteUrl={handleCopyInviteUrl}
+              onStatusChange={handleStatusChange}
             />
           ))}
         </div>
@@ -112,6 +142,7 @@ export function CandidatesTable({
               onToggleSelect={onToggleSelect}
               onEditClick={handleEditClick}
               onCopyInviteUrl={handleCopyInviteUrl}
+              onStatusChange={handleStatusChange}
             />
           ))}
         </TableBody>

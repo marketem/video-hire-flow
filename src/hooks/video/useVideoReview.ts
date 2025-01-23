@@ -26,13 +26,14 @@ export function useVideoReview(jobId: string | null) {
         throw error
       }
 
-      // If there are any candidates with videos but still in 'new' status,
-      // update them to 'reviewing'
+      // Only update status to reviewing if they have a video and are in requested status
       const candidatesToUpdate = data.filter(
-        c => c.video_url && c.status === 'new'
+        c => c.video_url && c.status === 'requested'
       )
 
       if (candidatesToUpdate.length > 0) {
+        console.log('Updating candidates to reviewing status:', candidatesToUpdate)
+        
         const { error: updateError } = await supabase
           .from('candidates')
           .update({ status: 'reviewing' })
@@ -43,10 +44,33 @@ export function useVideoReview(jobId: string | null) {
         } else {
           // Update local data to reflect the changes
           data.forEach(c => {
-            if (c.video_url && c.status === 'new') {
+            if (c.video_url && c.status === 'requested') {
               c.status = 'reviewing'
             }
           })
+
+          // Send email notifications for newly reviewing candidates
+          for (const candidate of candidatesToUpdate) {
+            try {
+              const { error: notificationError } = await supabase.functions.invoke(
+                'send-video-notification',
+                {
+                  body: {
+                    candidateName: candidate.name,
+                    to: candidate.email,
+                  },
+                }
+              )
+
+              if (notificationError) {
+                console.error('Error sending notification:', notificationError)
+              } else {
+                console.log('Email notification sent for candidate:', candidate.name)
+              }
+            } catch (error) {
+              console.error('Error in notification process:', error)
+            }
+          }
         }
       }
       
@@ -57,7 +81,7 @@ export function useVideoReview(jobId: string | null) {
   })
 
   const readyForReview = candidates.filter(c => 
-    c.video_url && ['new', 'reviewing'].includes(c.status)
+    c.video_url && c.status === 'reviewing'
   )
 
   const awaitingResponse = candidates.filter(c => 
@@ -78,6 +102,7 @@ export function useVideoReview(jobId: string | null) {
         .from('candidates')
         .update({ status })
         .eq('id', candidateId)
+        .select()
 
       if (error) throw error
 
