@@ -1,10 +1,11 @@
-import { useSupabaseClient } from "@supabase/auth-helpers-react"
+import { useSupabaseClient, useSession } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
 import { useQuery } from "@tanstack/react-query"
 import type { JobOpening } from "./types"
 
 export function useJobOpenings() {
   const supabase = useSupabaseClient()
+  const session = useSession()
   const { toast } = useToast()
 
   const {
@@ -16,9 +17,18 @@ export function useJobOpenings() {
     queryFn: async () => {
       try {
         console.log('Fetching jobs...')
+        console.log('User authenticated:', !!session?.user)
+        console.log('User ID:', session?.user?.id)
+
+        if (!session?.user) {
+          console.log('No authenticated user')
+          return []
+        }
+
         const { data: jobsData, error: jobsError } = await supabase
           .from('job_openings')
           .select('*')
+          .eq('user_id', session.user.id)
           .order('created_at', { ascending: false })
 
         if (jobsError) {
@@ -59,7 +69,8 @@ export function useJobOpenings() {
         return []
       }
     },
-    refetchInterval: 5000, // Poll every 5 seconds
+    enabled: !!session?.user,
+    refetchInterval: 5000,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchOnReconnect: true,
