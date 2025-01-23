@@ -1,4 +1,4 @@
-import { useSupabaseClient } from "@supabase/auth-helpers-react"
+import { useSupabaseClient, useSession } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
 import { useQuery } from "@tanstack/react-query"
 import type { Candidate } from "@/types/candidate"
@@ -25,8 +25,7 @@ export function useVideoReview(jobId: string | null) {
         throw error
       }
 
-      // If there are any candidates with videos but still in 'new' status,
-      // update them to 'reviewing'
+      // Only update and send notifications for NEW videos that haven't been reviewed yet
       const candidatesToUpdate = data.filter(
         c => c.video_url && c.status === 'new'
       )
@@ -40,6 +39,24 @@ export function useVideoReview(jobId: string | null) {
         if (updateError) {
           console.error('Error updating candidate statuses:', updateError)
         } else {
+          // Send email notifications only for newly submitted videos
+          for (const candidate of candidatesToUpdate) {
+            try {
+              const dashboardUrl = `${window.location.origin}/dashboard`
+              await supabase.functions.invoke('send-status-email', {
+                body: {
+                  to: supabase.auth.getUser().then(res => res.data.user?.email),
+                  candidateName: candidate.name,
+                  jobTitle: 'Job Opening', // You might want to fetch the actual job title
+                  dashboardUrl
+                }
+              })
+              console.log('Email notification sent for candidate:', candidate.name)
+            } catch (error) {
+              console.error('Error sending email notification:', error)
+            }
+          }
+
           // Update local data to reflect the changes
           data.forEach(c => {
             if (c.video_url && c.status === 'new') {
