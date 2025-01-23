@@ -11,7 +11,7 @@ interface CandidateActionsProps {
   candidate: Candidate
   showActions: boolean
   onVideoClick: () => void
-  onStatusChange?: (status: 'reviewing' | 'rejected' | 'approved') => void
+  onStatusChange?: (candidateId: string, status: 'reviewing' | 'rejected' | 'approved') => void
   sliderValue: number[]
   onSliderChange: (value: number[]) => void
 }
@@ -37,7 +37,7 @@ export function CandidateActions({
         .from('candidates')
         .update({ status })
         .eq('id', candidate.id)
-        .single()
+        .select()
 
       if (error) throw error
 
@@ -48,7 +48,7 @@ export function CandidateActions({
       })
 
       if (onStatusChange) {
-        onStatusChange(status)
+        onStatusChange(candidate.id, status)
       }
     } catch (error) {
       console.error('Error updating candidate status:', error)

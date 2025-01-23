@@ -48,6 +48,12 @@ export function CandidatesModal({
     }
   }
 
+  const handleStatusChange = async (candidateId: string, status: 'reviewing' | 'rejected' | 'approved') => {
+    console.log('Status change requested:', { candidateId, status })
+    // Immediately refresh candidates after status change
+    await fetchCandidates()
+  }
+
   const content = (
     <Tabs defaultValue="list" className="h-full flex flex-col">
       <TabsList className="w-full grid grid-cols-3">
@@ -81,6 +87,7 @@ export function CandidatesModal({
                 onToggleSelect={toggleCandidate}
                 onToggleSelectAll={(checked) => toggleSelectAll(candidates, checked)}
                 jobId={jobId}
+                onStatusChange={handleStatusChange}
               />
             )}
           </TabsContent>
