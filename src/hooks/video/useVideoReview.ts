@@ -28,7 +28,7 @@ export function useVideoReview(jobId: string | null) {
         throw error
       }
 
-      // Only update status to reviewing if they have a video and are in requested status
+      // Only update status to reviewing if they have a video AND are in requested status
       const candidatesToUpdate = data.filter(
         c => c.video_url && c.status === 'requested'
       )
@@ -44,6 +44,7 @@ export function useVideoReview(jobId: string | null) {
         if (updateError) {
           console.error('Error updating candidate statuses:', updateError)
         } else {
+          // Update local data to reflect changes
           data.forEach(c => {
             if (c.video_url && c.status === 'requested') {
               c.status = 'reviewing'
