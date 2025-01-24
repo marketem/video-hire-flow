@@ -11,7 +11,6 @@ interface MobileCandidateCardProps {
   onToggleSelect: (candidateId: string, checked: boolean) => void
   onEditClick: (candidate: Candidate) => void
   onCopyInviteUrl: (candidate: Candidate) => void
-  onStatusChange: (candidateId: string, status: 'reviewing' | 'rejected' | 'approved') => Promise<void>
 }
 
 export function MobileCandidateCard({
@@ -19,8 +18,7 @@ export function MobileCandidateCard({
   isSelected,
   onToggleSelect,
   onEditClick,
-  onCopyInviteUrl,
-  onStatusChange
+  onCopyInviteUrl
 }: MobileCandidateCardProps) {
   return (
     <div className="bg-card border rounded-lg p-4 space-y-3">
@@ -67,16 +65,6 @@ export function MobileCandidateCard({
               <DropdownMenuItem onClick={() => onCopyInviteUrl(candidate)}>
                 Copy Invite URL
               </DropdownMenuItem>
-              {candidate.status === 'reviewing' && (
-                <>
-                  <DropdownMenuItem onClick={() => onStatusChange(candidate.id, 'approved')}>
-                    Approve Candidate
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onStatusChange(candidate.id, 'rejected')}>
-                    Reject Candidate
-                  </DropdownMenuItem>
-                </>
-              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

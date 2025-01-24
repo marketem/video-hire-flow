@@ -1,13 +1,11 @@
-import { useSupabaseClient, useSession } from "@supabase/auth-helpers-react"
+import { useState } from "react"
+import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
-import { useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import type { Candidate } from "@/types/candidate"
 
 export function useVideoReview(jobId: string | null) {
   const supabase = useSupabaseClient()
-  const session = useSession()
-  const navigate = useNavigate()
   const { toast } = useToast()
 
   const { data: candidates = [], refetch } = useQuery({
@@ -27,6 +25,30 @@ export function useVideoReview(jobId: string | null) {
         console.error('Error fetching candidates:', error)
         throw error
       }
+
+      // If there are any candidates with videos but still in 'new' status,
+      // update them to 'reviewing'
+      const candidatesToUpdate = data.filter(
+        c => c.video_url && c.status === 'new'
+      )
+
+      if (candidatesToUpdate.length > 0) {
+        const { error: updateError } = await supabase
+          .from('candidates')
+          .update({ status: 'reviewing' })
+          .in('id', candidatesToUpdate.map(c => c.id))
+
+        if (updateError) {
+          console.error('Error updating candidate statuses:', updateError)
+        } else {
+          // Update local data to reflect the changes
+          data.forEach(c => {
+            if (c.video_url && c.status === 'new') {
+              c.status = 'reviewing'
+            }
+          })
+        }
+      }
       
       return data as Candidate[]
     },
@@ -34,25 +56,28 @@ export function useVideoReview(jobId: string | null) {
     refetchInterval: 5000,
   })
 
-  const handleReviewAction = async (candidateId: string, status: 'reviewing' | 'rejected' | 'approved') => {
-    if (!session) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to review candidates",
-        variant: "destructive",
-      })
-      navigate('/login')
-      return
-    }
+  const readyForReview = candidates.filter(c => 
+    c.video_url && ['new', 'reviewing'].includes(c.status)
+  )
 
+  const awaitingResponse = candidates.filter(c => 
+    c.video_token && !c.video_url && c.status === 'requested'
+  )
+
+  const approvedCandidates = candidates.filter(c => 
+    c.status === 'approved'
+  )
+
+  const rejectedCandidates = candidates.filter(c => 
+    c.status === 'rejected'
+  )
+
+  const handleReviewAction = async (candidateId: string, status: 'reviewing' | 'rejected' | 'approved') => {
     try {
-      console.log('Updating candidate status:', { candidateId, status })
-      
       const { error } = await supabase
         .from('candidates')
         .update({ status })
         .eq('id', candidateId)
-        .select()
 
       if (error) throw error
 
@@ -61,7 +86,7 @@ export function useVideoReview(jobId: string | null) {
         description: `Candidate marked as ${status}`,
       })
 
-      await refetch()
+      refetch()
     } catch (error) {
       console.error('Error updating candidate status:', error)
       toast({
@@ -73,16 +98,6 @@ export function useVideoReview(jobId: string | null) {
   }
 
   const getVideoUrl = async (videoPath: string, candidateName: string): Promise<string | null> => {
-    if (!session) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to view videos",
-        variant: "destructive",
-      })
-      navigate('/login')
-      return null
-    }
-
     try {
       console.log('Getting signed URL for video:', videoPath)
       const { data, error } = await supabase
@@ -111,22 +126,6 @@ export function useVideoReview(jobId: string | null) {
       return null
     }
   }
-
-  const readyForReview = candidates.filter(c => 
-    c.video_url && c.status === 'reviewing'
-  )
-
-  const awaitingResponse = candidates.filter(c => 
-    c.video_token && !c.video_url && c.status === 'requested'
-  )
-
-  const approvedCandidates = candidates.filter(c => 
-    c.status === 'approved'
-  )
-
-  const rejectedCandidates = candidates.filter(c => 
-    c.status === 'rejected'
-  )
 
   return {
     readyForReview,
