@@ -10,8 +10,7 @@ export function useRecorder() {
       'video/webm;codecs=vp8,opus',
       'video/webm;codecs=vp9,opus',
       'video/webm;codecs=h264,opus',
-      'video/webm',
-      'video/mp4'
+      'video/webm'
     ]
     
     return types.find(type => MediaRecorder.isTypeSupported(type)) || ''
