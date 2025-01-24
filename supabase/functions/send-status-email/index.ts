@@ -12,8 +12,6 @@ interface EmailRequest {
   candidateName: string
   jobTitle: string
   dashboardUrl: string
-  type?: 'video_submission' | 'status_change'
-  newStatus?: string
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -27,35 +25,9 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('SendGrid API key not found')
     }
 
-    const { to, candidateName, jobTitle, dashboardUrl, type = 'video_submission', newStatus } = await req.json() as EmailRequest
+    const { to, candidateName, jobTitle, dashboardUrl } = await req.json() as EmailRequest
 
-    console.log('Sending email notification:', { to, candidateName, jobTitle, type, newStatus })
-
-    let subject = ''
-    let content = ''
-
-    if (type === 'video_submission') {
-      subject = 'New Candidate Video Ready for Review'
-      content = `
-        <h2>New Video Submission Ready</h2>
-        <p>A new video submission is ready for your review!</p>
-        <p><strong>Candidate:</strong> ${candidateName}<br>
-        <strong>Job Position:</strong> ${jobTitle}</p>
-        <p>You can review their video submission now in your <a href="${dashboardUrl}">dashboard</a>.</p>
-        <p>Best regards,<br>VibeCheck Team</p>
-      `
-    } else if (type === 'status_change' && newStatus) {
-      subject = `Candidate Status Updated: ${newStatus}`
-      content = `
-        <h2>Candidate Status Update</h2>
-        <p>A candidate's status has been updated:</p>
-        <p><strong>Candidate:</strong> ${candidateName}<br>
-        <strong>Job Position:</strong> ${jobTitle}<br>
-        <strong>New Status:</strong> ${newStatus}</p>
-        <p>You can view the details in your <a href="${dashboardUrl}">dashboard</a>.</p>
-        <p>Best regards,<br>VibeCheck Team</p>
-      `
-    }
+    console.log('Sending video submission notification:', { to, candidateName, jobTitle })
 
     const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
@@ -68,10 +40,17 @@ const handler = async (req: Request): Promise<Response> => {
           to: [{ email: to }],
         }],
         from: { email: 'info@videovibecheck.com', name: 'VibeCheck' },
-        subject,
+        subject: 'New Candidate Video Ready for Review',
         content: [{
           type: 'text/html',
-          value: content
+          value: `
+            <h2>New Video Submission Ready</h2>
+            <p>A new video submission is ready for your review!</p>
+            <p><strong>Candidate:</strong> ${candidateName}<br>
+            <strong>Job Position:</strong> ${jobTitle}</p>
+            <p>You can review their video submission now in your <a href="${dashboardUrl}">dashboard</a>.</p>
+            <p>Best regards,<br>VibeCheck Team</p>
+          `
         }]
       })
     })
