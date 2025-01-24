@@ -21,47 +21,44 @@ export function CandidateNotifications() {
           event: 'UPDATE',
           schema: 'public',
           table: 'candidates',
-          filter: 'video_submitted_at=not.is.null'
+          filter: `video_url=is.not.null
+                  and video_submitted_at=is.not.null
+                  and old_video_submitted_at=is.null`
         },
         async (payload: RealtimePostgresChangesPayload<CandidateRow>) => {
-          const oldRecord = (payload as any).old_record as CandidateRow
           const newRecord = (payload as any).new_record as CandidateRow
-          console.log('Candidate update detected:', { oldRecord, newRecord })
+          console.log('Video submission detected:', { newRecord })
 
-          // Only send notification if this is a new video submission
-          // Check both video_url and video_submitted_at to ensure this is a fresh submission
-          if (!oldRecord.video_submitted_at && newRecord.video_submitted_at) {
-            try {
-              console.log('Sending video submission notification email')
-              const response = await fetch('/api/send-video-notification', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  candidateId: newRecord.id,
-                  candidateName: newRecord.name,
-                  candidateEmail: newRecord.email,
-                }),
-              })
+          try {
+            console.log('Sending video submission notification email')
+            const response = await fetch('/api/send-video-notification', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                candidateId: newRecord.id,
+                candidateName: newRecord.name,
+                candidateEmail: newRecord.email,
+              }),
+            })
 
-              if (!response.ok) {
-                throw new Error('Failed to send notification')
-              }
-
-              console.log('Notification email sent successfully')
-              toast({
-                title: "Video Submission Received",
-                description: `New video received from ${newRecord.name}`,
-              })
-            } catch (error) {
-              console.error('Error sending notification:', error)
-              toast({
-                title: "Notification Error",
-                description: "Failed to send video submission notification",
-                variant: "destructive",
-              })
+            if (!response.ok) {
+              throw new Error('Failed to send notification')
             }
+
+            console.log('Notification email sent successfully')
+            toast({
+              title: "Video Submission Received",
+              description: `New video received from ${newRecord.name}`,
+            })
+          } catch (error) {
+            console.error('Error sending notification:', error)
+            toast({
+              title: "Notification Error",
+              description: "Failed to send video submission notification",
+              variant: "destructive",
+            })
           }
         }
       )
