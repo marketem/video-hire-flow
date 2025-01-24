@@ -40,6 +40,8 @@ export function CandidateNotifications() {
                 candidateId: newRecord.id,
                 candidateName: newRecord.name,
                 candidateEmail: newRecord.email,
+                jobId: newRecord.job_id,
+                status: 'submitted' // Adding status to indicate this is a video submission notification
               }),
             })
 
