@@ -27,31 +27,6 @@ export function useVideoReview(jobId: string | null) {
         console.error('Error fetching candidates:', error)
         throw error
       }
-
-      // Only update status to reviewing if they have a video AND are in requested status
-      const candidatesToUpdate = data.filter(
-        c => c.video_url && c.status === 'requested'
-      )
-
-      if (candidatesToUpdate.length > 0) {
-        console.log('Updating candidates to reviewing status:', candidatesToUpdate)
-        
-        const { error: updateError } = await supabase
-          .from('candidates')
-          .update({ status: 'reviewing' })
-          .in('id', candidatesToUpdate.map(c => c.id))
-
-        if (updateError) {
-          console.error('Error updating candidate statuses:', updateError)
-        } else {
-          // Update local data to reflect changes
-          data.forEach(c => {
-            if (c.video_url && c.status === 'requested') {
-              c.status = 'reviewing'
-            }
-          })
-        }
-      }
       
       return data as Candidate[]
     },
