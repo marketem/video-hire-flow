@@ -87,7 +87,7 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
       if (isDuplicate) {
         form.setError("email", {
           type: "manual",
-          message: "A candidate with this email already exists for this job."
+          message: "A candidate with this email already exists for this job position. Please use a different email address."
         })
         setIsSubmitting(false)
         return
@@ -143,7 +143,7 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
       console.error('Form submission error:', error)
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to add candidate",
+        description: error instanceof Error ? error.message : "Failed to add candidate. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -171,13 +171,18 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
         <FormField
           control={form.control}
           name="email"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" {...field} required />
+                <Input 
+                  type="email" 
+                  {...field} 
+                  required
+                  className={fieldState.error ? "border-destructive" : ""} 
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-destructive" />
             </FormItem>
           )}
         />
