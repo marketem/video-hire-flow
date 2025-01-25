@@ -37,7 +37,7 @@ const handler = async (req: Request): Promise<Response> => {
     const payload: NotificationPayload = await req.json()
     console.log('Received payload:', payload)
 
-    // Create Supabase client with service role to fetch job details
+    // Create Supabase client with service role
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -49,17 +49,11 @@ const handler = async (req: Request): Promise<Response> => {
       }
     )
 
-    // Get job details and user email in a single query
+    // Get job details and user email using a raw query to avoid PostgREST relationship issues
     console.log('Fetching job details for job ID:', payload.jobId)
     const { data: jobData, error: jobError } = await supabaseClient
       .from('job_openings')
-      .select(`
-        title,
-        user_id,
-        auth_users:user_id (
-          email
-        )
-      `)
+      .select('title, user_id')
       .eq('id', payload.jobId)
       .single()
 
@@ -68,9 +62,18 @@ const handler = async (req: Request): Promise<Response> => {
       throw jobError
     }
 
-    if (!jobData?.auth_users?.email) {
-      console.error('No hiring manager email found for job:', jobData)
-      throw new Error('Hiring manager email not found')
+    if (!jobData?.user_id) {
+      console.error('No user_id found for job:', jobData)
+      throw new Error('User ID not found')
+    }
+
+    // Get user email from auth.users table
+    const { data: userData, error: userError } = await supabaseClient
+      .auth.admin.getUserById(jobData.user_id)
+
+    if (userError || !userData.user?.email) {
+      console.error('Error fetching user email:', userError)
+      throw new Error('User email not found')
     }
 
     // Send confirmation email to candidate
@@ -91,10 +94,10 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Send notification to hiring manager
-    console.log('Sending notification to hiring manager:', jobData.auth_users.email)
+    console.log('Sending notification to hiring manager:', userData.user.email)
     const managerEmail = {
       from: 'notifications@videovibecheck.com',
-      to: jobData.auth_users.email,
+      to: userData.user.email,
       subject: `New Video Submission: ${payload.candidateName} - ${jobData.title}`,
       html: `
         <h2>New Video Submission Received</h2>
