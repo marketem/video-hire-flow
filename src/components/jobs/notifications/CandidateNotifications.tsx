@@ -32,21 +32,17 @@ export function CandidateNotifications() {
           if (!oldRecord.video_url && newRecord.video_url) {
             try {
               console.log('Sending video submission notification email')
-              const response = await fetch('/api/send-video-notification', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
+              const { error } = await supabase.functions.invoke('send-video-notification', {
+                body: {
                   candidateId: newRecord.id,
                   candidateName: newRecord.name,
                   candidateEmail: newRecord.email,
                   jobId: newRecord.job_id
-                }),
+                }
               })
 
-              if (!response.ok) {
-                throw new Error('Failed to send notification')
+              if (error) {
+                throw error
               }
 
               console.log('Notification email sent successfully')

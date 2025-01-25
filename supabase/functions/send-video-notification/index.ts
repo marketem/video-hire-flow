@@ -35,11 +35,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const payload: NotificationPayload = await req.json()
-    console.log('Received payload:', {
-      candidateId: payload.candidateId,
-      candidateName: payload.candidateName,
-      jobId: payload.jobId
-    })
+    console.log('Received payload:', payload)
 
     // Create Supabase client with service role to fetch job details and hiring manager
     const supabaseClient = createClient(
@@ -72,7 +68,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Send confirmation email to candidate
-    console.log('Sending confirmation email to candidate...')
+    console.log('Sending confirmation email to candidate:', payload.candidateEmail)
     await sgMail.send({
       from: 'notifications@videovibecheck.com',
       to: payload.candidateEmail,
@@ -90,7 +86,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send notification to hiring manager
     if (jobData.profiles?.email) {
-      console.log('Sending notification to hiring manager...')
+      console.log('Sending notification to hiring manager:', jobData.profiles.email)
       await sgMail.send({
         from: 'notifications@videovibecheck.com',
         to: jobData.profiles.email,
@@ -127,20 +123,12 @@ const handler = async (req: Request): Promise<Response> => {
       },
     )
   } catch (error) {
-    console.error('Error in send-video-notification function:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
-    })
+    console.error('Error in send-video-notification function:', error)
     
     return new Response(
       JSON.stringify({ 
         success: false,
-        error: error.message,
-        details: {
-          name: error.name,
-          type: error.constructor.name
-        }
+        error: error.message
       }),
       {
         headers: { 
