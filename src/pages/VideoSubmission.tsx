@@ -79,8 +79,6 @@ export default function VideoSubmission() {
         .eq('video_token', token)
         .maybeSingle()
 
-      console.log('Raw database response:', { data, error })
-
       if (error) {
         console.error('Error fetching candidate:', error)
         console.error('Error details:', {
@@ -94,20 +92,6 @@ export default function VideoSubmission() {
 
       if (!data) {
         console.error('No candidate found for token:', token)
-        console.log('Attempting debug query...')
-        
-        // Debug query to check if token exists at all
-        const { data: debugData, error: debugError } = await supabase
-          .from('candidates')
-          .select('video_token')
-          .eq('video_token', token)
-        
-        console.log('Debug query results:', {
-          found: debugData?.length > 0,
-          error: debugError,
-          tokens: debugData
-        })
-        
         throw new Error('Invalid or expired video submission link')
       }
 

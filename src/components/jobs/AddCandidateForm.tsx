@@ -8,69 +8,35 @@ import { Label } from "@/components/ui/label"
 import { Upload } from "lucide-react"
 import { formatPhoneNumber } from "@/utils/phoneUtils"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useForm } from "react-hook-form"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
 
 interface AddCandidateFormProps {
   jobId: string
   onSuccess: () => void
 }
 
-interface FormValues {
-  name: string
-  email: string
-  phone: string
-  hasConsented: boolean
-}
-
 export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
   const [resume, setResume] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [hasConsented, setHasConsented] = useState(false)
   const supabase = useSupabaseClient()
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
-  const form = useForm<FormValues>({
-    defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      hasConsented: false
-    }
-  })
-
-  const checkDuplicateEmail = async (email: string) => {
-    try {
-      console.log('Checking for duplicate email:', email, 'jobId:', jobId)
-      const { data: existingCandidate, error } = await supabase
-        .from('candidates')
-        .select('id')
-        .eq('job_id', jobId)
-        .eq('email', email.toLowerCase().trim())
-        .maybeSingle()
-
-      if (error) {
-        console.error('Error checking for duplicate email:', error)
-        throw error
-      }
-
-      console.log('Duplicate check result:', existingCandidate)
-      return !!existingCandidate
-    } catch (error) {
-      console.error('Error in checkDuplicateEmail:', error)
-      throw new Error('Failed to check for duplicate email')
-    }
+  const resetForm = () => {
+    setName("")
+    setEmail("")
+    setPhone("")
+    setResume(null)
+    setHasConsented(false)
   }
 
-  const onSubmit = async (values: FormValues) => {
-    if (!values.hasConsented) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!hasConsented) {
       toast({
         title: "Consent Required",
         description: "Please confirm that the candidate has provided consent to proceed.",
@@ -82,15 +48,6 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
     setIsSubmitting(true)
 
     try {
-      const isDuplicate = await checkDuplicateEmail(values.email)
-      if (isDuplicate) {
-        form.setError("email", {
-          type: "manual",
-          message: "A candidate with this email already exists for this job position"
-        })
-        return
-      }
-
       let resumeUrl = null
       
       if (resume) {
@@ -108,15 +65,15 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
         resumeUrl = fileName
       }
 
-      const formattedPhone = formatPhoneNumber(values.phone)
+      const formattedPhone = formatPhoneNumber(phone)
 
       const { error } = await supabase
         .from('candidates')
         .insert([
           {
             job_id: jobId,
-            name: values.name,
-            email: values.email.toLowerCase().trim(),
+            name,
+            email,
             phone: formattedPhone,
             resume_url: resumeUrl,
             status: 'new'
@@ -134,136 +91,105 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
         description: "Candidate added successfully",
       })
 
-      form.reset()
-      setResume(null)
+      resetForm()
       onSuccess()
     } catch (error) {
       console.error('Form submission error:', error)
-      if (!form.getFieldState("email").error) {
-        toast({
-          title: "Error",
-          description: "Failed to add candidate. Please try again.",
-          variant: "destructive",
-        })
-      }
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to add candidate",
+        variant: "destructive",
+      })
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input {...field} required />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="name">Name</Label>
+        <Input
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
         />
-
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field, fieldState }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input 
-                  type="email" 
-                  {...field} 
-                  required
-                  className={fieldState.error ? "border-destructive ring-destructive" : ""} 
-                />
-              </FormControl>
-              <FormMessage className="text-destructive font-medium" />
-            </FormItem>
-          )}
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
         />
-
-        <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone Number</FormLabel>
-              <FormControl>
-                <Input
-                  type="tel"
-                  placeholder="+1 (234) 567-8900"
-                  {...field}
-                  required
-                />
-              </FormControl>
-              <p className="text-xs text-muted-foreground">
-                Enter phone number in any format - we'll format it automatically
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="phone">Phone Number</Label>
+        <Input
+          id="phone"
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          required
+          placeholder="+1 (234) 567-8900"
+        />
+        <p className="text-xs text-muted-foreground">
+          Enter phone number in any format - we'll format it automatically
+        </p>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="resume">Resume</Label>
+        <div className="flex items-center justify-center w-full">
+          <label htmlFor="resume" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/5 hover:bg-muted/10 border-muted-foreground/20">
+            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+              <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+              <p className="mb-2 text-sm text-muted-foreground">
+                <span className="font-semibold">Click to upload</span> or drag and drop
               </p>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="space-y-2">
-          <Label htmlFor="resume">Resume</Label>
-          <div className="flex items-center justify-center w-full">
-            <label htmlFor="resume" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/5 hover:bg-muted/10 border-muted-foreground/20">
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
-                <p className="mb-2 text-sm text-muted-foreground">
-                  <span className="font-semibold">Click to upload</span> or drag and drop
-                </p>
-                <p className="text-xs text-muted-foreground/75">PDF, DOC, or DOCX (Max 10MB)</p>
-              </div>
-              <Input
-                id="resume"
-                type="file"
-                accept=".pdf,.doc,.docx"
-                onChange={(e) => setResume(e.target.files?.[0] || null)}
-                className="hidden"
-              />
-            </label>
-          </div>
-          {resume && (
-            <p className="text-sm text-muted-foreground mt-2">
-              Selected file: {resume.name}
-            </p>
-          )}
+              <p className="text-xs text-muted-foreground/75">PDF, DOC, or DOCX (Max 10MB)</p>
+            </div>
+            <Input
+              id="resume"
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={(e) => setResume(e.target.files?.[0] || null)}
+              className="hidden"
+            />
+          </label>
         </div>
+        {resume && (
+          <p className="text-sm text-muted-foreground mt-2">
+            Selected file: {resume.name}
+          </p>
+        )}
+      </div>
 
-        <FormField
-          control={form.control}
-          name="hasConsented"
-          render={({ field }) => (
-            <FormItem className="flex items-start space-x-2 border rounded-lg p-4 bg-muted/5">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  className="mt-1"
-                />
-              </FormControl>
-              <div className="grid gap-1.5 leading-none">
-                <FormLabel>
-                  Consent Confirmation
-                </FormLabel>
-                <p className="text-sm text-muted-foreground">
-                  I confirm that the candidate has consented to receive SMS communications and agreed to VibeCheck's Terms of Service and Privacy Policy. Message and data rates may apply.
-                </p>
-              </div>
-            </FormItem>
-          )}
+      <div className="flex items-start space-x-2 border rounded-lg p-4 bg-muted/5">
+        <Checkbox 
+          id="consent" 
+          checked={hasConsented}
+          onCheckedChange={(checked) => setHasConsented(checked as boolean)}
+          className="mt-1"
         />
+        <div className="grid gap-1.5 leading-none">
+          <label
+            htmlFor="consent"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Consent Confirmation
+          </label>
+          <p className="text-sm text-muted-foreground">
+            I confirm that the candidate has consented to receive SMS communications and agreed to VibeCheck's Terms of Service and Privacy Policy. Message and data rates may apply.
+          </p>
+        </div>
+      </div>
 
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Adding..." : "Add Candidate"}
-        </Button>
-      </form>
-    </Form>
+      <Button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "Adding..." : "Add Candidate"}
+      </Button>
+    </form>
   )
 }
