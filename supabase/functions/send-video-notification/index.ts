@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { Resend } from "npm:resend@2.0.0"
 
-const SENDGRID_API_KEY = Deno.env.get('SENDGRID_API_KEY')
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+const resend = new Resend(RESEND_API_KEY)
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +13,7 @@ interface NotificationPayload {
   candidateId: string
   candidateName: string
   candidateEmail: string
+  jobId: string
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -25,68 +28,94 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     console.log('Starting send-video-notification function')
     
-    if (!SENDGRID_API_KEY) {
-      console.error('SendGrid API key not found')
-      throw new Error('SendGrid API key not found')
+    if (!RESEND_API_KEY) {
+      console.error('Resend API key not found')
+      throw new Error('Resend API key not found')
     }
 
     const payload: NotificationPayload = await req.json()
     console.log('Received payload:', {
       candidateId: payload.candidateId,
-      candidateName: payload.candidateName
+      candidateName: payload.candidateName,
+      jobId: payload.jobId
     })
 
-    // Prepare email data
-    const emailData = {
-      personalizations: [
-        {
-          to: [{ email: payload.candidateEmail }],
-        },
-      ],
-      from: { email: 'info@videovibecheck.com', name: 'Video Vibe Check' },
+    // Create Supabase client with service role to fetch job details and hiring manager
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
+
+    // Get job details and hiring manager email
+    const { data: jobData, error: jobError } = await supabaseClient
+      .from('job_openings')
+      .select(`
+        *,
+        profiles:user_id (
+          id,
+          email
+        )
+      `)
+      .eq('id', payload.jobId)
+      .single()
+
+    if (jobError) {
+      console.error('Error fetching job details:', jobError)
+      throw jobError
+    }
+
+    // Send confirmation email to candidate
+    console.log('Sending confirmation email to candidate...')
+    await resend.emails.send({
+      from: 'VibeCheck <notifications@videovibecheck.com>',
+      to: [payload.candidateEmail],
       subject: 'Video Submission Received',
-      content: [
-        {
-          type: 'text/html',
-          value: `
-            <h2>Thank You for Your Video Submission</h2>
-            <p>Hello ${payload.candidateName},</p>
-            <p>We have received your video submission. Our team will review it shortly.</p>
-            <p>Thank you for taking the time to complete this step in the application process.</p>
-          `,
-        },
-      ],
-    }
-
-    console.log('Sending email via SendGrid...')
-
-    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${SENDGRID_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(emailData),
+      html: `
+        <h2>Thank You for Your Video Submission</h2>
+        <p>Hello ${payload.candidateName},</p>
+        <p>We have received your video submission for the position of ${jobData.title}.</p>
+        <p>Our hiring team will review your submission and will be in touch if we feel there's a good fit.</p>
+        <p>Thank you for taking the time to complete this step in the application process.</p>
+        <br>
+        <p>Best regards,<br>The VibeCheck Team</p>
+      `
     })
 
-    console.log('SendGrid response status:', response.status)
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('SendGrid API error response:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorText
+    // Send notification to hiring manager
+    if (jobData.profiles?.email) {
+      console.log('Sending notification to hiring manager...')
+      await resend.emails.send({
+        from: 'VibeCheck <notifications@videovibecheck.com>',
+        to: [jobData.profiles.email],
+        subject: `New Video Submission: ${payload.candidateName} - ${jobData.title}`,
+        html: `
+          <h2>New Video Submission Received</h2>
+          <p>Hello,</p>
+          <p>A new video submission has been received for the ${jobData.title} position.</p>
+          <p><strong>Candidate Details:</strong></p>
+          <ul>
+            <li>Name: ${payload.candidateName}</li>
+            <li>Email: ${payload.candidateEmail}</li>
+          </ul>
+          <p>You can review this submission by logging into your VibeCheck dashboard.</p>
+          <br>
+          <p>Best regards,<br>The VibeCheck Team</p>
+        `
       })
-      throw new Error(`SendGrid API error: ${response.status} - ${errorText}`)
     }
 
-    console.log('Email sent successfully')
+    console.log('Emails sent successfully')
 
     return new Response(
       JSON.stringify({ 
         success: true,
-        message: 'Email sent successfully'
+        message: 'Notification emails sent successfully'
       }),
       {
         headers: { 

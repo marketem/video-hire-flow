@@ -24,7 +24,6 @@ export function CandidateNotifications() {
           filter: 'video_url=not.is.null'
         },
         async (payload: RealtimePostgresChangesPayload<CandidateRow>) => {
-          // For UPDATE events, we can safely cast to get old and new records
           const oldRecord = (payload as any).old_record as CandidateRow
           const newRecord = (payload as any).new_record as CandidateRow
           console.log('Candidate update detected:', { oldRecord, newRecord })
@@ -42,6 +41,7 @@ export function CandidateNotifications() {
                   candidateId: newRecord.id,
                   candidateName: newRecord.name,
                   candidateEmail: newRecord.email,
+                  jobId: newRecord.job_id
                 }),
               })
 
