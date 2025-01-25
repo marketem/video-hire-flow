@@ -37,7 +37,7 @@ const handler = async (req: Request): Promise<Response> => {
     const payload: NotificationPayload = await req.json()
     console.log('Received payload:', payload)
 
-    // Create Supabase client with service role to fetch job details and hiring manager
+    // Create Supabase client with service role to fetch job details
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -49,13 +49,14 @@ const handler = async (req: Request): Promise<Response> => {
       }
     )
 
-    // Get job details and hiring manager email
+    // Get job details and user email in a single query
+    console.log('Fetching job details for job ID:', payload.jobId)
     const { data: jobData, error: jobError } = await supabaseClient
       .from('job_openings')
       .select(`
-        *,
-        profiles:user_id (
-          id,
+        title,
+        user_id,
+        auth_users:user_id (
           email
         )
       `)
@@ -67,7 +68,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw jobError
     }
 
-    if (!jobData.profiles?.email) {
+    if (!jobData?.auth_users?.email) {
       console.error('No hiring manager email found for job:', jobData)
       throw new Error('Hiring manager email not found')
     }
@@ -90,10 +91,10 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Send notification to hiring manager
-    console.log('Sending notification to hiring manager:', jobData.profiles.email)
+    console.log('Sending notification to hiring manager:', jobData.auth_users.email)
     const managerEmail = {
       from: 'notifications@videovibecheck.com',
-      to: jobData.profiles.email,
+      to: jobData.auth_users.email,
       subject: `New Video Submission: ${payload.candidateName} - ${jobData.title}`,
       html: `
         <h2>New Video Submission Received</h2>
@@ -111,6 +112,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Send both emails
+    console.log('Sending emails...')
     await Promise.all([
       sgMail.send(candidateEmail),
       sgMail.send(managerEmail)
