@@ -65,7 +65,7 @@ export default function VideoSubmission() {
         .from('candidates')
         .select('*')
         .eq('video_token', token)
-        .single()
+        .maybeSingle()
 
       if (error) {
         console.error('Error fetching candidate:', error)
@@ -78,10 +78,13 @@ export default function VideoSubmission() {
         throw error
       }
 
+      if (!data) {
+        throw new Error('Invalid or expired video submission link')
+      }
+
       console.log('Successfully fetched candidate:', data)
       return data
     },
-    enabled: !!token,
     retry: false,
     meta: {
       onError: () => {
