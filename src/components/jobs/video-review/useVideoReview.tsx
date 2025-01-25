@@ -28,11 +28,14 @@ export function useVideoReview(jobId: string | null) {
       console.log('Raw candidates data:', data)
       console.log('Candidates with videos:', data.filter(c => c.video_url))
       console.log('Candidates with video_submitted_at:', data.filter(c => c.video_submitted_at))
+      console.log('Candidates by status:', data.reduce((acc, c) => {
+        acc[c.status] = (acc[c.status] || 0) + 1
+        return acc
+      }, {} as Record<string, number>))
 
-      // If there are any candidates with videos but still in 'new' status,
-      // update them to 'reviewing'
+      // Update any candidates that have videos but are still in 'requested' or 'new' status
       const candidatesToUpdate = data.filter(
-        c => c.video_url && c.status === 'new'
+        c => c.video_url && ['new', 'requested'].includes(c.status)
       )
 
       console.log('Candidates needing status update:', candidatesToUpdate)
@@ -49,7 +52,7 @@ export function useVideoReview(jobId: string | null) {
           console.log('Updated candidates status to reviewing:', candidatesToUpdate.map(c => c.id))
           // Update local data to reflect the changes
           data.forEach(c => {
-            if (c.video_url && c.status === 'new') {
+            if (c.video_url && ['new', 'requested'].includes(c.status)) {
               c.status = 'reviewing'
             }
           })
