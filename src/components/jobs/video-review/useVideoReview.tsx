@@ -52,7 +52,7 @@ export function useVideoReview(jobId: string | null) {
       return data as Candidate[]
     },
     enabled: !!jobId,
-    refetchInterval: 5000,
+    refetchInterval: 5000, // Refresh every 5 seconds
   })
 
   const readyForReview = candidates.filter(c => 
