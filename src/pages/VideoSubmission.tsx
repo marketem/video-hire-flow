@@ -50,21 +50,17 @@ export default function VideoSubmission() {
       
       console.log('Attempting to fetch candidate with token:', token)
       
-      // First check if we can get the current session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-      console.log('Current session:', {
-        hasSession: !!session,
-        hasAccessToken: !!session?.access_token,
-        claims: session?.access_token ? 
-          JSON.parse(atob(session.access_token.split('.')[1])) : 
-          'No claims available'
+      // First set the video token in the request context
+      const { error: tokenError } = await supabase.rpc('set_request_video_token', {
+        token: token
       })
-      
-      if (sessionError) {
-        console.error('Session error:', sessionError)
-      }
 
-      // Try to fetch the candidate
+      if (tokenError) {
+        console.error('Error setting video token:', tokenError)
+        throw tokenError
+      }
+      
+      // Then fetch the candidate using the token
       const { data, error } = await supabase
         .from('candidates')
         .select('*')
