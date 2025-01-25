@@ -1,8 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { Resend } from "npm:resend@2.0.0"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4"
+import sgMail from "npm:@sendgrid/mail"
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
-const resend = new Resend(RESEND_API_KEY)
+const SENDGRID_API_KEY = Deno.env.get('SENDGRID_API_KEY')
+sgMail.setApiKey(SENDGRID_API_KEY!)
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,9 +29,9 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     console.log('Starting send-video-notification function')
     
-    if (!RESEND_API_KEY) {
-      console.error('Resend API key not found')
-      throw new Error('Resend API key not found')
+    if (!SENDGRID_API_KEY) {
+      console.error('SendGrid API key not found')
+      throw new Error('SendGrid API key not found')
     }
 
     const payload: NotificationPayload = await req.json()
@@ -72,9 +73,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send confirmation email to candidate
     console.log('Sending confirmation email to candidate...')
-    await resend.emails.send({
-      from: 'VibeCheck <notifications@videovibecheck.com>',
-      to: [payload.candidateEmail],
+    await sgMail.send({
+      from: 'notifications@videovibecheck.com',
+      to: payload.candidateEmail,
       subject: 'Video Submission Received',
       html: `
         <h2>Thank You for Your Video Submission</h2>
@@ -90,9 +91,9 @@ const handler = async (req: Request): Promise<Response> => {
     // Send notification to hiring manager
     if (jobData.profiles?.email) {
       console.log('Sending notification to hiring manager...')
-      await resend.emails.send({
-        from: 'VibeCheck <notifications@videovibecheck.com>',
-        to: [jobData.profiles.email],
+      await sgMail.send({
+        from: 'notifications@videovibecheck.com',
+        to: jobData.profiles.email,
         subject: `New Video Submission: ${payload.candidateName} - ${jobData.title}`,
         html: `
           <h2>New Video Submission Received</h2>
