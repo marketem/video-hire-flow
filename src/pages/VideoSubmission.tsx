@@ -41,47 +41,18 @@ export default function VideoSubmission() {
   const { data: candidate, isLoading: isLoadingCandidate } = useQuery({
     queryKey: ['candidate', token],
     queryFn: async () => {
-      if (!token) {
-        console.error('No token provided')
-        throw new Error('No token provided')
-      }
-      
-      console.log('Attempting to fetch candidate with token:', token)
-      
-      // First set the video token in the request context
-      const { error: tokenError } = await supabase.rpc('set_request_video_token', {
-        token: token
-      })
-
-      if (tokenError) {
-        console.error('Error setting video token:', tokenError)
-        throw tokenError
-      }
+      if (!token) throw new Error('No token provided')
       
       const { data, error } = await supabase
         .from('candidates')
         .select('*')
         .eq('video_token', token)
-        .maybeSingle()
+        .single()
 
-      if (error) {
-        console.error('Error fetching candidate:', error)
-        console.error('Error details:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
-        })
-        throw error
-      }
-
-      if (!data) {
-        throw new Error('Invalid or expired video submission link')
-      }
-
-      console.log('Successfully fetched candidate:', data)
+      if (error) throw error
       return data
     },
+    enabled: !!token,
     retry: false,
     meta: {
       onError: () => {
@@ -109,14 +80,20 @@ export default function VideoSubmission() {
         throw new Error(`Video size (${Math.round(recordedBlob.size / (1024 * 1024))}MB) exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit`)
       }
 
+      // Create a unique filename with the correct extension
       const extension = recordedBlob.type.includes('mp4') ? 'mp4' : 'webm'
       const fileName = `${candidate.id}-${Date.now()}.${extension}`
       
       console.log('Uploading file:', fileName)
 
+      // Create a File object from the Blob
+      const file = new File([recordedBlob], fileName, {
+        type: recordedBlob.type
+      })
+
       const { error: uploadError, data } = await supabase.storage
         .from('videos')
-        .upload(fileName, recordedBlob, {
+        .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false,
           contentType: recordedBlob.type
@@ -129,14 +106,13 @@ export default function VideoSubmission() {
 
       console.log('Video uploaded successfully:', data)
 
-      // Update candidate record with video URL
       const { error: updateError } = await supabase
         .from('candidates')
         .update({ 
           video_url: fileName,
+          video_submitted_at: new Date().toISOString()
         })
         .eq('id', candidate.id)
-        .eq('video_token', token)
 
       if (updateError) {
         console.error('Database update error:', updateError)
@@ -298,3 +274,4 @@ export default function VideoSubmission() {
       </div>
     </div>
   )
+}
