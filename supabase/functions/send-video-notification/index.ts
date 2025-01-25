@@ -67,9 +67,14 @@ const handler = async (req: Request): Promise<Response> => {
       throw jobError
     }
 
+    if (!jobData.profiles?.email) {
+      console.error('No hiring manager email found for job:', jobData)
+      throw new Error('Hiring manager email not found')
+    }
+
     // Send confirmation email to candidate
     console.log('Sending confirmation email to candidate:', payload.candidateEmail)
-    await sgMail.send({
+    const candidateEmail = {
       from: 'notifications@videovibecheck.com',
       to: payload.candidateEmail,
       subject: 'Video Submission Received',
@@ -82,30 +87,34 @@ const handler = async (req: Request): Promise<Response> => {
         <br>
         <p>Best regards,<br>The VibeCheck Team</p>
       `
-    })
+    }
 
     // Send notification to hiring manager
-    if (jobData.profiles?.email) {
-      console.log('Sending notification to hiring manager:', jobData.profiles.email)
-      await sgMail.send({
-        from: 'notifications@videovibecheck.com',
-        to: jobData.profiles.email,
-        subject: `New Video Submission: ${payload.candidateName} - ${jobData.title}`,
-        html: `
-          <h2>New Video Submission Received</h2>
-          <p>Hello,</p>
-          <p>A new video submission has been received for the ${jobData.title} position.</p>
-          <p><strong>Candidate Details:</strong></p>
-          <ul>
-            <li>Name: ${payload.candidateName}</li>
-            <li>Email: ${payload.candidateEmail}</li>
-          </ul>
-          <p>You can review this submission by logging into your VibeCheck dashboard.</p>
-          <br>
-          <p>Best regards,<br>The VibeCheck Team</p>
-        `
-      })
+    console.log('Sending notification to hiring manager:', jobData.profiles.email)
+    const managerEmail = {
+      from: 'notifications@videovibecheck.com',
+      to: jobData.profiles.email,
+      subject: `New Video Submission: ${payload.candidateName} - ${jobData.title}`,
+      html: `
+        <h2>New Video Submission Received</h2>
+        <p>Hello,</p>
+        <p>A new video submission has been received for the ${jobData.title} position.</p>
+        <p><strong>Candidate Details:</strong></p>
+        <ul>
+          <li>Name: ${payload.candidateName}</li>
+          <li>Email: ${payload.candidateEmail}</li>
+        </ul>
+        <p>You can review this submission by logging into your VibeCheck dashboard.</p>
+        <br>
+        <p>Best regards,<br>The VibeCheck Team</p>
+      `
     }
+
+    // Send both emails
+    await Promise.all([
+      sgMail.send(candidateEmail),
+      sgMail.send(managerEmail)
+    ])
 
     console.log('Emails sent successfully')
 
