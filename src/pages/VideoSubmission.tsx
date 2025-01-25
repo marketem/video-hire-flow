@@ -38,18 +38,51 @@ export default function VideoSubmission() {
     initializeCamera
   } = useVideoRecording()
 
+  console.log('Current token from URL:', token)
+
   const { data: candidate, isLoading: isLoadingCandidate } = useQuery({
     queryKey: ['candidate', token],
     queryFn: async () => {
-      if (!token) throw new Error('No token provided')
+      if (!token) {
+        console.error('No token provided')
+        throw new Error('No token provided')
+      }
       
+      console.log('Attempting to fetch candidate with token:', token)
+      
+      // First check if we can get the current session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      console.log('Current session:', {
+        hasSession: !!session,
+        hasAccessToken: !!session?.access_token,
+        claims: session?.access_token ? 
+          JSON.parse(atob(session.access_token.split('.')[1])) : 
+          'No claims available'
+      })
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError)
+      }
+
+      // Try to fetch the candidate
       const { data, error } = await supabase
         .from('candidates')
         .select('*')
         .eq('video_token', token)
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Error fetching candidate:', error)
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        })
+        throw error
+      }
+
+      console.log('Successfully fetched candidate:', data)
       return data
     },
     enabled: !!token,
