@@ -65,7 +65,7 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
       return !!existingCandidate
     } catch (error) {
       console.error('Error in checkDuplicateEmail:', error)
-      throw error
+      throw new Error('Failed to check for duplicate email')
     }
   }
 
@@ -82,14 +82,12 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
     setIsSubmitting(true)
 
     try {
-      // Check for duplicate email before proceeding with submission
       const isDuplicate = await checkDuplicateEmail(values.email)
       if (isDuplicate) {
         form.setError("email", {
           type: "manual",
-          message: "A candidate with this email already exists for this job position. Please use a different email address."
+          message: "A candidate with this email already exists for this job position"
         })
-        setIsSubmitting(false)
         return
       }
 
@@ -141,11 +139,10 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
       onSuccess()
     } catch (error) {
       console.error('Form submission error:', error)
-      // Only show generic error if it's not a validation error
       if (!form.getFieldState("email").error) {
         toast({
           title: "Error",
-          description: "An unexpected error occurred. Please try again.",
+          description: "Failed to add candidate. Please try again.",
           variant: "destructive",
         })
       }
