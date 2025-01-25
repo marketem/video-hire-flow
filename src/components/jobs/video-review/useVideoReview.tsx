@@ -25,11 +25,17 @@ export function useVideoReview(jobId: string | null) {
         throw error
       }
 
+      console.log('Raw candidates data:', data)
+      console.log('Candidates with videos:', data.filter(c => c.video_url))
+      console.log('Candidates with video_submitted_at:', data.filter(c => c.video_submitted_at))
+
       // If there are any candidates with videos but still in 'new' status,
       // update them to 'reviewing'
       const candidatesToUpdate = data.filter(
         c => c.video_url && c.status === 'new'
       )
+
+      console.log('Candidates needing status update:', candidatesToUpdate)
 
       if (candidatesToUpdate.length > 0) {
         const { error: updateError } = await supabase
@@ -40,6 +46,7 @@ export function useVideoReview(jobId: string | null) {
         if (updateError) {
           console.error('Error updating candidate statuses:', updateError)
         } else {
+          console.log('Updated candidates status to reviewing:', candidatesToUpdate.map(c => c.id))
           // Update local data to reflect the changes
           data.forEach(c => {
             if (c.video_url && c.status === 'new') {
@@ -55,9 +62,19 @@ export function useVideoReview(jobId: string | null) {
     refetchInterval: 5000, // Refresh every 5 seconds
   })
 
-  const readyForReview = candidates.filter(c => 
-    c.video_url && ['new', 'reviewing'].includes(c.status)
-  )
+  const readyForReview = candidates.filter(c => {
+    const isReady = c.video_url && ['new', 'reviewing'].includes(c.status)
+    if (c.video_url) {
+      console.log('Candidate video status check:', {
+        id: c.id,
+        name: c.name,
+        hasVideo: !!c.video_url,
+        status: c.status,
+        isReady
+      })
+    }
+    return isReady
+  })
 
   const awaitingResponse = candidates.filter(c => 
     c.video_token && !c.video_url && c.status === 'requested'
@@ -71,8 +88,17 @@ export function useVideoReview(jobId: string | null) {
     c.status === 'rejected'
   )
 
+  console.log('Filtered candidates:', {
+    readyForReview: readyForReview.length,
+    awaitingResponse: awaitingResponse.length,
+    approved: approvedCandidates.length,
+    rejected: rejectedCandidates.length
+  })
+
   const handleReviewAction = async (candidateId: string, status: 'reviewing' | 'rejected' | 'approved') => {
     try {
+      console.log('Updating candidate status:', { candidateId, status })
+      
       const { error } = await supabase
         .from('candidates')
         .update({ status })
@@ -80,6 +106,8 @@ export function useVideoReview(jobId: string | null) {
 
       if (error) throw error
 
+      console.log('Successfully updated candidate status')
+      
       toast({
         title: "Success",
         description: `Candidate marked as ${status}`,
@@ -114,6 +142,7 @@ export function useVideoReview(jobId: string | null) {
         return null
       }
 
+      console.log('Successfully generated signed URL for video')
       return data.signedUrl
     } catch (error) {
       console.error('Error in getVideoUrl:', error)
