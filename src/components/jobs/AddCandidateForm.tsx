@@ -82,7 +82,7 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
     setIsSubmitting(true)
 
     try {
-      // Check for duplicate email
+      // Check for duplicate email before proceeding with submission
       const isDuplicate = await checkDuplicateEmail(values.email)
       if (isDuplicate) {
         form.setError("email", {
@@ -141,11 +141,14 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
       onSuccess()
     } catch (error) {
       console.error('Form submission error:', error)
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to add candidate. Please try again.",
-        variant: "destructive",
-      })
+      // Only show generic error if it's not a validation error
+      if (!form.getFieldState("email").error) {
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        })
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -179,10 +182,10 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
                   type="email" 
                   {...field} 
                   required
-                  className={fieldState.error ? "border-destructive" : ""} 
+                  className={fieldState.error ? "border-destructive ring-destructive" : ""} 
                 />
               </FormControl>
-              <FormMessage className="text-destructive" />
+              <FormMessage className="text-destructive font-medium" />
             </FormItem>
           )}
         />
