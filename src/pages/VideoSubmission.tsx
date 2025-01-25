@@ -124,7 +124,16 @@ export default function VideoSubmission() {
         description: "Your video has been uploaded successfully!",
       })
 
-      navigate('/submission-success')
+      navigate('/submission-success', { 
+        state: { 
+          candidateData: {
+            id: candidate.id,
+            name: candidate.name,
+            email: candidate.email,
+            job_id: candidate.job_id
+          }
+        }
+      })
     } catch (error) {
       console.error('Upload process error:', error)
       const errorMessage = error instanceof Error ? error.message : "Upload failed. Please try again."

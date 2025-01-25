@@ -2,24 +2,30 @@ import { Button } from "@/components/ui/button"
 import { CheckCircle2 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import { useEffect } from "react"
-import { supabase } from "@/integrations/supabase/client"
+import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
 
 export default function SubmissionSuccess() {
   const location = useLocation()
   const { toast } = useToast()
+  const supabase = useSupabaseClient()
   const candidateData = location.state?.candidateData
 
   useEffect(() => {
     const sendNotification = async () => {
-      if (!candidateData) return
+      if (!candidateData?.id || !candidateData?.name || !candidateData?.email || !candidateData?.job_id) {
+        console.error('Missing required candidate data for notification:', candidateData)
+        return
+      }
 
       try {
+        console.log('Sending video submission notification for candidate:', candidateData)
         const { error } = await supabase.functions.invoke('send-video-notification', {
           body: {
             candidateId: candidateData.id,
             candidateName: candidateData.name,
-            candidateEmail: candidateData.email
+            candidateEmail: candidateData.email,
+            jobId: candidateData.job_id
           }
         })
 
@@ -30,6 +36,8 @@ export default function SubmissionSuccess() {
             title: "Notification Error",
             description: "There was a problem sending the confirmation email."
           })
+        } else {
+          console.log('Notification sent successfully')
         }
       } catch (error) {
         console.error('Error invoking function:', error)
@@ -37,7 +45,7 @@ export default function SubmissionSuccess() {
     }
 
     sendNotification()
-  }, [candidateData, toast])
+  }, [candidateData, toast, supabase])
 
   return (
     <div className="min-h-screen bg-background p-4 flex flex-col">
