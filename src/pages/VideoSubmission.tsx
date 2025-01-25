@@ -75,18 +75,28 @@ export default function VideoSubmission() {
       console.log('Starting upload process...')
       console.log('Blob size:', recordedBlob.size)
       console.log('Blob type:', recordedBlob.type)
-      console.log('Candidate data:', {
-        id: candidate.id,
-        video_token: candidate.video_token,
-        status: candidate.status
-      })
+      
+      // Log complete candidate data for debugging
+      console.log('Full candidate data:', candidate)
+      
+      // Get and validate token from URL
+      const urlToken = searchParams.get('token')
+      console.log('Token from URL:', urlToken)
+      console.log('Token from candidate:', candidate.video_token)
+      console.log('Token match:', urlToken === candidate.video_token)
 
       // Log JWT claims
       const { data: { session }, error: sessionError } = await supabase.auth.getSession()
       if (sessionError) {
         console.error('Error getting session:', sessionError)
       } else {
-        console.log('JWT claims:', session?.access_token)
+        console.log('Session data:', {
+          hasSession: !!session,
+          hasAccessToken: !!session?.access_token,
+          claims: session?.access_token ? 
+            JSON.parse(atob(session.access_token.split('.')[1])) : 
+            'No claims available'
+        })
       }
 
       if (recordedBlob.size > MAX_FILE_SIZE) {
@@ -119,30 +129,42 @@ export default function VideoSubmission() {
       console.log('Attempting database update with:', {
         video_url: fileName,
         video_submitted_at: new Date().toISOString(),
-        candidate_id: candidate.id
+        candidate_id: candidate.id,
+        using_token: urlToken
       })
 
-      const { error: updateError, data: updateData } = await supabase
+      // Try to update with explicit token claim
+      const { error: updateError, data: updateData } = await supabase.auth.setSession({
+        access_token: session?.access_token || '',
+        refresh_token: session?.refresh_token || '',
+      })
+
+      if (updateError) {
+        console.error('Session update error:', updateError)
+      }
+
+      const { error: candidateUpdateError, data: candidateUpdateData } = await supabase
         .from('candidates')
         .update({ 
           video_url: fileName,
           video_submitted_at: new Date().toISOString()
         })
         .eq('id', candidate.id)
+        .eq('video_token', urlToken)
         .select()
 
-      if (updateError) {
-        console.error('Database update error:', updateError)
+      if (candidateUpdateError) {
+        console.error('Database update error:', candidateUpdateError)
         console.error('Error details:', {
-          code: updateError.code,
-          message: updateError.message,
-          details: updateError.details,
-          hint: updateError.hint
+          code: candidateUpdateError.code,
+          message: candidateUpdateError.message,
+          details: candidateUpdateError.details,
+          hint: candidateUpdateError.hint
         })
-        throw updateError
+        throw candidateUpdateError
       }
 
-      console.log('Database update successful:', updateData)
+      console.log('Database update successful:', candidateUpdateData)
 
       toast({
         title: "Success",
