@@ -28,11 +28,7 @@ export function DashboardHeader() {
           <h1 className="text-xl md:text-3xl font-bold truncate pr-4">
             Welcome, {session?.user.user_metadata.first_name || 'User'}!
           </h1>
-          {hasPremiumAccess ? (
-            <p className="text-sm text-success">
-              Premium
-            </p>
-          ) : session?.user.user_metadata.trial_ends_at ? (
+          {session?.user.user_metadata.trial_ends_at && (
             <p className="text-sm text-muted-foreground">
               Trial ends in {Math.ceil(
                 (new Date(session.user.user_metadata.trial_ends_at).getTime() -
@@ -40,10 +36,10 @@ export function DashboardHeader() {
                   (1000 * 60 * 60 * 24)
               )} days
             </p>
-          ) : null}
+          )}
         </div>
         <div className="flex items-center gap-4">
-          {!hasPremiumAccess && (
+          {(!hasPremiumAccess || session?.user.user_metadata.trial_ends_at) && (
             <Button onClick={handleUpgrade} className="hidden sm:flex">
               <Sparkles className="mr-2 h-4 w-4" />
               Upgrade Now
