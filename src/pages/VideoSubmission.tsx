@@ -50,19 +50,29 @@ export default function VideoSubmission() {
         throw new Error('No token provided')
       }
       
-      console.log('Attempting to fetch candidate with token:', token)
+      console.log('Starting candidate fetch process with token:', token)
       
       // First set the video token in the request context
+      console.log('Setting video token in request context...')
       const { error: tokenError } = await supabase.rpc('set_request_video_token', {
         token: token
       })
 
       if (tokenError) {
         console.error('Error setting video token:', tokenError)
+        console.error('Token error details:', {
+          code: tokenError.code,
+          message: tokenError.message,
+          details: tokenError.details,
+          hint: tokenError.hint
+        })
         throw tokenError
       }
       
+      console.log('Video token successfully set in request context')
+      
       // Then fetch the candidate using the token
+      console.log('Fetching candidate data...')
       const { data, error } = await supabase
         .from('candidates')
         .select('*')
@@ -81,10 +91,11 @@ export default function VideoSubmission() {
       }
 
       if (!data) {
+        console.error('No candidate found for token:', token)
         throw new Error('Invalid or expired video submission link')
       }
 
-      console.log('Successfully fetched candidate:', data)
+      console.log('Successfully fetched candidate data:', data)
       return data
     },
     retry: false,
@@ -101,12 +112,16 @@ export default function VideoSubmission() {
   })
 
   const handleUpload = async () => {
-    console.log('handleUpload function called') // Log when function is called
-    console.log('Current recordedBlob:', recordedBlob) // Log the blob
-    console.log('Current candidate:', candidate) // Log candidate data
+    console.log('handleUpload function called')
+    console.log('Current recordedBlob:', recordedBlob)
+    console.log('Current candidate:', candidate)
+    console.log('Current token from URL:', token)
 
     if (!recordedBlob || !candidate?.id) {
-      console.log('Upload prevented - missing blob or candidate id') // Log validation failure
+      console.log('Upload prevented - missing blob or candidate id')
+      console.log('Blob exists:', !!recordedBlob)
+      console.log('Candidate exists:', !!candidate)
+      console.log('Candidate ID exists:', !!candidate?.id)
       return
     }
 
