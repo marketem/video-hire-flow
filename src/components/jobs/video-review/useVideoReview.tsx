@@ -1,37 +1,18 @@
-import { useSupabaseClient, useSession } from "@supabase/auth-helpers-react"
+import { useSupabaseClient } from "@supabase/auth-helpers-react"
 import { useToast } from "@/hooks/use-toast"
-import { useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import type { Candidate } from "@/types/candidate"
 
 export function useVideoReview(jobId: string | null) {
   const supabase = useSupabaseClient()
-  const session = useSession()
-  const navigate = useNavigate()
   const { toast } = useToast()
 
-  const { data: candidates, refetch } = useQuery({
+  const { data: candidates = [], refetch } = useQuery({
     queryKey: ['candidates-review', jobId],
     queryFn: async () => {
-      if (!jobId) return null
+      if (!jobId) return []
       
-      console.log('Fetching candidates for job:', jobId)
-      console.log('User authenticated:', !!session?.user)
-      console.log('User ID:', session?.user?.id)
-
-      // First verify job ownership
-      const { data: jobData, error: jobError } = await supabase
-        .from('job_openings')
-        .select('user_id, title')
-        .eq('id', jobId)
-        .single()
-
-      if (jobError) {
-        console.error('Error fetching job:', jobError)
-        throw jobError
-      }
-
-      console.log('Job belongs to user:', jobData?.user_id === session?.user?.id)
+      console.log('Fetching candidates for video review, job:', jobId)
 
       const { data, error } = await supabase
         .from('candidates')
@@ -43,18 +24,14 @@ export function useVideoReview(jobId: string | null) {
         console.error('Error fetching candidates:', error)
         throw error
       }
-      
-      console.log('Raw Supabase response:', { data, error })
-      console.log('Fetched candidates:', data)
 
-      // Update status to 'reviewing' for candidates with videos but not in reviewing status
+      // If there are any candidates with videos but still in 'new' status,
+      // update them to 'reviewing'
       const candidatesToUpdate = data.filter(
-        (c: Candidate) => c.video_url && c.status !== 'reviewing'
+        c => c.video_url && c.status === 'new'
       )
 
       if (candidatesToUpdate.length > 0) {
-        console.log('Updating candidates to reviewing status:', candidatesToUpdate)
-        
         const { error: updateError } = await supabase
           .from('candidates')
           .update({ status: 'reviewing' })
@@ -63,50 +40,38 @@ export function useVideoReview(jobId: string | null) {
         if (updateError) {
           console.error('Error updating candidate statuses:', updateError)
         } else {
-          // Send email notifications for each updated candidate
-          for (const candidate of candidatesToUpdate) {
-            try {
-              const dashboardUrl = `${window.location.origin}/dashboard`
-              await supabase.functions.invoke('send-status-email', {
-                body: {
-                  to: session?.user?.email,
-                  candidateName: candidate.name,
-                  jobTitle: jobData.title,
-                  dashboardUrl
-                }
-              })
-              console.log('Email notification sent for candidate:', candidate.name)
-            } catch (error) {
-              console.error('Error sending email notification:', error)
-            }
-          }
-
-          // Update the local data to reflect the changes
-          data.forEach(candidate => {
-            if (candidatesToUpdate.find(c => c.id === candidate.id)) {
-              candidate.status = 'reviewing'
+          // Update local data to reflect the changes
+          data.forEach(c => {
+            if (c.video_url && c.status === 'new') {
+              c.status = 'reviewing'
             }
           })
         }
       }
-
+      
       return data as Candidate[]
     },
-    enabled: !!jobId && !!session?.user?.id,
-    refetchInterval: 5000, // Refetch every 5 seconds to catch new uploads
+    enabled: !!jobId,
+    refetchInterval: 5000,
   })
 
-  const handleReviewAction = async (candidateId: string, status: 'reviewing' | 'rejected' | 'approved') => {
-    if (!session) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to review candidates",
-        variant: "destructive",
-      })
-      navigate('/login')
-      return
-    }
+  const readyForReview = candidates.filter(c => 
+    c.video_url && ['new', 'reviewing'].includes(c.status)
+  )
 
+  const awaitingResponse = candidates.filter(c => 
+    c.video_token && !c.video_url && c.status === 'requested'
+  )
+
+  const approvedCandidates = candidates.filter(c => 
+    c.status === 'approved'
+  )
+
+  const rejectedCandidates = candidates.filter(c => 
+    c.status === 'rejected'
+  )
+
+  const handleReviewAction = async (candidateId: string, status: 'reviewing' | 'rejected' | 'approved') => {
     try {
       const { error } = await supabase
         .from('candidates')
@@ -132,16 +97,6 @@ export function useVideoReview(jobId: string | null) {
   }
 
   const getVideoUrl = async (videoPath: string, candidateName: string): Promise<string | null> => {
-    if (!session) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to view videos",
-        variant: "destructive",
-      })
-      navigate('/login')
-      return null
-    }
-
     try {
       console.log('Getting signed URL for video:', videoPath)
       const { data, error } = await supabase
@@ -170,23 +125,6 @@ export function useVideoReview(jobId: string | null) {
       return null
     }
   }
-
-  // Filter candidates based on their status
-  const readyForReview = candidates?.filter(c => 
-    c.status === 'reviewing'
-  ) || []
-
-  const awaitingResponse = candidates?.filter(c => 
-    c.status === 'requested' && !c.video_url
-  ) || []
-
-  const approvedCandidates = candidates?.filter(c => 
-    c.status === 'approved'
-  ) || []
-
-  const rejectedCandidates = candidates?.filter(c => 
-    c.status === 'rejected'
-  ) || []
 
   return {
     readyForReview,
