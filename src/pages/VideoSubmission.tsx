@@ -72,32 +72,52 @@ export default function VideoSubmission() {
     setIsUploading(true)
 
     try {
+      console.log('Starting upload process...')
+      console.log('Blob size:', recordedBlob.size)
+      console.log('Blob type:', recordedBlob.type)
+
       if (recordedBlob.size > MAX_FILE_SIZE) {
-        throw new Error(`Video size (${Math.round(recordedBlob.size / (1024 * 1024))}MB) exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit. Please record a shorter video.`)
+        throw new Error(`Video size (${Math.round(recordedBlob.size / (1024 * 1024))}MB) exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit`)
       }
 
-      const fileName = `${candidate.id}-${Date.now()}.webm`
+      // Create a unique filename with the correct extension
+      const extension = recordedBlob.type.includes('mp4') ? 'mp4' : 'webm'
+      const fileName = `${candidate.id}-${Date.now()}.${extension}`
+      
+      console.log('Uploading file:', fileName)
+
+      // Create a File object from the Blob
       const file = new File([recordedBlob], fileName, {
-        type: 'video/webm'
+        type: recordedBlob.type
       })
 
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError, data } = await supabase.storage
         .from('videos')
         .upload(fileName, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
+          contentType: recordedBlob.type
         })
 
-      if (uploadError) throw uploadError
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError)
+        throw uploadError
+      }
+
+      console.log('Video uploaded successfully:', data)
 
       const { error: updateError } = await supabase
         .from('candidates')
         .update({ 
-          video_url: fileName
+          video_url: fileName,
+          video_submitted_at: new Date().toISOString()
         })
         .eq('id', candidate.id)
 
-      if (updateError) throw updateError
+      if (updateError) {
+        console.error('Database update error:', updateError)
+        throw updateError
+      }
 
       toast({
         title: "Success",
