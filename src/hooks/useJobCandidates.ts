@@ -27,6 +27,32 @@ export function useJobCandidates(jobId: string) {
         return acc
       }, {} as Record<string, number>))
 
+      // Update any candidates that have videos but are still in 'requested' or 'new' status
+      const candidatesToUpdate = data.filter(
+        c => c.video_url && ['new', 'requested'].includes(c.status)
+      )
+
+      if (candidatesToUpdate.length > 0) {
+        console.log('Candidates needing status update:', candidatesToUpdate)
+        
+        const { error: updateError } = await supabase
+          .from('candidates')
+          .update({ status: 'reviewing' })
+          .in('id', candidatesToUpdate.map(c => c.id))
+
+        if (updateError) {
+          console.error('Error updating candidate statuses:', updateError)
+        } else {
+          console.log('Updated candidates status to reviewing:', candidatesToUpdate.map(c => c.id))
+          // Update local data to reflect the changes
+          data.forEach(c => {
+            if (c.video_url && ['new', 'requested'].includes(c.status)) {
+              c.status = 'reviewing'
+            }
+          })
+        }
+      }
+
       return data as Candidate[]
     },
     refetchInterval: 5000 // Poll every 5 seconds

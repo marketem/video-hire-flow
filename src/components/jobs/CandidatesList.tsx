@@ -14,7 +14,7 @@ interface CandidatesListProps {
 }
 
 export function CandidatesList({ jobId }: CandidatesListProps) {
-  const { data: candidates, isLoading, refetch } = useJobCandidates(jobId)
+  const { candidates, isLoading, fetchCandidates } = useJobCandidates(jobId)
   const { selectedCandidates, setSelectedCandidates, toggleSelectAll, toggleCandidate } = useCandidateSelection()
   const { sendVideoInvites } = useSendVideoInvites(jobId)
   const supabase = useSupabaseClient()
@@ -34,7 +34,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
         },
         (payload) => {
           console.log('Real-time update received:', payload)
-          refetch()
+          fetchCandidates()
         }
       )
       .subscribe()
@@ -42,7 +42,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [jobId, refetch, supabase])
+  }, [jobId, fetchCandidates, supabase])
 
   const handleSendInvites = async () => {
     const success = await sendVideoInvites(selectedCandidates, candidates || [])
@@ -58,7 +58,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       }
 
       setSelectedCandidates([])
-      refetch()
+      fetchCandidates()
     }
   }
 
@@ -81,7 +81,7 @@ export function CandidatesList({ jobId }: CandidatesListProps) {
       console.log('Deletion successful')
       
       setSelectedCandidates([])
-      await refetch()
+      await fetchCandidates()
       
       toast({
         title: "Success",
