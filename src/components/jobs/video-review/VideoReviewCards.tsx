@@ -5,9 +5,49 @@ import { VideoReviewModal } from "./VideoReviewModal"
 import { useVideoStats } from "./useVideoStats"
 import { PriorityIndicator } from "./PriorityIndicator"
 import { StatRow } from "./StatRow"
+import { useQuery } from "@tanstack/react-query"
+import { useSupabaseClient } from "@supabase/auth-helpers-react"
 
 export function VideoReviewCards() {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
+  const supabase = useSupabaseClient()
+  
+  // Add polling query to fetch and update candidates statuses
+  const { data: candidates = [] } = useQuery({
+    queryKey: ['candidates-status-check'],
+    queryFn: async () => {
+      console.log('Polling for candidate status updates...')
+      const { data, error } = await supabase
+        .from('candidates')
+        .select('*')
+        .in('status', ['new', 'requested'])
+        .not('video_url', 'is', null)
+
+      if (error) {
+        console.error('Error fetching candidates for status check:', error)
+        throw error
+      }
+
+      // If we find any candidates with videos that aren't in reviewing status, update them
+      if (data && data.length > 0) {
+        console.log('Found candidates needing status update:', data)
+        const { error: updateError } = await supabase
+          .from('candidates')
+          .update({ status: 'reviewing' })
+          .in('id', data.map(c => c.id))
+
+        if (updateError) {
+          console.error('Error updating candidate statuses:', updateError)
+        } else {
+          console.log('Updated candidates to reviewing status:', data.map(c => c.id))
+        }
+      }
+
+      return data
+    },
+    refetchInterval: 5000
+  })
+
   const { data: videoStats = [] } = useVideoStats()
 
   return (
