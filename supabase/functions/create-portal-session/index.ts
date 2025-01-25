@@ -39,7 +39,16 @@ serve(async (req) => {
     });
 
     if (customers.data.length === 0) {
-      throw new Error('No Stripe customer found');
+      console.error('No Stripe customer found for email:', user.email);
+      return new Response(
+        JSON.stringify({ 
+          error: 'No active subscription found. Please sign up for a subscription first.' 
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        }
+      );
     }
 
     // Create customer portal session

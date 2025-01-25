@@ -18,11 +18,14 @@ export function ManageSubscription() {
       });
 
       if (error) throw error;
-      if (url) window.location.href = url;
-    } catch (error) {
+      
+      if (url) {
+        window.location.href = url;
+      }
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to access subscription portal. Please try again.",
+        description: error.message || "Failed to access subscription portal. Please make sure you have an active subscription.",
         variant: "destructive",
       });
     } finally {
