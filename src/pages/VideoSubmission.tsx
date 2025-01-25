@@ -24,6 +24,8 @@ export default function VideoSubmission() {
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
+  console.log('isUploading state:', isUploading) // Track isUploading state changes
+
   const {
     isRecording,
     recordedBlob,
@@ -99,8 +101,16 @@ export default function VideoSubmission() {
   })
 
   const handleUpload = async () => {
-    if (!recordedBlob || !candidate?.id) return
-    setUploadError(null)
+    console.log('handleUpload function called') // Log when function is called
+    console.log('Current recordedBlob:', recordedBlob) // Log the blob
+    console.log('Current candidate:', candidate) // Log candidate data
+
+    if (!recordedBlob || !candidate?.id) {
+      console.log('Upload prevented - missing blob or candidate id') // Log validation failure
+      return
+    }
+
+    console.log('Setting isUploading to true') // Log state change
     setIsUploading(true)
 
     try {
@@ -223,6 +233,7 @@ export default function VideoSubmission() {
         variant: "destructive",
       })
     } finally {
+      console.log('Setting isUploading to false') // Log state change
       setIsUploading(false)
     }
   }
