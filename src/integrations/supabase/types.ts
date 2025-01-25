@@ -176,6 +176,12 @@ export type Database = {
         }
         Returns: Json
       }
+      set_request_video_token: {
+        Args: {
+          token: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
