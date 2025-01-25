@@ -47,19 +47,26 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
   })
 
   const checkDuplicateEmail = async (email: string) => {
-    const { data: existingCandidate, error } = await supabase
-      .from('candidates')
-      .select('id')
-      .eq('job_id', jobId)
-      .eq('email', email)
-      .maybeSingle()
+    try {
+      console.log('Checking for duplicate email:', email, 'jobId:', jobId)
+      const { data: existingCandidate, error } = await supabase
+        .from('candidates')
+        .select('id')
+        .eq('job_id', jobId)
+        .eq('email', email.toLowerCase().trim())
+        .maybeSingle()
 
-    if (error) {
-      console.error('Error checking for duplicate email:', error)
-      return false
+      if (error) {
+        console.error('Error checking for duplicate email:', error)
+        throw error
+      }
+
+      console.log('Duplicate check result:', existingCandidate)
+      return !!existingCandidate
+    } catch (error) {
+      console.error('Error in checkDuplicateEmail:', error)
+      throw error
     }
-
-    return !!existingCandidate
   }
 
   const onSubmit = async (values: FormValues) => {
@@ -111,7 +118,7 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
           {
             job_id: jobId,
             name: values.name,
-            email: values.email,
+            email: values.email.toLowerCase().trim(),
             phone: formattedPhone,
             resume_url: resumeUrl,
             status: 'new'
