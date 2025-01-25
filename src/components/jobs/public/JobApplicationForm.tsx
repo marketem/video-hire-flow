@@ -22,6 +22,22 @@ export function JobApplicationForm({ jobId }: JobApplicationFormProps) {
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
+  const checkDuplicateEmail = async (email: string) => {
+    const { data: existingCandidate, error } = await supabase
+      .from('candidates')
+      .select('id')
+      .eq('job_id', jobId)
+      .eq('email', email)
+      .maybeSingle()
+
+    if (error) {
+      console.error('Error checking for duplicate email:', error)
+      return false
+    }
+
+    return !!existingCandidate
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -37,8 +53,18 @@ export function JobApplicationForm({ jobId }: JobApplicationFormProps) {
     setIsSubmitting(true)
 
     try {
-      console.log('Starting application submission for job:', jobId)
-      
+      // Check for duplicate email
+      const isDuplicate = await checkDuplicateEmail(email)
+      if (isDuplicate) {
+        toast({
+          title: "Application Already Exists",
+          description: "You have already applied for this position with this email address.",
+          variant: "destructive",
+        })
+        setIsSubmitting(false)
+        return
+      }
+
       // Validate file size (max 10MB)
       if (resume && resume.size > 10 * 1024 * 1024) {
         throw new Error("File size must be less than 10MB")

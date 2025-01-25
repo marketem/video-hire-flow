@@ -33,6 +33,22 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
     setHasConsented(false)
   }
 
+  const checkDuplicateEmail = async (email: string) => {
+    const { data: existingCandidates, error } = await supabase
+      .from('candidates')
+      .select('id')
+      .eq('job_id', jobId)
+      .eq('email', email)
+      .maybeSingle()
+
+    if (error) {
+      console.error('Error checking for duplicate email:', error)
+      return false
+    }
+
+    return !!existingCandidates
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -48,6 +64,18 @@ export function AddCandidateForm({ jobId, onSuccess }: AddCandidateFormProps) {
     setIsSubmitting(true)
 
     try {
+      // Check for duplicate email
+      const isDuplicate = await checkDuplicateEmail(email)
+      if (isDuplicate) {
+        toast({
+          title: "Duplicate Email",
+          description: "A candidate with this email already exists for this job.",
+          variant: "destructive",
+        })
+        setIsSubmitting(false)
+        return
+      }
+
       let resumeUrl = null
       
       if (resume) {

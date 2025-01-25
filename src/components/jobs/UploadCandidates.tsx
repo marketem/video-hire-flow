@@ -14,6 +14,21 @@ export function UploadCandidates({ jobId, onSuccess }: { jobId: string; onSucces
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
+  const checkDuplicateEmails = async (emails: string[]) => {
+    const { data: existingCandidates, error } = await supabase
+      .from('candidates')
+      .select('email')
+      .eq('job_id', jobId)
+      .in('email', emails)
+
+    if (error) {
+      console.error('Error checking for duplicate emails:', error)
+      return []
+    }
+
+    return existingCandidates?.map(c => c.email) || []
+  }
+
   const formatPhoneNumber = (phone: string) => {
     // Remove all non-numeric characters except +
     const cleaned = phone.replace(/[^\d+]/g, '')
@@ -49,13 +64,31 @@ export function UploadCandidates({ jobId, onSuccess }: { jobId: string; onSucces
       const text = await file.text()
       const rows = text.split('\n').map(row => row.split(','))
       const headers = rows[0].map(header => header.trim().toLowerCase())
+      
+      // Extract all emails from the CSV
+      const emails = rows.slice(1).map(row => {
+        const emailIndex = headers.indexOf('email')
+        return row[emailIndex]?.trim() || ''
+      }).filter(Boolean)
+
+      // Check for duplicates
+      const duplicateEmails = await checkDuplicateEmails(emails)
+      if (duplicateEmails.length > 0) {
+        toast({
+          title: "Duplicate Emails Found",
+          description: `The following emails already exist: ${duplicateEmails.join(', ')}`,
+          variant: "destructive",
+        })
+        setIsUploading(false)
+        return
+      }
+
       const candidates = rows.slice(1).map(row => {
         const candidate: Record<string, string> = {}
         headers.forEach((header, index) => {
           candidate[header] = row[index]?.trim() || ''
         })
         
-        // Format the phone number before saving
         const phone = candidate.phone || candidate.phonenumber || ''
         const formattedPhone = formatPhoneNumber(phone)
         
