@@ -8,6 +8,12 @@ export function useJobCandidates(jobId: string) {
   const { data: candidates = [], isLoading, refetch } = useQuery({
     queryKey: ['candidates', jobId],
     queryFn: async () => {
+      // Add validation to prevent querying with invalid job ID
+      if (!jobId) {
+        console.log('No job ID provided, skipping candidates fetch')
+        return []
+      }
+
       console.log('Fetching candidates for job:', jobId)
       const { data, error } = await supabase
         .from('candidates')
@@ -55,6 +61,8 @@ export function useJobCandidates(jobId: string) {
 
       return data as Candidate[]
     },
+    // Only run the query if we have a valid job ID
+    enabled: !!jobId,
     refetchInterval: 5000 // Poll every 5 seconds
   })
 
