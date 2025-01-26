@@ -16,18 +16,23 @@ export function useLoginForm() {
     console.error("Auth error details:", error);
     
     if (error instanceof AuthApiError) {
+      // Check if the error message contains any indication of email verification
+      const errorMessage = error.message.toLowerCase();
+      if (errorMessage.includes('email not confirmed') || 
+          errorMessage.includes('email confirmation') ||
+          errorMessage.includes('verify')) {
+        return "Please check your email for the verification link before logging in.";
+      }
+
       switch (error.status) {
         case 400:
-          if (error.message.includes('Email not confirmed')) {
-            return "Please check your email for the verification link before logging in.";
-          }
-          return "Invalid email or password. Please try again.";
+          return "Please verify your email before logging in. Check your inbox for the verification link.";
         case 401:
-          return "Invalid login credentials. Please check your email and password.";
+          return "Please verify your email before logging in. Check your inbox for the verification link.";
         case 403:
           return "Email not confirmed. Please check your email for verification link.";
         case 422:
-          return "Invalid login credentials. Please try again.";
+          return "Please verify your email before logging in.";
         default:
           return "Invalid email or password. Please try again.";
       }
@@ -50,6 +55,25 @@ export function useLoginForm() {
         return;
       }
 
+      // First, check if the user exists and if their email is confirmed
+      const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers({
+        filters: {
+          email: email
+        }
+      });
+
+      if (getUserError) {
+        console.error("Error checking user status:", getUserError);
+      } else if (users && users.length > 0 && !users[0].email_confirmed_at) {
+        toast({
+          title: "Email Verification Required",
+          description: "Please check your email for the verification link before logging in.",
+          variant: "default",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -59,7 +83,7 @@ export function useLoginForm() {
         console.error("Login error:", error);
         
         // Check if the error is related to email verification
-        if (error.message.includes('Email not confirmed')) {
+        if (error.message.toLowerCase().includes('email not confirmed')) {
           toast({
             title: "Email Verification Required",
             description: "Please check your email for the verification link before logging in.",
