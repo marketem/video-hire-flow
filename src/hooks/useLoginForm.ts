@@ -18,6 +18,9 @@ export function useLoginForm() {
     if (error instanceof AuthApiError) {
       switch (error.status) {
         case 400:
+          if (error.message.includes('Email not confirmed')) {
+            return "Please check your email for the verification link before logging in.";
+          }
           return "Invalid email or password. Please try again.";
         case 401:
           return "Invalid login credentials. Please check your email and password.";
@@ -54,6 +57,17 @@ export function useLoginForm() {
 
       if (error) {
         console.error("Login error:", error);
+        
+        // Check if the error is related to email verification
+        if (error.message.includes('Email not confirmed')) {
+          toast({
+            title: "Email Verification Required",
+            description: "Please check your email for the verification link before logging in.",
+            variant: "default",
+          });
+          return;
+        }
+        
         toast({
           title: "Login Failed",
           description: getErrorMessage(error),
@@ -84,7 +98,7 @@ export function useLoginForm() {
       console.error("Unexpected error during login:", error);
       toast({
         title: "Error",
-        description: "Invalid email or password. Please try again.",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {
