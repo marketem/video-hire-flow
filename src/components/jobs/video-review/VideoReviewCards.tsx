@@ -1,7 +1,6 @@
 import { useState } from "react"
-import { Clock, ThumbsUp, ThumbsDown, Eye } from "lucide-react"
+import { Clock, ThumbsUp, ThumbsDown } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { VideoReviewModal } from "./VideoReviewModal"
 import { useVideoStats } from "./useVideoStats"
 import { PriorityIndicator } from "./PriorityIndicator"
@@ -66,19 +65,7 @@ export function VideoReviewCards() {
             <CardHeader className="p-3 pb-0">
               <CardTitle className="text-base truncate flex items-start justify-between gap-2">
                 <span>{stat.jobTitle}</span>
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className={`px-2 py-1 h-auto ${
-                      stat.readyForReview > 0 ? 'text-red-500' : 'text-gray-400'
-                    }`}
-                  >
-                    <Eye className="h-4 w-4 mr-1" />
-                    Review
-                  </Button>
-                  <PriorityIndicator oldestPending={stat.oldestPending} />
-                </div>
+                <PriorityIndicator oldestPending={stat.oldestPending} />
               </CardTitle>
             </CardHeader>
             <CardContent className="p-3 pt-2">
