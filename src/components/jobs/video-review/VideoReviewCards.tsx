@@ -57,7 +57,7 @@ export function VideoReviewCards() {
         {videoStats.map((stat) => (
           <Card 
             key={stat.jobId}
-            className={`cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98] border-primary/10 relative ${
+            className={`cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98] border-primary/10 ${
               stat.readyForReview > 0 ? 'bg-gradient-to-br from-white to-red-50/30' : ''
             }`}
             onClick={() => setSelectedJobId(stat.jobId)}
@@ -91,15 +91,6 @@ export function VideoReviewCards() {
                   count={stat.rejectedCount}
                   label="Rejected"
                 />
-              </div>
-              <div className="absolute bottom-3 right-3">
-                <span 
-                  className={`px-3 py-1 rounded-md text-white text-sm font-medium ${
-                    stat.readyForReview > 0 ? 'bg-red-500' : 'bg-gray-400'
-                  }`}
-                >
-                  Review
-                </span>
               </div>
             </CardContent>
           </Card>
