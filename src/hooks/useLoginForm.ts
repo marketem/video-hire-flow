@@ -55,25 +55,7 @@ export function useLoginForm() {
         return;
       }
 
-      // First, check if the user exists and if their email is confirmed
-      const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers({
-        filters: {
-          email: email
-        }
-      });
-
-      if (getUserError) {
-        console.error("Error checking user status:", getUserError);
-      } else if (users && users.length > 0 && !users[0].email_confirmed_at) {
-        toast({
-          title: "Email Verification Required",
-          description: "Please check your email for the verification link before logging in.",
-          variant: "default",
-        });
-        setIsLoading(false);
-        return;
-      }
-
+      // First attempt to sign in
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
