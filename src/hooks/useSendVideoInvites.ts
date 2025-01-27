@@ -19,7 +19,9 @@ export function useSendVideoInvites(jobId: string) {
     }
 
     try {
-      // Check daily request limit for trial users
+      // NOTE: Daily request limit for trial users is currently disabled
+      // To re-enable the 5-invite daily limit, uncomment the following code block:
+      /*
       if (!hasPremiumAccess) {
         const today = new Date().toISOString().split('T')[0];
         
@@ -30,7 +32,7 @@ export function useSendVideoInvites(jobId: string) {
           .eq('request_date', today)
           .single()
 
-        if (logError && logError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+        if (logError && logError.code !== 'PGRST116') {
           console.error('Error checking request limit:', logError)
           throw new Error('Failed to check request limit')
         }
@@ -63,6 +65,7 @@ export function useSendVideoInvites(jobId: string) {
           throw new Error('Failed to update request log')
         }
       }
+      */
 
       console.log('Starting to send video invites for candidates:', selectedIds)
       const selectedCandidates = candidates.filter(c => selectedIds.includes(c.id))
