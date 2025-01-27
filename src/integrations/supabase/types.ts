@@ -182,6 +182,24 @@ export type Database = {
         }
         Returns: undefined
       }
+      validate_and_get_candidate: {
+        Args: {
+          token: string
+        }
+        Returns: {
+          id: string
+          job_id: string
+          name: string
+          email: string
+          phone: string
+          resume_url: string
+          status: string
+          created_at: string
+          video_url: string
+          video_token: string
+          video_submitted_at: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
